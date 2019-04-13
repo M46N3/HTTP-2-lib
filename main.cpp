@@ -114,6 +114,8 @@ void configure_context(SSL_CTX *ctx) {
 }
 
 int main(int argc, char **argv) {
+    bool use_default_port = false;
+    int port = use_default_port ? 443 : 8443;
     int sock;
     SSL_CTX *ctx;
 
@@ -122,7 +124,7 @@ int main(int argc, char **argv) {
 
     configure_context(ctx);
 
-    sock = create_socket(443);
+    sock = create_socket(port);
 
     /* Handle connections */
     while(1) {
