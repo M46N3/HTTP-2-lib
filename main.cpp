@@ -6,7 +6,9 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <nghttp2/nghttp2.h>
-#include <filesystem>
+
+static unsigned char next_proto_list[256];
+static size_t next_proto_list_len;
 
 int create_socket(int port) {
     int s;
@@ -59,10 +61,6 @@ SSL_CTX *create_context() {
 
     return ctx;
 }
-
-static unsigned char next_proto_list[256];
-static size_t next_proto_list_len;
-
 
 static int next_proto_cb(SSL *s, const unsigned char **data,
                          unsigned int *len, void *arg) {
