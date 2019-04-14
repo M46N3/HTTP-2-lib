@@ -5,7 +5,9 @@
 #include <arpa/inet.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
-#include <nghttp2/nghttp2.h>
+#include <iostream>
+
+using namespace std;
 
 static unsigned char next_proto_list[256];
 static size_t next_proto_list_len;
@@ -69,12 +71,34 @@ static int next_proto_cb(SSL *s, const unsigned char **data,
     return SSL_TLSEXT_ERR_OK;
 }
 
+
+static int select_protocol(unsigned char **out, unsigned char *outlen, const unsigned char *in, unsigned int inlen) {
+    *outlen = in[0];
+    out[0] = (unsigned char*) "h2";
+
+    return 1;
+}
+
 static int alpn_select_proto_cb(SSL *ssl, const unsigned char **out,
                                 unsigned char *outlen, const unsigned char *in,
                                 unsigned int inlen, void *arg) {
     int rv;
 
-    rv = nghttp2_select_next_protocol((unsigned char **)out, outlen, in, inlen);
+    //rv = nghttp2_select_next_protocol((unsigned char **)out, outlen, in, inlen);
+    rv = select_protocol((unsigned char **)out, outlen, in, inlen);
+
+
+    for(unsigned int i = 0; i < inlen; i++) {
+        std::cout << i << ": " << in[i] << endl;
+    }
+
+    std::cout << "" << std::endl;
+
+    cout << in[1] << endl;
+
+    std::cout << *out << " " << (unsigned int)*outlen << std::endl;
+
+    std::cout << rv << std::endl;
 
     if (rv != 1) {
         return SSL_TLSEXT_ERR_NOACK;
@@ -84,10 +108,9 @@ static int alpn_select_proto_cb(SSL *ssl, const unsigned char **out,
 }
 
 void configure_alpn(SSL_CTX *ctx) {
-    next_proto_list[0] = NGHTTP2_PROTO_VERSION_ID_LEN;
-    memcpy(&next_proto_list[1], NGHTTP2_PROTO_VERSION_ID,
-           NGHTTP2_PROTO_VERSION_ID_LEN);
-    next_proto_list_len = 1 + NGHTTP2_PROTO_VERSION_ID_LEN;
+    next_proto_list[0] = 2;
+    memcpy(&next_proto_list[1], "h2", 2);
+    next_proto_list_len = 1 + 2;
 
     SSL_CTX_set_next_protos_advertised_cb(ctx, next_proto_cb, NULL);
 
