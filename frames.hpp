@@ -52,7 +52,7 @@ char* getBytes(frame frame) {
     for (int i = 0; i < 9; i++) {
         bitset<8> b(s, (i*8), 8);
         chars[i] = (b.to_ulong() & 0xFF);
-        cout << static_cast<int>(chars[i]);
+        //cout << static_cast<int>(chars[i]);
     }
     return chars;
 }
