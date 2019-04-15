@@ -6,6 +6,8 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <iostream>
+#include <event2/event.h>
+#include <event2/listener.h>
 
 using namespace std;
 
@@ -48,7 +50,7 @@ void cleanup_openssl() {
     EVP_cleanup();
 }
 
-SSL_CTX *create_context() {
+SSL_CTX *create_ssl_context() {
     const SSL_METHOD *method;
     SSL_CTX *ctx;
 
@@ -153,6 +155,82 @@ void configure_context(SSL_CTX *ctx) {
     configure_alpn(ctx);
 }
 
+struct application_ctx {
+    SSL_CTX *ctx;
+    struct event_base *eventBase;
+};
+
+struct h2_session_data {
+    struct h2_stream_data root;
+    struct bufferevent *bufferEvent;
+    application_ctx *appCtx;
+    h2_session *session;
+    char *clientAddress;
+} h2_session_data;
+
+
+static void create_application_context(application_ctx *appCtx, SSL_CTX *sslCtx, struct event_base *eventBase_) {
+    memset(appCtx, 0, sizeof(appCtx));
+    appCtx->ctx = sslCtx;
+    appCtx->eventBase = eventBase_;
+}
+
+static void accept_callback(struct evconnlistener *conListener, int fd,
+                            struct sockaddr *address, int addres_length, void *arg) {
+    application_ctx *appCtx = (application_ctx *)arg;
+    //http2_session_data *session_data;
+    (void)conListener;
+
+    session_data
+}
+
+static void server_listen(struct event_base *eventBase, const char *port, application_ctx *appCtx) {
+    int return_value;
+    struct addrinfo hints;
+    struct addrinfo *res, *rp;
+
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+#ifdef AI_ADDRCONFIG
+    hints.ai_flags |= AI_ADDRCONFIG;
+#endif
+
+    return_value = getaddrinfo(NULL, port, &hints, &res);
+    if (return_value !=0) {
+        printf("%s", "Error: Could not resolve server address");
+    }
+
+    for (rp = res; rp; rp = rp->ai_next) {
+        struct evconnlistener *conListener;
+        conListener = evconnlistener_new_bind(
+                eventBase, accept_callback, appCtx, LEV_OPT_CLOSE_ON_FREE | LEV_OPT_REUSEABLE,
+                16, rp->ai_addr, (int)rp->ai_addrlen);
+        if (conListener) {
+            freeaddrinfo(res);
+            return;
+        }
+    }
+
+    // if for loop above does not return, starting the listener has failed
+    printf("%s", "Error: Could not start listener");
+}
+
+static void run(const char *certKeyFile, const char *certFile) {
+    SSL_CTX *sslCtx;
+    application_ctx appCtx;
+    struct event_base *eventBase;
+
+    sslCtx = create_ssl_context();
+    configure_context(sslCtx);
+    eventBase = event_base_new();
+    create_application_context(&appCtx, sslCtx, eventBase);
+
+
+
+}
+
 int main(int argc, char **argv) {
     bool use_default_port = false;
     int port = use_default_port ? 443 : 8443;
@@ -160,7 +238,7 @@ int main(int argc, char **argv) {
     SSL_CTX *ctx;
 
     init_openssl();
-    ctx = create_context();
+    ctx = create_ssl_context();
 
     configure_context(ctx);
 
