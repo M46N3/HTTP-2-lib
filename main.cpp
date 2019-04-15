@@ -154,8 +154,7 @@ void configure_context(SSL_CTX *ctx) {
     configure_alpn(ctx);
 }
 
-char *sslRead (SSL *ssl)
-{
+char *sslRead (SSL *ssl) {
     const int readSize = 64;
     char *rc = NULL;
     int received, count = 0;
@@ -164,13 +163,10 @@ char *sslRead (SSL *ssl)
     struct timeval timeout;
     char buffer[1024];
 
-    if (ssl)
-    {
-        while (1)
-        {
+    if (ssl) {
+        while (1) {
             received = SSL_read (ssl, buffer, readSize);
-            if (received > 0)
-            {
+            if (received > 0) {
                 TotalReceived += received;
                 printf("Buffsize - %i - %.*s \n", received, received, buffer);
                 for (int i = 0; i < received; i++) {
@@ -178,30 +174,25 @@ char *sslRead (SSL *ssl)
                 }
                 cout << "\n";
             }
-            else
-            {
+            else {
                 count++;
 
                 //printf(" received equal to or less than 0\n")
                 int err = SSL_get_error(ssl, received);
-                switch (err)
-                {
-                    case SSL_ERROR_NONE:
-                    {
+                switch (err) {
+                    case SSL_ERROR_NONE: {
                         // no real error, just try again...
                         printf("SSL_ERROR_NONE %i\n", count);
                         continue;
                     }
 
-                    case SSL_ERROR_ZERO_RETURN:
-                    {
+                    case SSL_ERROR_ZERO_RETURN: {
                         // peer disconnected...
                         printf("SSL_ERROR_ZERO_RETURN %i\n", count);
                         break;
                     }
 
-                    case SSL_ERROR_WANT_READ:
-                    {
+                    case SSL_ERROR_WANT_READ: {
                         // no data available right now, wait a few seconds in case new data arrives...
                         printf("SSL_ERROR_WANT_READ %i\n", count);
 
@@ -225,8 +216,7 @@ char *sslRead (SSL *ssl)
                         break;
                     }
 
-                    case SSL_ERROR_WANT_WRITE:
-                    {
+                    case SSL_ERROR_WANT_WRITE: {
                         // socket not writable right now, wait a few seconds and try again...
                         printf("SSL_ERROR_WANT_WRITE %i\n", count);
 
@@ -250,8 +240,7 @@ char *sslRead (SSL *ssl)
                         break;
                     }
 
-                    default:
-                    {
+                    default: {
                         printf("error %i:%i\n", received, err);
                         break;
                     }
@@ -294,60 +283,13 @@ int main(int argc, char **argv) {
         ssl = SSL_new(ctx);
         SSL_set_fd(ssl, client);
 
-        // Frames setup:
-        //setup();
-        const int readSize = 1024;
-        char buffer[readSize];
-        fd_set fds;
-        struct timeval timeout;
-
         if (SSL_accept(ssl) <= 0) {
             ERR_print_errors_fp(stderr);
         }
         else {
             SSL_write(ssl, settingsframe(0x0), 9);
             char* res = sslRead(ssl);
-            cout << "From client: " << res << endl;
             SSL_write(ssl, settingsframe(0x1), 9);
-            /*while (1) {
-                int recieved = SSL_read(ssl, buffer, readSize);
-                if (recieved > 0) {
-                    cout << "Got someting" << endl;
-                } else {
-                    int err = SSL_get_error(ssl, recieved);
-                    switch (err) {
-                        case SSL_ERROR_WANT_READ:
-                        {
-                            int sock = SSL_get_rfd(ssl);
-                            FD_ZERO(&fds);
-                            FD_SET(sock, &fds);
-
-                            timeout.tv_sec = 5;
-                            timeout.tv_usec = 0;
-
-                            err = select(sock+1, &fds, NULL, NULL, &timeout);
-                            if (err > 0) {
-                                continue;   // more data to read...
-                            }
-
-                            if (err == 0) {
-                                // timeout...
-                            } else {
-                                // error...
-                            }
-
-                            break;
-                        }
-
-                        default:
-                        {
-                            printf("error %i:%i\n", recieved, err);
-                            break;
-                        }
-                    }
-                    break;
-                }
-            }*/
         }
 
         SSL_free(ssl);
