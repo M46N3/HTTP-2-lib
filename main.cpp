@@ -74,6 +74,23 @@ static int next_proto_cb(SSL *s, const unsigned char **data,
 
 
 static int select_protocol(unsigned char **out, unsigned char *outlen, const unsigned char *in, unsigned int inlen) {
+    unsigned int start_index = (unsigned int) in[0];
+    unsigned int end_of_next_protocol = start_index ;
+
+    unsigned int i = 0;
+    cout << endl << "Client supports following protocols, ordered according to preference: " << endl;
+    while (i < inlen) {
+        while (i <= end_of_next_protocol && i < inlen) {
+            cout << in[i];
+            ++i;
+        }
+        cout << endl;
+        end_of_next_protocol += in[i] + 1;
+        ++i;
+
+    }
+    cout << endl;
+
     *outlen = in[0];
     out[0] = (unsigned char*) "h2";
 
@@ -85,10 +102,9 @@ static int alpn_select_proto_cb(SSL *ssl, const unsigned char **out,
                                 unsigned int inlen, void *arg) {
     int rv;
 
-    //rv = nghttp2_select_next_protocol((unsigned char **)out, outlen, in, inlen);
     rv = select_protocol((unsigned char **)out, outlen, in, inlen);
 
-
+    /*
     for(unsigned int i = 0; i < inlen; i++) {
         std::cout << i << ": " << in[i] << endl;
     }
@@ -100,10 +116,13 @@ static int alpn_select_proto_cb(SSL *ssl, const unsigned char **out,
     std::cout << *out << " " << (unsigned int)*outlen << std::endl;
 
     std::cout << rv << std::endl;
+    */
 
     if (rv != 1) {
         return SSL_TLSEXT_ERR_NOACK;
     }
+
+    cout << "Server has chosen 'h2', meaning HTTP/2 over TLS" << endl;
 
     return SSL_TLSEXT_ERR_OK;
 }
