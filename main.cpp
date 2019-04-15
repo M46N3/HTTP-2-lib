@@ -6,6 +6,7 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <iostream>
+#include "frames.hpp"
 
 using namespace std;
 
@@ -153,6 +154,106 @@ void configure_context(SSL_CTX *ctx) {
     configure_alpn(ctx);
 }
 
+char *sslRead (SSL *ssl) {
+    const int readSize = 64;
+    char *rc = NULL;
+    int received, count = 0;
+    int TotalReceived = 0;
+    fd_set fds;
+    struct timeval timeout;
+    char buffer[1024];
+
+    if (ssl) {
+        while (1) {
+            received = SSL_read (ssl, buffer, readSize);
+            if (received > 0) {
+                TotalReceived += received;
+                printf("Buffsize - %i - %.*s \n", received, received, buffer);
+                for (int i = 0; i < received; i++) {
+                    printf("%x", buffer[i]);
+                }
+                cout << "\n";
+            }
+            else {
+                count++;
+
+                //printf(" received equal to or less than 0\n")
+                int err = SSL_get_error(ssl, received);
+                switch (err) {
+                    case SSL_ERROR_NONE: {
+                        // no real error, just try again...
+                        printf("SSL_ERROR_NONE %i\n", count);
+                        continue;
+                    }
+
+                    case SSL_ERROR_ZERO_RETURN: {
+                        // peer disconnected...
+                        printf("SSL_ERROR_ZERO_RETURN %i\n", count);
+                        break;
+                    }
+
+                    case SSL_ERROR_WANT_READ: {
+                        // no data available right now, wait a few seconds in case new data arrives...
+                        printf("SSL_ERROR_WANT_READ %i\n", count);
+
+                        int sock = SSL_get_rfd(ssl);
+                        FD_ZERO(&fds);
+                        FD_SET(sock, &fds);
+
+                        timeout.tv_sec = 5;
+                        timeout.tv_usec = 0;
+
+                        err = select(sock+1, &fds, NULL, NULL, &timeout);
+                        if (err > 0)
+                            continue; // more data to read...
+
+                        if (err == 0) {
+                            // timeout...
+                        } else {
+                            // error...
+                        }
+
+                        break;
+                    }
+
+                    case SSL_ERROR_WANT_WRITE: {
+                        // socket not writable right now, wait a few seconds and try again...
+                        printf("SSL_ERROR_WANT_WRITE %i\n", count);
+
+                        int sock = SSL_get_wfd(ssl);
+                        FD_ZERO(&fds);
+                        FD_SET(sock, &fds);
+
+                        timeout.tv_sec = 5;
+                        timeout.tv_usec = 0;
+
+                        err = select(sock+1, NULL, &fds, NULL, &timeout);
+                        if (err > 0)
+                            continue; // can write more data now...
+
+                        if (err == 0) {
+                            // timeout...
+                        } else {
+                            // error...
+                        }
+
+                        break;
+                    }
+
+                    default: {
+                        printf("error %i:%i\n", received, err);
+                        break;
+                    }
+                }
+
+                break;
+            }
+        }
+    }
+
+    return rc;
+}
+
 int main(int argc, char **argv) {
     bool use_default_port = false;
     int port = use_default_port ? 443 : 8443;
@@ -171,7 +272,7 @@ int main(int argc, char **argv) {
         struct sockaddr_in addr;
         uint len = sizeof(addr);
         SSL *ssl;
-        const char reply[] = "test\n";
+        //const char reply[] = "test\n";
 
         int client = accept(sock, (struct sockaddr*)&addr, &len);
         if (client < 0) {
@@ -186,7 +287,9 @@ int main(int argc, char **argv) {
             ERR_print_errors_fp(stderr);
         }
         else {
-            SSL_write(ssl, reply, strlen(reply));
+            SSL_write(ssl, settingsframe(0x0), 9);
+            char* res = sslRead(ssl);
+            SSL_write(ssl, settingsframe(0x1), 9);
         }
 
         SSL_free(ssl);
