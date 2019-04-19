@@ -208,16 +208,23 @@ struct application_ctx {
     struct event_base *eventBase;
 };
 
+struct stream_data {
+    struct stream_data *prev, *next;
+    char *requested_path;
+    int32_t stream_id;
+    int sock;
+} stream_data;
+
 /* client_sess_data structure to store data pertaining to one h2 connection */
 struct client_sess_data {
-    //struct h2_stream_data root;
+    struct stream_data root;
     struct bufferevent *bufferEvent;
     application_ctx *appCtx;
     //h2_session *session;
     char *clientAddress;
 } client_session_data;
 
-static client_sess_data create_client_session_data(application_ctx *appCtx, int sock, struct sockaddr *clientAddress, int addressLength) {
+static client_sess_data *create_client_session_data(application_ctx *appCtx, int sock, struct sockaddr *clientAddress, int addressLength) {
     int returnValue;
     client_sess_data *clientSessData;
     SSL *ssl;
@@ -237,14 +244,11 @@ static client_sess_data create_client_session_data(application_ctx *appCtx, int 
     clientSessData->appCtx = appCtx;
     setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, (char *)&val, sizeof(val)); // set TCP_NODELAY option for improved latency
 
-    /*
     clientSessData->bufferEvent = bufferevent_openssl_socket_new(
             appCtx->eventBase, sock, ssl, BUFFEREVENT_SSL_ACCEPTING,
             BEV_OPT_CLOSE_ON_FREE | BEV_OPT_DEFER_CALLBACKS
             );
-    */
 
-    clientSessData->bufferEvent = bufferevent_socket_new(appCtx->eventBase, sock, 0);
 
     bufferevent_enable(clientSessData->bufferEvent, EV_READ | EV_WRITE);
 
@@ -256,7 +260,7 @@ static client_sess_data create_client_session_data(application_ctx *appCtx, int 
         clientSessData->clientAddress = strdup(host);
     }
 
-    return *clientSessData;
+    return clientSessData;
 
 }
 
@@ -275,6 +279,7 @@ static void create_application_context(application_ctx *appCtx, SSL_CTX *sslCtx,
 static void event_callback(struct bufferevent *bufferEvent, short events, void *ptr){
     client_sess_data *clientSessData = (client_sess_data *)ptr;
 
+
     if (events & BEV_EVENT_CONNECTED) {
         const unsigned char *alpn = NULL;
         unsigned int alpnlen = 0;
@@ -284,26 +289,68 @@ static void event_callback(struct bufferevent *bufferEvent, short events, void *
 
         printf( "%s connected\n", clientSessData->clientAddress);
 
+        ssl = bufferevent_openssl_get_ssl(bufferEvent);
+
         /* Negotiate ALPN on initial connection */
         if (alpn == NULL) {
             SSL_get0_alpn_selected(ssl, &alpn, &alpnlen);
         }
 
-        /* Checks if ALPN decided to use HTTP/2 */
         if (alpn == NULL || alpnlen != 2 || memcmp("h2", alpn, 2) != 0) {
             printf("%s h2 negotiation failed\n", clientSessData->clientAddress);
             /* TODO: delete_client_sess_data(clientSessData); */
             return;
         }
+
+        /*
+        if(send_connection_header(clientSessData) != 0 ||
+            client_sess_send(clientSessData) != 0) {
+            // TODO: delete_client_sess_data(clientSessData);
+            return;
+        }
+
+        return;
+        */
     }
 }
+
+static int session_on_received(client_sess_data *clientSessData) {
+    ssize_t readlen;
+    struct evbuffer *in = bufferevent_get_input(clientSessData->bufferEvent);
+    size_t length = evbuffer_get_length(in);
+    unsigned char *data = evbuffer_pullup(in, -1); // Make whole buffer contiguous
+
+    for (size_t i = 0; i < length; ++i) {
+        cout << hex << data[i];
+    }
+    cout << endl;
+
+    return 0;
+}
+
+static void readcb(struct bufferevent *bufferEvent, void *ptr){
+    cout << "[ read cb ]" << endl;
+    auto *clientSessData = (client_sess_data *)ptr;
+    (void)bufferEvent;
+
+    int returnValue = session_on_received(clientSessData);
+}
+
+static void writecb(struct bufferevent *bufferEvent, void *ptr){
+    cout << "[ read cb ]" << endl;
+    return;
+}
+
 
 static void accept_callback(struct evconnlistener *conListener, int sock,
                             struct sockaddr *address, int address_length, void *arg) {
     application_ctx *appCtx = (application_ctx *) arg;
-    //http2_session_data *session_data;
+    client_sess_data *clientSessData;
     cout << "[ accept_callback]: " << "sock: " << sock << ", address: " << address << endl;
     (void) conListener;
+
+    clientSessData = create_client_session_data(appCtx, sock,address, address_length);
+    bufferevent_setcb(clientSessData->bufferEvent, readcb, writecb, event_callback, clientSessData);
 
 }
 
