@@ -6,14 +6,20 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <iostream>
+#include <event.h>
 #include <event2/event.h>
 #include <event2/listener.h>
+#include <event2/bufferevent_ssl.h>
+#include <signal.h>
+#include <err.h>
+#include <netinet/tcp.h>
 
 using namespace std;
 
 static unsigned char next_proto_list[256];
 static size_t next_proto_list_len;
 
+/*
 int create_socket(int port) {
     int s;
     struct sockaddr_in addr;
@@ -40,9 +46,14 @@ int create_socket(int port) {
 
     return s;
 }
+ */
 
 void init_openssl() {
+
+    cout << "[ init_openssl ]" << endl;
+
     SSL_load_error_strings();
+    SSL_library_init();
     OpenSSL_add_ssl_algorithms();
 }
 
@@ -51,10 +62,19 @@ void cleanup_openssl() {
 }
 
 SSL_CTX *create_ssl_context() {
+    /**
+     * Creates a new SSL_CTX object and sets the connection method
+     * to be used, which is a general SSL/TLS server connection method.
+     *
+     * return: The new SSL_CTX object with connection method set.
+     */
+
+    cout << "[ create_ssl_context ]" << endl;
+
     const SSL_METHOD *method;
     SSL_CTX *ctx;
 
-    method = SSLv23_server_method();
+    method = TLS_server_method();
 
     ctx = SSL_CTX_new(method);
     if (!ctx) {
@@ -68,6 +88,9 @@ SSL_CTX *create_ssl_context() {
 
 static int next_proto_cb(SSL *s, const unsigned char **data,
                          unsigned int *len, void *arg) {
+
+    cout << "[ next_proto_cb ]" << endl;
+
     *data = next_proto_list;
     *len = (unsigned int)next_proto_list_len;
     return SSL_TLSEXT_ERR_OK;
@@ -75,6 +98,12 @@ static int next_proto_cb(SSL *s, const unsigned char **data,
 
 
 static int select_protocol(unsigned char **out, unsigned char *outlen, const unsigned char *in, unsigned int inlen) {
+    /**
+     *
+     */
+
+    cout << "[ select_protocol ]" << endl;
+
     unsigned int start_index = (unsigned int) in[0];
     unsigned int end_of_next_protocol = start_index ;
 
@@ -101,6 +130,9 @@ static int select_protocol(unsigned char **out, unsigned char *outlen, const uns
 static int alpn_select_proto_cb(SSL *ssl, const unsigned char **out,
                                 unsigned char *outlen, const unsigned char *in,
                                 unsigned int inlen, void *arg) {
+
+    cout << "[ alpn_select_proto_cb ]" << endl;
+
     int rv;
 
     rv = select_protocol((unsigned char **)out, outlen, in, inlen);
@@ -129,6 +161,13 @@ static int alpn_select_proto_cb(SSL *ssl, const unsigned char **out,
 }
 
 void configure_alpn(SSL_CTX *ctx) {
+    /**
+     * Configures the given SSL_CTX object to use the Application Layer Protocol Negotiation extension,
+     * with 'next protos advertised' and 'alpn select' callbacks.
+     */
+
+    cout << "[ configure_alpn ]" << endl;
+
     next_proto_list[0] = 2;
     memcpy(&next_proto_list[1], "h2", 2);
     next_proto_list_len = 1 + 2;
@@ -138,20 +177,29 @@ void configure_alpn(SSL_CTX *ctx) {
     SSL_CTX_set_alpn_select_cb(ctx, alpn_select_proto_cb, NULL);
 }
 
-void configure_context(SSL_CTX *ctx) {
+void configure_context(SSL_CTX *ctx, const char *certKeyFile, const char *certFile) {
+    /**
+     * Configures the SSL_CTX object to use given certificate and private key,
+     * and calls to configure ALPN extension.
+     */
+
+    cout << "[ configure_context ]" << endl;
+
+    /* Make server always choose the most appropriate curve for the client. */
     SSL_CTX_set_ecdh_auto(ctx, 1);
 
     /* Set the key and cert */
-    if (SSL_CTX_use_certificate_file(ctx, "../cert.pem", SSL_FILETYPE_PEM) <= 0) {
+    if (SSL_CTX_use_certificate_file(ctx, certFile, SSL_FILETYPE_PEM) <= 0) {
         ERR_print_errors_fp(stderr);
         exit(EXIT_FAILURE);
     }
 
-    if (SSL_CTX_use_PrivateKey_file(ctx, "../key.pem", SSL_FILETYPE_PEM) <= 0 ) {
+    if (SSL_CTX_use_PrivateKey_file(ctx, certKeyFile, SSL_FILETYPE_PEM) <= 0 ) {
         ERR_print_errors_fp(stderr);
         exit(EXIT_FAILURE);
     }
 
+    /* Configure SSL_CTX object to use ALPN */
     configure_alpn(ctx);
 }
 
@@ -160,31 +208,113 @@ struct application_ctx {
     struct event_base *eventBase;
 };
 
-struct h2_session_data {
-    struct h2_stream_data root;
+/* client_sess_data structure to store data pertaining to one h2 connection */
+struct client_sess_data {
+    //struct h2_stream_data root;
     struct bufferevent *bufferEvent;
     application_ctx *appCtx;
-    h2_session *session;
+    //h2_session *session;
     char *clientAddress;
-} h2_session_data;
+} client_session_data;
+
+static client_sess_data create_client_session_data(application_ctx *appCtx, int sock, struct sockaddr *clientAddress, int addressLength) {
+    int returnValue;
+    client_sess_data *clientSessData;
+    SSL *ssl;
+    char host[1025];
+    int val = 1;
+
+    /* Create new TLS session object */
+    ssl = SSL_new(appCtx->ctx);
+    if (!ssl) {
+        errx(1, "Could not create TLS session object: %s",
+                ERR_error_string(ERR_get_error(), NULL));
+    }
+
+    clientSessData = (client_sess_data *)malloc(sizeof(client_sess_data));
+    memset(clientSessData, 0, sizeof(client_sess_data));
+
+    clientSessData->appCtx = appCtx;
+    setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, (char *)&val, sizeof(val)); // set TCP_NODELAY option for improved latency
+
+    /*
+    clientSessData->bufferEvent = bufferevent_openssl_socket_new(
+            appCtx->eventBase, sock, ssl, BUFFEREVENT_SSL_ACCEPTING,
+            BEV_OPT_CLOSE_ON_FREE | BEV_OPT_DEFER_CALLBACKS
+            );
+    */
+
+    clientSessData->bufferEvent = bufferevent_socket_new(appCtx->eventBase, sock, 0);
+
+    bufferevent_enable(clientSessData->bufferEvent, EV_READ | EV_WRITE);
+
+    returnValue = getnameinfo(clientAddress, (socklen_t)addressLength, host, sizeof(host), NULL, 0, NI_NUMERICHOST);
+
+    if (returnValue != 0) {
+        clientSessData->clientAddress = strdup("(unknown)");
+    } else {
+        clientSessData->clientAddress = strdup(host);
+    }
+
+    return *clientSessData;
+
+}
 
 
 static void create_application_context(application_ctx *appCtx, SSL_CTX *sslCtx, struct event_base *eventBase_) {
-    memset(appCtx, 0, sizeof(appCtx));
+    /**
+     * Sets the application_ctx members, ctx and eventBase, to the given SSL_CTX and event_base objects
+     */
+    cout << "[ create_application_context ]" << endl;
+
+    memset(appCtx, 0, sizeof(application_ctx));
     appCtx->ctx = sslCtx;
     appCtx->eventBase = eventBase_;
 }
 
-static void accept_callback(struct evconnlistener *conListener, int fd,
-                            struct sockaddr *address, int addres_length, void *arg) {
-    application_ctx *appCtx = (application_ctx *)arg;
-    //http2_session_data *session_data;
-    (void)conListener;
+static void event_callback(struct bufferevent *bufferEvent, short events, void *ptr){
+    client_sess_data *clientSessData = (client_sess_data *)ptr;
 
-    session_data
+    if (events & BEV_EVENT_CONNECTED) {
+        const unsigned char *alpn = NULL;
+        unsigned int alpnlen = 0;
+
+        SSL *ssl;
+        (void)bufferEvent;
+
+        printf( "%s connected\n", clientSessData->clientAddress);
+
+        /* Negotiate ALPN on initial connection */
+        if (alpn == NULL) {
+            SSL_get0_alpn_selected(ssl, &alpn, &alpnlen);
+        }
+
+        /* Checks if ALPN decided to use HTTP/2 */
+        if (alpn == NULL || alpnlen != 2 || memcmp("h2", alpn, 2) != 0) {
+            printf("%s h2 negotiation failed\n", clientSessData->clientAddress);
+            /* TODO: delete_client_sess_data(clientSessData); */
+            return;
+        }
+    }
 }
 
+static void accept_callback(struct evconnlistener *conListener, int sock,
+                            struct sockaddr *address, int address_length, void *arg) {
+    application_ctx *appCtx = (application_ctx *) arg;
+    //http2_session_data *session_data;
+    cout << "[ accept_callback]: " << "sock: " << sock << ", address: " << address << endl;
+    (void) conListener;
+
+}
+
+
 static void server_listen(struct event_base *eventBase, const char *port, application_ctx *appCtx) {
+    /**
+     * Sets up and starts the server.
+     */
+
+    cout << "[ server_listen ]" << endl;
+
     int return_value;
     struct addrinfo hints;
     struct addrinfo *res, *rp;
@@ -217,20 +347,45 @@ static void server_listen(struct event_base *eventBase, const char *port, applic
     printf("%s", "Error: Could not start listener");
 }
 
-static void run(const char *certKeyFile, const char *certFile) {
+static void run(const char *port, const char *certKeyFile, const char *certFile) {
+    cout << "[ run ]" << endl;
+
     SSL_CTX *sslCtx;
     application_ctx appCtx;
     struct event_base *eventBase;
 
     sslCtx = create_ssl_context();
-    configure_context(sslCtx);
+    configure_context(sslCtx, certKeyFile, certFile);
     eventBase = event_base_new();
     create_application_context(&appCtx, sslCtx, eventBase);
 
+    server_listen(eventBase, port, &appCtx);
 
+    event_base_loop(eventBase, 0);
 
+    event_base_free(eventBase);
+    SSL_CTX_free(sslCtx);
 }
 
+int main(int argc, char **argv) {
+    struct sigaction act;
+
+    if (argc < 4) {
+        cerr << "http2-server PORT PRIVATE_KEY_FILE CERT_FILE\n" << endl;
+        exit(EXIT_FAILURE);
+    }
+
+    memset(&act, 0, sizeof(struct sigaction));
+    act.sa_handler = SIG_IGN;
+    sigaction(SIGPIPE, &act, NULL);
+
+    init_openssl();
+
+    run(argv[1], argv[2], argv[3]);
+    return 0;
+}
+
+/*
 int main(int argc, char **argv) {
     bool use_default_port = false;
     int port = use_default_port ? 443 : 8443;
@@ -244,7 +399,7 @@ int main(int argc, char **argv) {
 
     sock = create_socket(port);
 
-    /* Handle connections */
+    // Handle connections
     while(1) {
         struct sockaddr_in addr;
         uint len = sizeof(addr);
@@ -275,3 +430,4 @@ int main(int argc, char **argv) {
     SSL_CTX_free(ctx);
     cleanup_openssl();
 }
+*/
