@@ -137,20 +137,6 @@ static int alpn_select_proto_cb(SSL *ssl, const unsigned char **out,
 
     rv = select_protocol((unsigned char **)out, outlen, in, inlen);
 
-    /*
-    for(unsigned int i = 0; i < inlen; i++) {
-        std::cout << i << ": " << in[i] << endl;
-    }
-
-    std::cout << "" << std::endl;
-
-    cout << in[1] << endl;
-
-    std::cout << *out << " " << (unsigned int)*outlen << std::endl;
-
-    std::cout << rv << std::endl;
-    */
-
     if (rv != 1) {
         return SSL_TLSEXT_ERR_NOACK;
     }
@@ -321,10 +307,21 @@ static int session_on_received(client_sess_data *clientSessData) {
     unsigned char *data = evbuffer_pullup(in, -1); // Make whole buffer contiguous
 
     for (size_t i = 0; i < length; ++i) {
-        cout << hex << data[i];
+        printf("%x", data[i]);
     }
     cout << endl;
 
+    readlen = 1;
+
+    if (readlen < 0) {
+        printf("Error: error storing recevied data in client_sess_data");
+        return -1;
+    }
+
+    if (evbuffer_drain(in, (size_t)length) != 0) {
+        printf("Error: evbuffer_drain failed");
+        return -1;
+    }
     return 0;
 }
 
@@ -337,7 +334,7 @@ static void readcb(struct bufferevent *bufferEvent, void *ptr){
 }
 
 static void writecb(struct bufferevent *bufferEvent, void *ptr){
-    cout << "[ read cb ]" << endl;
+    cout << "[ write cb ]" << endl;
     return;
 }
 
