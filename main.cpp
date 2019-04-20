@@ -251,18 +251,18 @@ static client_sess_data *create_client_session_data(application_ctx *appCtx, int
 }
 
 
-static void create_application_context(application_ctx *appCtx, SSL_CTX *sslCtx, struct event_base *eventBase_) {
+static void createApplicationContext(application_ctx *appCtx, SSL_CTX *sslCtx, struct event_base *eventBase_) {
     /**
      * Sets the application_ctx members, ctx and eventBase, to the given SSL_CTX and event_base objects
      */
-    cout << "[ create_application_context ]" << endl;
+    cout << "[ createApplicationContext ]" << endl;
 
     memset(appCtx, 0, sizeof(application_ctx));
     appCtx->ctx = sslCtx;
     appCtx->eventBase = eventBase_;
 }
 
-static void event_callback(struct bufferevent *bufferEvent, short events, void *ptr){
+static void eventCallback(struct bufferevent *bufferEvent, short events, void *ptr){
     client_sess_data *clientSessData = (client_sess_data *)ptr;
 
 
@@ -300,7 +300,7 @@ static void event_callback(struct bufferevent *bufferEvent, short events, void *
     }
 }
 
-static int session_on_received(client_sess_data *clientSessData) {
+static int sessionOnReceived(client_sess_data *clientSessData) {
     ssize_t readlen;
     struct evbuffer *in = bufferevent_get_input(clientSessData->bufferEvent);
     size_t length = evbuffer_get_length(in);
@@ -325,15 +325,20 @@ static int session_on_received(client_sess_data *clientSessData) {
     return 0;
 }
 
-static void readcb(struct bufferevent *bufferEvent, void *ptr){
-    cout << "[ read cb ]" << endl;
+
+/// readCallback - Callback triggered when there is data to be read in the evbuffer.
+///
+/// @param bufferEvent - The bufferevent that triggered the callback.
+/// @param ptr - The user-specified context for this bufferevent, which is the ClientSessionData object.
+static void readCallback(struct bufferevent *bufferEvent, void *ptr){
+    cout << "[ readCallback ]" << endl;
     auto *clientSessData = (client_sess_data *)ptr;
     (void)bufferEvent;
 
-    int returnValue = session_on_received(clientSessData);
+    int returnValue = sessionOnReceived(clientSessData);
 }
 
-static void writecb(struct bufferevent *bufferEvent, void *ptr){
+static void writeCallback(struct bufferevent *bufferEvent, void *ptr){
     cout << "[ write cb ]" << endl;
     return;
 }
@@ -347,7 +352,7 @@ static void accept_callback(struct evconnlistener *conListener, int sock,
     (void) conListener;
 
     clientSessData = create_client_session_data(appCtx, sock,address, address_length);
-    bufferevent_setcb(clientSessData->bufferEvent, readcb, writecb, event_callback, clientSessData);
+    bufferevent_setcb(clientSessData->bufferEvent, readCallback, writeCallback, eventCallback, clientSessData);
 
 }
 
@@ -401,7 +406,7 @@ static void run(const char *port, const char *certKeyFile, const char *certFile)
     sslCtx = create_ssl_context();
     configure_context(sslCtx, certKeyFile, certFile);
     eventBase = event_base_new();
-    create_application_context(&appCtx, sslCtx, eventBase);
+    createApplicationContext(&appCtx, sslCtx, eventBase);
 
     server_listen(eventBase, port, &appCtx);
 
