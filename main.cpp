@@ -6,42 +6,25 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <iostream>
-#include "frames.hpp"
+#include <event.h>
+#include <event2/event.h>
+#include <event2/listener.h>
+#include <event2/bufferevent_ssl.h>
+#include <signal.h>
+#include <err.h>
+#include <netinet/tcp.h>
 
 using namespace std;
 
 static unsigned char next_proto_list[256];
 static size_t next_proto_list_len;
 
-int create_socket(int port) {
-    int s;
-    struct sockaddr_in addr;
+void initOpenssl() {
 
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(port);
-    addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    cout << "[ initOpenssl ]" << endl;
 
-    s = socket(AF_INET, SOCK_STREAM, 0);
-    if (s < 0) {
-        perror("Unable to create socket");
-        exit(EXIT_FAILURE);
-    }
-
-    if (bind(s, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
-        perror("Unable to bind");
-        exit(EXIT_FAILURE);
-    }
-
-    if (listen(s, 1) < 0) {
-        perror("Unable to listen");
-        exit(EXIT_FAILURE);
-    }
-
-    return s;
-}
-
-void init_openssl() {
     SSL_load_error_strings();
+    SSL_library_init();
     OpenSSL_add_ssl_algorithms();
 }
 
@@ -49,11 +32,20 @@ void cleanup_openssl() {
     EVP_cleanup();
 }
 
-SSL_CTX *create_context() {
+
+/// createSslContext - Creates a new SSL_CTX object and sets the connection method to be used,
+/// which is a general SSL/TLS server connection method.
+///
+/// return ctx - The newly created SSL_CTX object with the connection method set.
+
+SSL_CTX *createSslContext() {
+
+    cout << "[ createSslContext ]" << endl;
+
     const SSL_METHOD *method;
     SSL_CTX *ctx;
 
-    method = SSLv23_server_method();
+    method = TLS_server_method();
 
     ctx = SSL_CTX_new(method);
     if (!ctx) {
@@ -65,15 +57,38 @@ SSL_CTX *create_context() {
     return ctx;
 }
 
-static int next_proto_cb(SSL *s, const unsigned char **data,
-                         unsigned int *len, void *arg) {
+
+/// nextProtocolCallback -
+///
+/// \param s
+/// \param data
+/// \param len
+/// \param arg
+/// \return
+
+static int nextProtocolCallback(SSL *s, const unsigned char **data,
+                                unsigned int *len, void *arg) {
+
+    cout << "[ nextProtocolCallback ]" << endl;
+
     *data = next_proto_list;
     *len = (unsigned int)next_proto_list_len;
     return SSL_TLSEXT_ERR_OK;
 }
 
 
-static int select_protocol(unsigned char **out, unsigned char *outlen, const unsigned char *in, unsigned int inlen) {
+/// selectProtocol - Selects 'h2' meaning 'HTTP/2 over TLS'
+///
+/// @param out - name of protocol chosen by the server.
+/// @param outlen - length of name of protocol given in 'out'.
+/// @param in  - string of protocols supported by the client, prefixed by the length of the following protocol.
+/// @param inlen - total length of the protocols-string 'in'.
+/// @return - 1 if successful.
+
+static int selectProtocol(unsigned char **out, unsigned char *outlen, const unsigned char *in, unsigned int inlen) {
+
+    cout << "[ selectProtocol ]" << endl;
+
     unsigned int start_index = (unsigned int) in[0];
     unsigned int end_of_next_protocol = start_index ;
 
@@ -97,26 +112,26 @@ static int select_protocol(unsigned char **out, unsigned char *outlen, const uns
     return 1;
 }
 
-static int alpn_select_proto_cb(SSL *ssl, const unsigned char **out,
-                                unsigned char *outlen, const unsigned char *in,
-                                unsigned int inlen, void *arg) {
+
+/// alpnSelectProtocolCallback - Callback function used for the negotiation of HTTP/2 over TLS in ALPN.
+///
+/// @param ssl - SSL object (unused parameter).
+/// @param out - string for chosen protocol
+/// @param outlength - length of name of chosen protocol given in 'out'.
+/// @param in - protocols supported by the client.
+/// @param inlen - length of 'in'.
+/// @param arg
+/// @return - returns 0 on success and non-zero on failure.
+
+static int alpnSelectProtocolCallback(SSL *ssl, const unsigned char **out,
+                                      unsigned char *outlength, const unsigned char *in,
+                                      unsigned int inlen, void *arg) {
+
+    cout << "[ alpnSelectProtocolCallback ]" << endl;
+
     int rv;
 
-    rv = select_protocol((unsigned char **)out, outlen, in, inlen);
-
-    /*
-    for(unsigned int i = 0; i < inlen; i++) {
-        std::cout << i << ": " << in[i] << endl;
-    }
-
-    std::cout << "" << std::endl;
-
-    cout << in[1] << endl;
-
-    std::cout << *out << " " << (unsigned int)*outlen << std::endl;
-
-    std::cout << rv << std::endl;
-    */
+    rv = selectProtocol((unsigned char **) out, outlength, in, inlen);
 
     if (rv != 1) {
         return SSL_TLSEXT_ERR_NOACK;
@@ -127,176 +142,375 @@ static int alpn_select_proto_cb(SSL *ssl, const unsigned char **out,
     return SSL_TLSEXT_ERR_OK;
 }
 
-void configure_alpn(SSL_CTX *ctx) {
+
+/// configureAlpn - Configures the referenced SSL_CTX object to use the Aplication Protocol Layer Negotiation
+/// extension, with 'nextProtocolCallback' and 'alpnSelectProtocolCallback'.
+///
+/// @param ctx - reference to the SSL_CTX object to configure ALPN extension on.
+
+void configureAlpn(SSL_CTX *ctx) {
+
+    cout << "[ configureAlpn ]" << endl;
+
     next_proto_list[0] = 2;
     memcpy(&next_proto_list[1], "h2", 2);
     next_proto_list_len = 1 + 2;
 
-    SSL_CTX_set_next_protos_advertised_cb(ctx, next_proto_cb, NULL);
+    SSL_CTX_set_next_protos_advertised_cb(ctx, nextProtocolCallback, NULL);
 
-    SSL_CTX_set_alpn_select_cb(ctx, alpn_select_proto_cb, NULL);
+    SSL_CTX_set_alpn_select_cb(ctx, alpnSelectProtocolCallback, NULL);
 }
 
-void configure_context(SSL_CTX *ctx) {
+
+/// configureContext - Configures the SSL_CTX object to use given certificate and private key,
+/// and calls to configure ALPN extension.
+///
+/// @param ctx - reference to the SSL_CTX object to configure.
+/// @param certKeyFile - path to Certificate Key File to be used for TLS.
+/// @param certFile - path to Certificate File to be used for TLS.
+
+void configureContext(SSL_CTX *ctx, const char *certKeyFile, const char *certFile) {
+
+    cout << "[ configureContext ]" << endl;
+
+    /* Make server always choose the most appropriate curve for the client. */
     SSL_CTX_set_ecdh_auto(ctx, 1);
 
     /* Set the key and cert */
-    if (SSL_CTX_use_certificate_file(ctx, "../cert.pem", SSL_FILETYPE_PEM) <= 0) {
+    if (SSL_CTX_use_certificate_file(ctx, certFile, SSL_FILETYPE_PEM) <= 0) {
         ERR_print_errors_fp(stderr);
         exit(EXIT_FAILURE);
     }
 
-    if (SSL_CTX_use_PrivateKey_file(ctx, "../key.pem", SSL_FILETYPE_PEM) <= 0 ) {
+    if (SSL_CTX_use_PrivateKey_file(ctx, certKeyFile, SSL_FILETYPE_PEM) <= 0 ) {
         ERR_print_errors_fp(stderr);
         exit(EXIT_FAILURE);
     }
 
-    configure_alpn(ctx);
+    /* Configure SSL_CTX object to use ALPN */
+    configureAlpn(ctx);
 }
 
-char *sslRead (SSL *ssl) {
-    const int readSize = 64;
-    char *rc = NULL;
-    int received, count = 0;
-    int TotalReceived = 0;
-    fd_set fds;
-    struct timeval timeout;
-    char buffer[1024];
+struct application_ctx {
+    SSL_CTX *ctx;
+    struct event_base *eventBase;
+};
 
-    if (ssl) {
-        while (1) {
-            received = SSL_read (ssl, buffer, readSize);
-            if (received > 0) {
-                TotalReceived += received;
-                printf("Buffsize - %i - %.*s \n", received, received, buffer);
-                for (int i = 0; i < received; i++) {
-                    printf("%x", buffer[i]);
+struct stream_data {
+    struct stream_data *prev, *next;
+    char *requested_path;
+    int32_t stream_id;
+    int sock;
+} stream_data;
+
+/* client_sess_data structure to store data pertaining to one h2 connection */
+struct client_sess_data {
+    struct stream_data root;
+    struct bufferevent *bufferEvent;
+    application_ctx *appCtx;
+    //h2_session *session;
+    char *clientAddress;
+} client_session_data;
+
+
+/// createClientSessionData - Creates a clientSessionData object which keeps all to be used for one single connection.
+///
+/// @param appCtx - Application-wide application_ctx object.
+/// @param sock - file descriptor for the connection
+/// @param clientAddress - socket address of the client.
+/// @param addressLength - length of socket address.
+/// @return
+
+static client_sess_data *createClientSessionData(application_ctx *appCtx, int sock, struct sockaddr *clientAddress,
+                                                 int addressLength) {
+    int returnValue;
+    client_sess_data *clientSessData;
+    SSL *ssl;
+    char host[1025];
+    int val = 1;
+
+    /* Create new TLS session object */
+    ssl = SSL_new(appCtx->ctx);
+    if (!ssl) {
+        errx(1, "Could not create TLS session object: %s",
+                ERR_error_string(ERR_get_error(), NULL));
+    }
+
+    clientSessData = (client_sess_data *)malloc(sizeof(client_sess_data));
+    memset(clientSessData, 0, sizeof(client_sess_data));
+
+    clientSessData->appCtx = appCtx;
+    setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, (char *)&val, sizeof(val)); // set TCP_NODELAY option for improved latency
+
+    clientSessData->bufferEvent = bufferevent_openssl_socket_new(
+            appCtx->eventBase, sock, ssl, BUFFEREVENT_SSL_ACCEPTING,
+            BEV_OPT_CLOSE_ON_FREE | BEV_OPT_DEFER_CALLBACKS
+            );
+
+    bufferevent_enable(clientSessData->bufferEvent, EV_READ | EV_WRITE);
+
+    returnValue = getnameinfo(clientAddress, (socklen_t)addressLength, host, sizeof(host), NULL, 0, NI_NUMERICHOST);
+
+    if (returnValue != 0) {
+        clientSessData->clientAddress = strdup("(unknown)");
+    } else {
+        clientSessData->clientAddress = strdup(host);
+    }
+
+    return clientSessData;
+
+}
+
+
+static void createApplicationContext(application_ctx *appCtx, SSL_CTX *sslCtx, struct event_base *eventBase_) {
+    /**
+     * Sets the application_ctx members, ctx and eventBase, to the given SSL_CTX and event_base objects
+     */
+    cout << "[ createApplicationContext ]" << endl;
+
+    memset(appCtx, 0, sizeof(application_ctx));
+    appCtx->ctx = sslCtx;
+    appCtx->eventBase = eventBase_;
+}
+
+
+/// sendConnectionHeader - Sends server connection header with 'MAXIMUM_CONCURRENT_STREAMS' set to 100.
+///
+/// @param ClientSessData - ClientSessData object for this particular connection.
+/// @return returnValue - 0 if successful, non-zero if failure.
+
+static int sendConnectionHeader(client_sess_data *ClientSessData) {
+    int returnValue;
+    cout << "\nSending server SETTINGS FRAME." << endl;
+    char data[] = { 0x00, 0x00, 0x06, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x64 };
+
+    returnValue = bufferevent_write(ClientSessData->bufferEvent, data, 15);
+    return returnValue;
+}
+
+
+/// eventCallback - Callback invoked when there is an event on the sock filedescriptor.
+///
+/// @param bufferEvent - bufferevent object associated with the connection.
+/// @param events - flag type conjunction of error and/or event type.
+/// @param ptr - clientSessionData object for the connection.
+
+static void eventCallback(struct bufferevent *bufferEvent, short events, void *ptr){
+    cout << " [ eventCallback ] " << endl;
+
+    client_sess_data *clientSessData = (client_sess_data *)ptr;
+
+    if (events & BEV_EVENT_CONNECTED) {
+        const unsigned char *alpn = NULL;
+        unsigned int alpnlen = 0;
+
+        SSL *ssl;
+        (void)bufferEvent;
+
+        printf( "%s connected\n", clientSessData->clientAddress);
+
+        ssl = bufferevent_openssl_get_ssl(bufferEvent);
+
+        /* Negotiate ALPN on initial connection */
+        if (alpn == NULL) {
+            SSL_get0_alpn_selected(ssl, &alpn, &alpnlen);
+        }
+
+        if (alpn == NULL || alpnlen != 2 || memcmp("h2", alpn, 2) != 0) {
+            printf("%s h2 negotiation failed\n", clientSessData->clientAddress);
+            /* TODO: delete_client_sess_data(clientSessData); */
+            return;
+        }
+
+        if(sendConnectionHeader(clientSessData) != 0) {
+            // TODO: delete_client_sess_data(clientSessData);
+            return;
+        }
+
+        return;
+
+    }
+}
+
+static int sessionOnReceived(client_sess_data *clientSessData) {
+    ssize_t readlen;
+    struct evbuffer *in = bufferevent_get_input(clientSessData->bufferEvent);
+    size_t length = evbuffer_get_length(in);
+    unsigned char *data = evbuffer_pullup(in, -1); // Make whole buffer contiguous
+    cout << "Length: " << length << endl;
+
+    cout << "Length: ";
+    for (size_t i = 0; i < 3 ; ++i) {
+        printf("%02x", data[i]);
+    }
+
+    cout << "\nType: ";
+    for (size_t i = 3; i < 4 ; ++i) {
+        printf("%02x", data[i]);
+    }
+
+    cout << "\nFlags: ";
+    for (size_t i = 4; i < 5; ++i) {
+        printf("%02x", data[i]);
+    }
+
+    cout << "\nStream Identifier: ";
+    for (size_t i = 5; i < 9 ; ++i) {
+        printf("%02x", data[i]);
+    }
+
+    if (length >= 9) {
+        cout << "\nPayload: ";
+        if (data[3] == 0x04 && data[4] == 0x00) {
+            for (size_t i = 9; i < length; i += 6) {
+                cout << endl;
+                for (size_t j = i; j < i + 2; ++j) {
+                    printf("%02x", data[j]);
                 }
-                cout << "\n";
-            }
-            else {
-                count++;
-
-                //printf(" received equal to or less than 0\n")
-                int err = SSL_get_error(ssl, received);
-                switch (err) {
-                    case SSL_ERROR_NONE: {
-                        // no real error, just try again...
-                        printf("SSL_ERROR_NONE %i\n", count);
-                        continue;
-                    }
-
-                    case SSL_ERROR_ZERO_RETURN: {
-                        // peer disconnected...
-                        printf("SSL_ERROR_ZERO_RETURN %i\n", count);
-                        break;
-                    }
-
-                    case SSL_ERROR_WANT_READ: {
-                        // no data available right now, wait a few seconds in case new data arrives...
-                        printf("SSL_ERROR_WANT_READ %i\n", count);
-
-                        int sock = SSL_get_rfd(ssl);
-                        FD_ZERO(&fds);
-                        FD_SET(sock, &fds);
-
-                        timeout.tv_sec = 5;
-                        timeout.tv_usec = 0;
-
-                        err = select(sock+1, &fds, NULL, NULL, &timeout);
-                        if (err > 0)
-                            continue; // more data to read...
-
-                        if (err == 0) {
-                            // timeout...
-                        } else {
-                            // error...
-                        }
-
-                        break;
-                    }
-
-                    case SSL_ERROR_WANT_WRITE: {
-                        // socket not writable right now, wait a few seconds and try again...
-                        printf("SSL_ERROR_WANT_WRITE %i\n", count);
-
-                        int sock = SSL_get_wfd(ssl);
-                        FD_ZERO(&fds);
-                        FD_SET(sock, &fds);
-
-                        timeout.tv_sec = 5;
-                        timeout.tv_usec = 0;
-
-                        err = select(sock+1, NULL, &fds, NULL, &timeout);
-                        if (err > 0)
-                            continue; // can write more data now...
-
-                        if (err == 0) {
-                            // timeout...
-                        } else {
-                            // error...
-                        }
-
-                        break;
-                    }
-
-                    default: {
-                        printf("error %i:%i\n", received, err);
-                        break;
-                    }
+                cout << " : ";
+                for (size_t j = i + 2; j < i + 4; ++j) {
+                    printf("%02x", data[j]);
                 }
-
-                break;
             }
+            cout << "\nSending 'ACK' SETTINGS FRAME." << endl;
+            sendConnectionHeader(clientSessData);
+
+            char data[] = { 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 };
+            bufferevent_write(clientSessData->bufferEvent, data, 9);
+
+        }
+
+    }
+
+    cout << endl << endl;
+    readlen = 1;
+    if (readlen < 0) {
+        printf("Error: error storing recevied data in client_sess_data");
+        return -1;
+    }
+    if (evbuffer_drain(in, (size_t)length) != 0) {
+        printf("Error: evbuffer_drain failed");
+        return -1;
+    }
+    return 0;
+}
+
+
+/// readCallback - Callback triggered when there is data to be read in the evbuffer.
+///
+/// @param bufferEvent - The bufferevent that triggered the callback.
+/// @param ptr - The user-specified context for this bufferevent, which is the ClientSessionData object.
+
+static void readCallback(struct bufferevent *bufferEvent, void *ptr){
+    cout << "[ readCallback ]" << endl;
+    auto *clientSessData = (client_sess_data *)ptr;
+    (void)bufferEvent;
+
+    int returnValue = sessionOnReceived(clientSessData);
+}
+
+
+/// writeCallback - Callback that gets invoked when all data in the bufferevent output buffer has been sent.
+///
+/// @param bufferEvent -
+/// @param ptr
+
+static void writeCallback(struct bufferevent *bufferEvent, void *ptr){
+    cout << "[ write cb ]" << endl;
+    return;
+}
+
+
+static void acceptCallback(struct evconnlistener *conListener, int sock,
+                           struct sockaddr *address, int address_length, void *arg) {
+    application_ctx *appCtx = (application_ctx *) arg;
+    client_sess_data *clientSessData;
+    cout << "[ acceptCallback]: " << "sock: " << sock << ", address: " << address << endl;
+    (void) conListener;
+
+    clientSessData = createClientSessionData(appCtx, sock, address, address_length);
+    bufferevent_setcb(clientSessData->bufferEvent, readCallback, writeCallback, eventCallback, clientSessData);
+
+}
+
+
+/// serverListen - Sets up the server and starts listening on the given port.
+///
+/// @param eventBase - The application-wide event_base object to use with listeners.
+/// @param port - The port number the application should listen on.
+/// @param appCtx - The global application context object to use.
+
+static void serverListen(struct event_base *eventBase, const char *port, application_ctx *appCtx) {
+
+    cout << "[ serverListen ]" << endl;
+
+    int return_value;
+    struct addrinfo hints;
+    struct addrinfo *res, *rp;
+
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+#ifdef AI_ADDRCONFIG
+    hints.ai_flags |= AI_ADDRCONFIG;
+#endif
+
+    return_value = getaddrinfo(NULL, port, &hints, &res);
+    if (return_value !=0) {
+        printf("%s", "Error: Could not resolve server address");
+    }
+
+    for (rp = res; rp; rp = rp->ai_next) {
+        struct evconnlistener *conListener;
+        conListener = evconnlistener_new_bind(
+                eventBase, acceptCallback, appCtx, LEV_OPT_CLOSE_ON_FREE | LEV_OPT_REUSEABLE,
+                16, rp->ai_addr, (int) rp->ai_addrlen);
+        if (conListener) {
+            freeaddrinfo(res);
+            return;
         }
     }
 
-    return rc;
+    // if for loop above does not return, starting the listener has failed
+    printf("%s", "Error: Could not start listener");
+}
+
+
+static void run(const char *port, const char *certKeyFile, const char *certFile) {
+    cout << "[ run ]" << endl;
+
+    SSL_CTX *sslCtx;
+    application_ctx appCtx;
+    struct event_base *eventBase;
+
+    sslCtx = createSslContext();
+    configureContext(sslCtx, certKeyFile, certFile);
+    eventBase = event_base_new();
+    createApplicationContext(&appCtx, sslCtx, eventBase);
+
+    serverListen(eventBase, port, &appCtx);
+
+    event_base_loop(eventBase, 0);
+
+    event_base_free(eventBase);
+    SSL_CTX_free(sslCtx);
 }
 
 int main(int argc, char **argv) {
-    bool use_default_port = false;
-    int port = use_default_port ? 443 : 8443;
-    int sock;
-    SSL_CTX *ctx;
+    struct sigaction act;
 
-    init_openssl();
-    ctx = create_context();
-
-    configure_context(ctx);
-
-    sock = create_socket(port);
-
-    /* Handle connections */
-    while(1) {
-        struct sockaddr_in addr;
-        uint len = sizeof(addr);
-        SSL *ssl;
-        //const char reply[] = "test\n";
-
-        int client = accept(sock, (struct sockaddr*)&addr, &len);
-        if (client < 0) {
-            perror("Unable to accept");
-            exit(EXIT_FAILURE);
-        }
-
-        ssl = SSL_new(ctx);
-        SSL_set_fd(ssl, client);
-
-        if (SSL_accept(ssl) <= 0) {
-            ERR_print_errors_fp(stderr);
-        }
-        else {
-            SSL_write(ssl, settingsframe(0x0), 9);
-            char* res = sslRead(ssl);
-            SSL_write(ssl, settingsframe(0x1), 9);
-        }
-
-        SSL_free(ssl);
-        close(client);
+    if (argc < 4) {
+        cerr << "http2-server PORT PRIVATE_KEY_FILE CERT_FILE\n" << endl;
+        exit(EXIT_FAILURE);
     }
 
-    close(sock);
-    SSL_CTX_free(ctx);
-    cleanup_openssl();
+    memset(&act, 0, sizeof(struct sigaction));
+    act.sa_handler = SIG_IGN;
+    sigaction(SIGPIPE, &act, NULL);
+
+    initOpenssl();
+
+    run(argv[1], argv[2], argv[3]);
+    return 0;
 }
