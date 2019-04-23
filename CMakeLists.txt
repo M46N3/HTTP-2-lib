@@ -21,5 +21,5 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y -pthread -Wall -Wextra -Wno-u
 find_package(OpenSSL REQUIRED)
 include_directories(${OPENSSL_INCLUDE_DIR})
 
-add_executable(Nettverksprog_prosjekt main.cpp h2_callbacks.hpp h2_callbacks.cpp h2_structs.h)
+add_executable(Nettverksprog_prosjekt main.cpp)
 target_link_libraries(Nettverksprog_prosjekt ${OPENSSL_LIBRARIES} -levent_openssl -levent ${EVENT_LIBRARIES})
