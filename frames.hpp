@@ -27,6 +27,23 @@ enum SettingsParameters {
     SETTINGS_MAX_HEADER_LIST_SIZE = 0x6
 };
 
+enum ErrorCodes {
+    NO_ERROR = 0x0,
+    PROTOCOL_ERROR = 0x1,
+    INTERNAL_ERROR = 0x2,
+    FLOW_CONTROL_ERROR = 0x3,
+    SETTINGS_TIMEOUT = 0x4,
+    STREAM_CLOSED = 0x5,
+    FRAME_SIZE_ERROR = 0x6,
+    REFUSED_STREAM = 0x7,
+    CANCEL = 0x8,
+    COMPRESSION_ERROR = 0x9,
+    CONNECT_ERROR = 0xa,
+    ENHANCE_YOUR_CALM = 0xb,
+    INADEQUATE_SECURITY = 0xc,
+    HTTP_1_1_REQUIRED = 0xd
+};
+
 struct frame {
     bitset<24> length;
     bitset<8> type;
@@ -69,7 +86,7 @@ char* getBytes(frame frame) {
     string s = frame.length.to_string() + frame.type.to_string() + frame.flags.to_string() + frame.r.to_string() + frame.stream_id.to_string();
     char* chars = new char[9];
     //string s = bs.to_string();
-    for (size_t i = 0; i < 9; i++) {
+    for (size_t i = 0; i < 9; ++i) {
         bitset<8> b(s, (i*8), 8);
         chars[i] = (b.to_ulong() & 0xFF);
         //cout << static_cast<int>(chars[i]);
@@ -89,7 +106,7 @@ char* getBytesString(frame frame, const string &payload, size_t len) {
     }
 
     //cout << s << endl;
-    for (size_t i = 0; i < (9 + len); i++) {
+    for (size_t i = 0; i < (9 + len); ++i) {
         bitset<8> b(s, (i*8), 8);
         chars[i] = (b.to_ulong() & 0xFF);
         //cout << static_cast<int>(chars[i]);
