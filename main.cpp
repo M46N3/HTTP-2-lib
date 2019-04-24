@@ -13,6 +13,7 @@
 #include <signal.h>
 #include <err.h>
 #include <netinet/tcp.h>
+#include "frames.hpp"
 
 using namespace std;
 
@@ -300,6 +301,7 @@ static void eventCallback(struct bufferevent *bufferEvent, short events, void *p
 
     client_sess_data *clientSessData = (client_sess_data *)ptr;
 
+
     if (events & BEV_EVENT_CONNECTED) {
         const unsigned char *alpn = NULL;
         unsigned int alpnlen = 0;
@@ -321,6 +323,9 @@ static void eventCallback(struct bufferevent *bufferEvent, short events, void *p
             /* TODO: delete_client_sess_data(clientSessData); */
             return;
         }
+
+        // SETTINGS FRAME:
+        //bufferevent_write(bufferEvent, settingsframe(bitset<8>(0x0), bitset<31>(0x0)), 9);
 
         if(sendConnectionHeader(clientSessData) != 0) {
             // TODO: delete_client_sess_data(clientSessData);
@@ -381,6 +386,25 @@ static int sessionOnReceived(client_sess_data *clientSessData) {
         }
 
     }
+
+    /*
+    if (data[3] == 0x04 && data[4] == 0x0) {
+        // SETTINGS FRAME:
+        bufferevent_write(clientSessData->bufferEvent, settingsframe(bitset<8>(0x01), bitset<31>(0x0)), 9);
+        cout << "Settings frame recieved" << endl;
+    }
+
+    if (data[3] == 0x01) {
+        string s = "<h1>Hello World!<h1>";
+        auto sLen = s.length();
+        // DATA FRAME:
+        //cout << s << endl;
+        //cout << sLen << endl;
+        //cout << bitset<24>(sLen) << endl;
+
+        //bufferevent_write(clientSessData->bufferEvent, dataframe(bitset<8>(0x1), bitset<31>(0x0), s, sLen), (sLen + 9));
+    }
+    */
 
     cout << endl << endl;
     readlen = 1;
@@ -475,7 +499,6 @@ static void serverListen(struct event_base *eventBase, const char *port, applica
     // if for loop above does not return, starting the listener has failed
     printf("%s", "Error: Could not start listener");
 }
-
 
 static void run(const char *port, const char *certKeyFile, const char *certFile) {
     cout << "[ run ]" << endl;
