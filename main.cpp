@@ -337,11 +337,28 @@ static void eventCallback(struct bufferevent *bufferEvent, short events, void *p
     }
 }
 
+static void dataFrameHandler(const unsigned char *data) {
+    // Handle payload
+}
+
+static void frameHandler(const unsigned char *data) {
+    // Print length, flag etc.
+
+    // Handle types
+    switch (data[3]) {
+        case Types::DATA:
+            dataFrameHandler(data);
+    }
+}
+
 static int sessionOnReceived(client_sess_data *clientSessData) {
     ssize_t readlen;
     struct evbuffer *in = bufferevent_get_input(clientSessData->bufferEvent);
     size_t length = evbuffer_get_length(in);
     unsigned char *data = evbuffer_pullup(in, -1); // Make whole buffer contiguous
+
+    frameHandler(data);
+
     cout << "Length: " << length << endl;
 
     cout << "Length: ";
@@ -350,14 +367,10 @@ static int sessionOnReceived(client_sess_data *clientSessData) {
     }
 
     cout << "\nType: ";
-    for (size_t i = 3; i < 4 ; ++i) {
-        printf("%02x", data[i]);
-    }
+    printf("%02x", data[3]);
 
     cout << "\nFlags: ";
-    for (size_t i = 4; i < 5; ++i) {
-        printf("%02x", data[i]);
-    }
+    printf("%02x", data[4]);
 
     cout << "\nStream Identifier: ";
     for (size_t i = 5; i < 9 ; ++i) {
