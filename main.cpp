@@ -341,13 +341,14 @@ static void dataFrameHandler(const unsigned char *data) {
     // Handle payload
 }
 
-static void settingsFrameHandler(const unsigned char *data, size_t length) {
+static void settingsFrameHandler(client_sess_data *clientSessData, const unsigned char *data, size_t length) {
     size_t indexIdentifier = 9;
     size_t indexValue = 11;
     int payloadNumber = 1;
     for (size_t i = 9; i < length; ++i) {
         if (i == indexIdentifier) {
-            cout << "\n---" << payloadNumber << "---";
+            // Print to track numbers of payload.
+            //cout << "\n---" << payloadNumber << "---";
             payloadNumber++;
             cout << "\nIdentifier(16):\t\t\t\t";
             indexIdentifier += 6;
@@ -358,19 +359,32 @@ static void settingsFrameHandler(const unsigned char *data, size_t length) {
         }
         printf("%02x", data[i]);
     }
+
+    ulong payloadLength = bitset<24>(data[0] + data[1] + data[2]).to_ulong();
+//    if (payloadLength % 6 != 0) {
+//        char data[] = { 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 };
+//        bufferevent_write(clientSessData->bufferEvent, data, 9);
+//    }
+
+
+
 }
 
 static void frameDefaultPrint(const unsigned char *data) {
     for (size_t i = 0; i < 9; ++i) {
         if (i == 0) cout << "Length(24):\t\t\t\t\t";
         if (i == 3) cout << "\nType(8):\t\t\t\t\t";
-        if (i == 4) cout << "\nFlags(8):\t\t\t\t\t";
+        if (i == 4) cout << "\nFlags(8)(bits):\t\t\t\t";
         if (i == 5) cout << "\nStream Identifier(R + 31):\t";
-        printf("%02x", data[i]);
+        if (i == 4) {
+            cout << bitset<8>(data[i]);
+        } else {
+            printf("%02x", data[i]);
+        }
     }
 }
 
-static void frameHandler(const unsigned char *data, size_t length) {
+static void frameHandler(client_sess_data *clientSessData, const unsigned char *data, size_t length) {
     // Print length, flag etc.
     switch (data[3]) {
         case Types::DATA:
@@ -392,7 +406,7 @@ static void frameHandler(const unsigned char *data, size_t length) {
         case Types::SETTINGS:
             cout << "SETTINGS" << endl;
             frameDefaultPrint(data);
-            settingsFrameHandler(data, length);
+            settingsFrameHandler(clientSessData, data, length);
             break;
         case Types::PUSH_PROMISE:
             cout << "PUSH_PROMISE" << endl;
@@ -415,6 +429,11 @@ static void frameHandler(const unsigned char *data, size_t length) {
             frameDefaultPrint(data);
             break;
         default:
+
+            string connectionPreface = "505249202a20485454502f322e300d0a0d0a534d0d0a0d0a";
+
+
+
             cout << "DEFAULT" << endl;
             for(size_t i = 0; i < length; ++i) {
                 printf("%02x", data[i]);
@@ -429,7 +448,7 @@ static int sessionOnReceived(client_sess_data *clientSessData) {
     size_t length = evbuffer_get_length(in);
     unsigned char *data = evbuffer_pullup(in, -1); // Make whole buffer contiguous
 
-    frameHandler(data, length);
+    frameHandler(clientSessData, data, length);
 
 //    cout << "Length: " << length << endl;
 //
@@ -449,28 +468,28 @@ static int sessionOnReceived(client_sess_data *clientSessData) {
 //        printf("%02x", data[i]);
 //    }
 //
-//    if (length >= 9) {
-//        cout << "\nPayload: ";
-//        if (data[3] == Types::SETTINGS && data[4] == 0x00) {
-//            for (size_t i = 9; i < length; i += 6) {
-//                cout << endl;
-//                for (size_t j = i; j < i + 2; ++j) {
-//                    printf("%02x", data[j]);
-//                }
-//                cout << " : ";
-//                for (size_t j = i + 2; j < i + 4; ++j) {
-//                    printf("%02x", data[j]);
-//                }
-//            }
-//            cout << "\nSending 'ACK' SETTINGS FRAME." << endl;
-//            sendConnectionHeader(clientSessData);
-//
-//            char data[] = { 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 };
-//            bufferevent_write(clientSessData->bufferEvent, data, 9);
-//
-//        }
-//
-//    }
+    if (length >= 9) {
+        cout << "\nPayload: ";
+        if (data[3] == Types::SETTINGS && data[4] == 0x00) {
+            for (size_t i = 9; i < length; i += 6) {
+                cout << endl;
+                for (size_t j = i; j < i + 2; ++j) {
+                    printf("%02x", data[j]);
+                }
+                cout << " : ";
+                for (size_t j = i + 2; j < i + 4; ++j) {
+                    printf("%02x", data[j]);
+                }
+            }
+            cout << "\nSending 'ACK' SETTINGS FRAME." << endl;
+            sendConnectionHeader(clientSessData);
+
+            char data[] = { 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 };
+            bufferevent_write(clientSessData->bufferEvent, data, 9);
+
+        }
+
+    }
 
     /*
     if (data[3] == 0x04 && data[4] == 0x0) {
