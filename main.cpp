@@ -46,7 +46,7 @@ SSL_CTX *create_ssl_context() {
     const SSL_METHOD *method;
     SSL_CTX *ctx;
 
-    method = TLS_server_method();
+    method = SSLv23_server_method();
 
     ctx = SSL_CTX_new(method);
     if (!ctx) {
