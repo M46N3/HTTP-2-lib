@@ -341,13 +341,110 @@ static void dataFrameHandler(const unsigned char *data) {
     // Handle payload
 }
 
-static void frameHandler(const unsigned char *data) {
-    // Print length, flag etc.
+static void settingsFrameHandler(client_sess_data *clientSessData, const unsigned char *data, size_t length) {
+    size_t indexIdentifier = 9;
+    size_t indexValue = 11;
+    int payloadNumber = 1;
+    for (size_t i = 9; i < length; ++i) {
+        if (i == indexIdentifier) {
+            // Print to track numbers of payload.
+            //cout << "\n---" << payloadNumber << "---";
+            payloadNumber++;
+            cout << "\nIdentifier(16):\t\t\t\t";
+            indexIdentifier += 6;
+        }
+        if (i == indexValue) {
+            cout << "\nValue(32):\t\t\t\t\t";
+            indexValue += 6;
+        }
+        printf("%02x", data[i]);
+    }
 
-    // Handle types
+    ulong payloadLength = bitset<24>(data[0] + data[1] + data[2]).to_ulong();
+//    if (payloadLength % 6 != 0) {
+//        char data[] = { 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 };
+//        bufferevent_write(clientSessData->bufferEvent, data, 9);
+//    }
+
+
+
+}
+
+static void frameDefaultPrint(const unsigned char *data) {
+    for (size_t i = 0; i < 9; ++i) {
+        if (i == 0) cout << "Length(24):\t\t\t\t\t";
+        if (i == 3) cout << "\nType(8):\t\t\t\t\t";
+        if (i == 4) cout << "\nFlags(8)(bits):\t\t\t\t";
+        if (i == 5) cout << "\nStream Identifier(R + 31):\t";
+        if (i == 4) {
+            cout << bitset<8>(data[i]);
+        } else {
+            printf("%02x", data[i]);
+        }
+    }
+}
+
+static void frameHandler(client_sess_data *clientSessData, const unsigned char *data, size_t length) {
+    // Print length, flag etc.
     switch (data[3]) {
         case Types::DATA:
-            dataFrameHandler(data);
+            cout << "DATA" << endl;
+            frameDefaultPrint(data);
+            break;
+        case Types::HEADERS:
+            cout << "HEADER" << endl;
+            frameDefaultPrint(data);
+            break;
+        case Types::PRIORITY:
+            cout << "PRIORITY" << endl;
+            frameDefaultPrint(data);
+            break;
+        case Types::RST_STREAM:
+            cout << "RST_STREAM" << endl;
+            frameDefaultPrint(data);
+            break;
+        case Types::SETTINGS:
+            cout << "SETTINGS" << endl;
+            frameDefaultPrint(data);
+            settingsFrameHandler(clientSessData, data, length);
+            break;
+        case Types::PUSH_PROMISE:
+            cout << "PUSH_PROMISE" << endl;
+            frameDefaultPrint(data);
+            break;
+        case Types::PING:
+            cout << "PING" << endl;
+            frameDefaultPrint(data);
+            break;
+        case Types::GOAWAY:
+            cout << "GOAWAY" << endl;
+            frameDefaultPrint(data);
+            break;
+        case Types::WINDOW_UPDATE:
+            cout << "WINDOW_UPDATE" << endl;
+            frameDefaultPrint(data);
+            break;
+        case Types::CONTINUATION:
+            cout << "CONTINUATION" << endl;
+            frameDefaultPrint(data);
+            break;
+        default:
+
+            string connectionPreface = "505249202a20485454502f322e300d0a0d0a534d0d0a0d0a";
+            string dataCompare = "";
+            for (size_t i = 0; i < length; ++i) {
+                dataCompare += data[i];
+            }
+//            cout << "Her er utrskrift" << endl;
+//            cout << dataCompare << endl;
+//              sdfs
+
+
+            cout << "DEFAULT" << endl;
+            for(size_t i = 0; i < length; ++i) {
+                printf("%02x", data[i]);
+            }
+            break;
     }
 }
 
@@ -357,26 +454,26 @@ static int sessionOnReceived(client_sess_data *clientSessData) {
     size_t length = evbuffer_get_length(in);
     unsigned char *data = evbuffer_pullup(in, -1); // Make whole buffer contiguous
 
-    frameHandler(data);
+    frameHandler(clientSessData, data, length);
 
-    cout << "Length: " << length << endl;
-
-    cout << "Length: ";
-    for (size_t i = 0; i < 3 ; ++i) {
-        printf("%02x", data[i]);
-    }
-
-    cout << "\nType: ";
-    printf("%02x", data[3]);
-
-    cout << "\nFlags: ";
-    printf("%02x", data[4]);
-
-    cout << "\nStream Identifier: ";
-    for (size_t i = 5; i < 9 ; ++i) {
-        printf("%02x", data[i]);
-    }
-
+//    cout << "Length: " << length << endl;
+//
+//    cout << "Length: ";
+//    for (size_t i = 0; i < 3 ; ++i) {
+//        printf("%02x", data[i]);
+//    }
+//
+//    cout << "\nType: ";
+//    printf("%02x", data[3]);
+//
+//    cout << "\nFlags: ";
+//    printf("%02x", data[4]);
+//
+//    cout << "\nStream Identifier: ";
+//    for (size_t i = 5; i < 9 ; ++i) {
+//        printf("%02x", data[i]);
+//    }
+//
     if (length >= 9) {
         cout << "\nPayload: ";
         if (data[3] == Types::SETTINGS && data[4] == 0x00) {
