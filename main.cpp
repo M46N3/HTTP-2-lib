@@ -437,6 +437,7 @@ static void frameHandler(client_sess_data *clientSessData, const unsigned char *
             }
 //            cout << "Her er utrskrift" << endl;
 //            cout << dataCompare << endl;
+//              sdfs
 
 
             cout << "DEFAULT" << endl;
