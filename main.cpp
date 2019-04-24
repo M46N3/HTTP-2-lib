@@ -431,7 +431,12 @@ static void frameHandler(client_sess_data *clientSessData, const unsigned char *
         default:
 
             string connectionPreface = "505249202a20485454502f322e300d0a0d0a534d0d0a0d0a";
-
+            string dataCompare = "";
+            for (size_t i = 0; i < length; ++i) {
+                dataCompare += data[i];
+            }
+//            cout << "Her er utrskrift" << endl;
+//            cout << dataCompare << endl;
 
 
             cout << "DEFAULT" << endl;
