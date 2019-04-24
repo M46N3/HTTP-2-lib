@@ -337,6 +337,21 @@ static void eventCallback(struct bufferevent *bufferEvent, short events, void *p
     }
 }
 
+static string bytesToString(const unsigned char *data, size_t firstIndex, size_t secondIndex) {
+    static const char characters[] = "0123456789abcdef";
+
+    std::string res((secondIndex - firstIndex) * 2, 0);
+
+    char *buf = (res.data());
+
+    for (size_t i = firstIndex; i < secondIndex; ++i) {
+        *buf++ = characters[data[i] >> 4];
+        *buf++ = characters[data[i] & 0x0F];
+    }
+
+    return res;
+}
+
 static void dataFrameHandler(const unsigned char *data) {
     // Handle payload
 }
@@ -361,12 +376,29 @@ static void settingsFrameHandler(client_sess_data *clientSessData, const unsigne
     }
 
     ulong payloadLength = bitset<24>(data[0] + data[1] + data[2]).to_ulong();
+
+    string flagString = bitset<8>(data[4]).to_string();
+
+    char flagArray[8] = {0};
+    std::copy(flagString.begin(), flagString.end(), flagArray);
+
+
+    cout << "\nFlag ACK: " << flagArray[7] << endl;
+    if (flagArray[7] == '1' && payloadLength != 0) {
+        cout << "yippie kay yay madafaka" << endl;
+
+        // FRAME_SIZE_ERROR (0x6):
+
+//        char dataSend[] = { 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 };
+//        bufferevent_write(clientSessData->bufferEvent, dataSend, 9);
+
+    }
+
+//    cout << "payloadLength: " << payloadLength << endl;
 //    if (payloadLength % 6 != 0) {
 //        char data[] = { 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 };
 //        bufferevent_write(clientSessData->bufferEvent, data, 9);
 //    }
-
-
 
 }
 
@@ -429,20 +461,16 @@ static void frameHandler(client_sess_data *clientSessData, const unsigned char *
             frameDefaultPrint(data);
             break;
         default:
-
-            string connectionPreface = "505249202a20485454502f322e300d0a0d0a534d0d0a0d0a";
-            string dataCompare = "";
-            for (size_t i = 0; i < length; ++i) {
-                dataCompare += data[i];
-            }
-//            cout << "Her er utrskrift" << endl;
-//            cout << dataCompare << endl;
-//              sdfs
-
-
             cout << "DEFAULT" << endl;
-            for(size_t i = 0; i < length; ++i) {
-                printf("%02x", data[i]);
+            string connectionPreface = "505249202a20485454502f322e300d0a0d0a534d0d0a0d0a";
+            string dataString = bytesToString(data, 0, length);
+
+            if (connectionPreface == dataString) {
+                for(size_t i = 0; i < length; ++i) {
+                    printf("%02x", data[i]);
+                }
+            } else {
+                cout << "Frame type is unknown" << endl;
             }
             break;
     }
@@ -474,28 +502,28 @@ static int sessionOnReceived(client_sess_data *clientSessData) {
 //        printf("%02x", data[i]);
 //    }
 //
-    if (length >= 9) {
-        cout << "\nPayload: ";
-        if (data[3] == Types::SETTINGS && data[4] == 0x00) {
-            for (size_t i = 9; i < length; i += 6) {
-                cout << endl;
-                for (size_t j = i; j < i + 2; ++j) {
-                    printf("%02x", data[j]);
-                }
-                cout << " : ";
-                for (size_t j = i + 2; j < i + 4; ++j) {
-                    printf("%02x", data[j]);
-                }
-            }
-            cout << "\nSending 'ACK' SETTINGS FRAME." << endl;
-            sendConnectionHeader(clientSessData);
-
-            char data[] = { 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 };
-            bufferevent_write(clientSessData->bufferEvent, data, 9);
-
-        }
-
-    }
+//    if (length >= 9) {
+//        cout << "\nPayload: ";
+//        if (data[3] == Types::SETTINGS && data[4] == 0x00) {
+//            for (size_t i = 9; i < length; i += 6) {
+//                cout << endl;
+//                for (size_t j = i; j < i + 2; ++j) {
+//                    printf("%02x", data[j]);
+//                }
+//                cout << " : ";
+//                for (size_t j = i + 2; j < i + 4; ++j) {
+//                    printf("%02x", data[j]);
+//                }
+//            }
+//            cout << "\nSending 'ACK' SETTINGS FRAME." << endl;
+//            sendConnectionHeader(clientSessData);
+//
+//            char data[] = { 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 };
+//            bufferevent_write(clientSessData->bufferEvent, data, 9);
+//
+//        }
+//
+//    }
 
     /*
     if (data[3] == 0x04 && data[4] == 0x0) {
@@ -515,6 +543,7 @@ static int sessionOnReceived(client_sess_data *clientSessData) {
         //bufferevent_write(clientSessData->bufferEvent, dataframe(bitset<8>(0x1), bitset<31>(0x0), s, sLen), (sLen + 9));
     }
     */
+
 
     cout << endl << endl;
     readlen = 1;
