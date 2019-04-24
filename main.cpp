@@ -20,9 +20,9 @@ using namespace std;
 static unsigned char next_proto_list[256];
 static size_t next_proto_list_len;
 
-void init_openssl() {
+void initOpenssl() {
 
-    cout << "[ init_openssl ]" << endl;
+    cout << "[ initOpenssl ]" << endl;
 
     SSL_load_error_strings();
     SSL_library_init();
@@ -33,20 +33,20 @@ void cleanup_openssl() {
     EVP_cleanup();
 }
 
-SSL_CTX *create_ssl_context() {
-    /**
-     * Creates a new SSL_CTX object and sets the connection method
-     * to be used, which is a general SSL/TLS server connection method.
-     *
-     * return: The new SSL_CTX object with connection method set.
-     */
 
-    cout << "[ create_ssl_context ]" << endl;
+/// createSslContext - Creates a new SSL_CTX object and sets the connection method to be used,
+/// which is a general SSL/TLS server connection method.
+///
+/// return ctx - The newly created SSL_CTX object with the connection method set.
+
+SSL_CTX *createSslContext() {
+
+    cout << "[ createSslContext ]" << endl;
 
     const SSL_METHOD *method;
     SSL_CTX *ctx;
 
-    method = SSLv23_server_method();
+    method = TLS_server_method();
 
     ctx = SSL_CTX_new(method);
     if (!ctx) {
@@ -58,10 +58,19 @@ SSL_CTX *create_ssl_context() {
     return ctx;
 }
 
-static int next_proto_cb(SSL *s, const unsigned char **data,
-                         unsigned int *len, void *arg) {
 
-    cout << "[ next_proto_cb ]" << endl;
+/// nextProtocolCallback -
+///
+/// \param s
+/// \param data
+/// \param len
+/// \param arg
+/// \return
+
+static int nextProtocolCallback(SSL *s, const unsigned char **data,
+                                unsigned int *len, void *arg) {
+
+    cout << "[ nextProtocolCallback ]" << endl;
 
     *data = next_proto_list;
     *len = (unsigned int)next_proto_list_len;
@@ -69,12 +78,17 @@ static int next_proto_cb(SSL *s, const unsigned char **data,
 }
 
 
-static int select_protocol(unsigned char **out, unsigned char *outlen, const unsigned char *in, unsigned int inlen) {
-    /**
-     *
-     */
+/// selectProtocol - Selects 'h2' meaning 'HTTP/2 over TLS'
+///
+/// @param out - name of protocol chosen by the server.
+/// @param outlen - length of name of protocol given in 'out'.
+/// @param in  - string of protocols supported by the client, prefixed by the length of the following protocol.
+/// @param inlen - total length of the protocols-string 'in'.
+/// @return - 1 if successful.
 
-    cout << "[ select_protocol ]" << endl;
+static int selectProtocol(unsigned char **out, unsigned char *outlen, const unsigned char *in, unsigned int inlen) {
+
+    cout << "[ selectProtocol ]" << endl;
 
     unsigned int start_index = (unsigned int) in[0];
     unsigned int end_of_next_protocol = start_index ;
@@ -99,15 +113,26 @@ static int select_protocol(unsigned char **out, unsigned char *outlen, const uns
     return 1;
 }
 
-static int alpn_select_proto_cb(SSL *ssl, const unsigned char **out,
-                                unsigned char *outlen, const unsigned char *in,
-                                unsigned int inlen, void *arg) {
 
-    cout << "[ alpn_select_proto_cb ]" << endl;
+/// alpnSelectProtocolCallback - Callback function used for the negotiation of HTTP/2 over TLS in ALPN.
+///
+/// @param ssl - SSL object (unused parameter).
+/// @param out - string for chosen protocol
+/// @param outlength - length of name of chosen protocol given in 'out'.
+/// @param in - protocols supported by the client.
+/// @param inlen - length of 'in'.
+/// @param arg
+/// @return - returns 0 on success and non-zero on failure.
+
+static int alpnSelectProtocolCallback(SSL *ssl, const unsigned char **out,
+                                      unsigned char *outlength, const unsigned char *in,
+                                      unsigned int inlen, void *arg) {
+
+    cout << "[ alpnSelectProtocolCallback ]" << endl;
 
     int rv;
 
-    rv = select_protocol((unsigned char **)out, outlen, in, inlen);
+    rv = selectProtocol((unsigned char **) out, outlength, in, inlen);
 
     if (rv != 1) {
         return SSL_TLSEXT_ERR_NOACK;
@@ -118,30 +143,36 @@ static int alpn_select_proto_cb(SSL *ssl, const unsigned char **out,
     return SSL_TLSEXT_ERR_OK;
 }
 
-void configure_alpn(SSL_CTX *ctx) {
-    /**
-     * Configures the given SSL_CTX object to use the Application Layer Protocol Negotiation extension,
-     * with 'next protos advertised' and 'alpn select' callbacks.
-     */
 
-    cout << "[ configure_alpn ]" << endl;
+/// configureAlpn - Configures the referenced SSL_CTX object to use the Aplication Protocol Layer Negotiation
+/// extension, with 'nextProtocolCallback' and 'alpnSelectProtocolCallback'.
+///
+/// @param ctx - reference to the SSL_CTX object to configure ALPN extension on.
+
+void configureAlpn(SSL_CTX *ctx) {
+
+    cout << "[ configureAlpn ]" << endl;
 
     next_proto_list[0] = 2;
     memcpy(&next_proto_list[1], "h2", 2);
     next_proto_list_len = 1 + 2;
 
-    SSL_CTX_set_next_protos_advertised_cb(ctx, next_proto_cb, NULL);
+    SSL_CTX_set_next_protos_advertised_cb(ctx, nextProtocolCallback, NULL);
 
-    SSL_CTX_set_alpn_select_cb(ctx, alpn_select_proto_cb, NULL);
+    SSL_CTX_set_alpn_select_cb(ctx, alpnSelectProtocolCallback, NULL);
 }
 
-void configure_context(SSL_CTX *ctx, const char *certKeyFile, const char *certFile) {
-    /**
-     * Configures the SSL_CTX object to use given certificate and private key,
-     * and calls to configure ALPN extension.
-     */
 
-    cout << "[ configure_context ]" << endl;
+/// configureContext - Configures the SSL_CTX object to use given certificate and private key,
+/// and calls to configure ALPN extension.
+///
+/// @param ctx - reference to the SSL_CTX object to configure.
+/// @param certKeyFile - path to Certificate Key File to be used for TLS.
+/// @param certFile - path to Certificate File to be used for TLS.
+
+void configureContext(SSL_CTX *ctx, const char *certKeyFile, const char *certFile) {
+
+    cout << "[ configureContext ]" << endl;
 
     /* Make server always choose the most appropriate curve for the client. */
     SSL_CTX_set_ecdh_auto(ctx, 1);
@@ -158,7 +189,7 @@ void configure_context(SSL_CTX *ctx, const char *certKeyFile, const char *certFi
     }
 
     /* Configure SSL_CTX object to use ALPN */
-    configure_alpn(ctx);
+    configureAlpn(ctx);
 }
 
 struct application_ctx {
@@ -182,7 +213,17 @@ struct client_sess_data {
     char *clientAddress;
 } client_session_data;
 
-static client_sess_data *create_client_session_data(application_ctx *appCtx, int sock, struct sockaddr *clientAddress, int addressLength) {
+
+/// createClientSessionData - Creates a clientSessionData object which keeps all to be used for one single connection.
+///
+/// @param appCtx - Application-wide application_ctx object.
+/// @param sock - file descriptor for the connection
+/// @param clientAddress - socket address of the client.
+/// @param addressLength - length of socket address.
+/// @return
+
+static client_sess_data *createClientSessionData(application_ctx *appCtx, int sock, struct sockaddr *clientAddress,
+                                                 int addressLength) {
     int returnValue;
     client_sess_data *clientSessData;
     SSL *ssl;
@@ -207,7 +248,6 @@ static client_sess_data *create_client_session_data(application_ctx *appCtx, int
             BEV_OPT_CLOSE_ON_FREE | BEV_OPT_DEFER_CALLBACKS
             );
 
-
     bufferevent_enable(clientSessData->bufferEvent, EV_READ | EV_WRITE);
 
     returnValue = getnameinfo(clientAddress, (socklen_t)addressLength, host, sizeof(host), NULL, 0, NI_NUMERICHOST);
@@ -223,18 +263,42 @@ static client_sess_data *create_client_session_data(application_ctx *appCtx, int
 }
 
 
-static void create_application_context(application_ctx *appCtx, SSL_CTX *sslCtx, struct event_base *eventBase_) {
+static void createApplicationContext(application_ctx *appCtx, SSL_CTX *sslCtx, struct event_base *eventBase_) {
     /**
      * Sets the application_ctx members, ctx and eventBase, to the given SSL_CTX and event_base objects
      */
-    cout << "[ create_application_context ]" << endl;
+    cout << "[ createApplicationContext ]" << endl;
 
     memset(appCtx, 0, sizeof(application_ctx));
     appCtx->ctx = sslCtx;
     appCtx->eventBase = eventBase_;
 }
 
-static void event_callback(struct bufferevent *bufferEvent, short events, void *ptr){
+
+/// sendConnectionHeader - Sends server connection header with 'MAXIMUM_CONCURRENT_STREAMS' set to 100.
+///
+/// @param ClientSessData - ClientSessData object for this particular connection.
+/// @return returnValue - 0 if successful, non-zero if failure.
+
+static int sendConnectionHeader(client_sess_data *ClientSessData) {
+    int returnValue;
+    cout << "\nSending server SETTINGS FRAME." << endl;
+    char data[] = { 0x00, 0x00, 0x06, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x64 };
+
+    returnValue = bufferevent_write(ClientSessData->bufferEvent, data, 15);
+    return returnValue;
+}
+
+
+/// eventCallback - Callback invoked when there is an event on the sock filedescriptor.
+///
+/// @param bufferEvent - bufferevent object associated with the connection.
+/// @param events - flag type conjunction of error and/or event type.
+/// @param ptr - clientSessionData object for the connection.
+
+static void eventCallback(struct bufferevent *bufferEvent, short events, void *ptr){
+    cout << " [ eventCallback ] " << endl;
+
     client_sess_data *clientSessData = (client_sess_data *)ptr;
 
 
@@ -261,31 +325,69 @@ static void event_callback(struct bufferevent *bufferEvent, short events, void *
         }
 
         // SETTINGS FRAME:
-        bufferevent_write(bufferEvent, settingsframe(bitset<8>(0x0), bitset<31>(0x0)), 9);
+        //bufferevent_write(bufferEvent, settingsframe(bitset<8>(0x0), bitset<31>(0x0)), 9);
 
-        /*
-        if(send_connection_header(clientSessData) != 0 ||
-            client_sess_send(clientSessData) != 0) {
+        if(sendConnectionHeader(clientSessData) != 0) {
             // TODO: delete_client_sess_data(clientSessData);
             return;
         }
 
         return;
-        */
+
     }
 }
 
-static int session_on_received(client_sess_data *clientSessData) {
+static int sessionOnReceived(client_sess_data *clientSessData) {
     ssize_t readlen;
     struct evbuffer *in = bufferevent_get_input(clientSessData->bufferEvent);
     size_t length = evbuffer_get_length(in);
     unsigned char *data = evbuffer_pullup(in, -1); // Make whole buffer contiguous
+    cout << "Length: " << length << endl;
 
-    for (size_t i = 0; i < length; ++i) {
-        printf("%02x ", data[i]);
+    cout << "Length: ";
+    for (size_t i = 0; i < 3 ; ++i) {
+        printf("%02x", data[i]);
     }
-    cout << endl;
 
+    cout << "\nType: ";
+    for (size_t i = 3; i < 4 ; ++i) {
+        printf("%02x", data[i]);
+    }
+
+    cout << "\nFlags: ";
+    for (size_t i = 4; i < 5; ++i) {
+        printf("%02x", data[i]);
+    }
+
+    cout << "\nStream Identifier: ";
+    for (size_t i = 5; i < 9 ; ++i) {
+        printf("%02x", data[i]);
+    }
+
+    if (length >= 9) {
+        cout << "\nPayload: ";
+        if (data[3] == 0x04 && data[4] == 0x00) {
+            for (size_t i = 9; i < length; i += 6) {
+                cout << endl;
+                for (size_t j = i; j < i + 2; ++j) {
+                    printf("%02x", data[j]);
+                }
+                cout << " : ";
+                for (size_t j = i + 2; j < i + 4; ++j) {
+                    printf("%02x", data[j]);
+                }
+            }
+            cout << "\nSending 'ACK' SETTINGS FRAME." << endl;
+            sendConnectionHeader(clientSessData);
+
+            char data[] = { 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 };
+            bufferevent_write(clientSessData->bufferEvent, data, 9);
+
+        }
+
+    }
+
+    /*
     if (data[3] == 0x04 && data[4] == 0x0) {
         // SETTINGS FRAME:
         bufferevent_write(clientSessData->bufferEvent, settingsframe(bitset<8>(0x01), bitset<31>(0x0)), 9);
@@ -302,14 +404,14 @@ static int session_on_received(client_sess_data *clientSessData) {
 
         //bufferevent_write(clientSessData->bufferEvent, dataframe(bitset<8>(0x1), bitset<31>(0x0), s, sLen), (sLen + 9));
     }
+    */
 
+    cout << endl << endl;
     readlen = 1;
-
     if (readlen < 0) {
         printf("Error: error storing recevied data in client_sess_data");
         return -1;
     }
-
     if (evbuffer_drain(in, (size_t)length) != 0) {
         printf("Error: evbuffer_drain failed");
         return -1;
@@ -317,39 +419,54 @@ static int session_on_received(client_sess_data *clientSessData) {
     return 0;
 }
 
-static void readcb(struct bufferevent *bufferEvent, void *ptr){
-    cout << "[ read cb ]" << endl;
+
+/// readCallback - Callback triggered when there is data to be read in the evbuffer.
+///
+/// @param bufferEvent - The bufferevent that triggered the callback.
+/// @param ptr - The user-specified context for this bufferevent, which is the ClientSessionData object.
+
+static void readCallback(struct bufferevent *bufferEvent, void *ptr){
+    cout << "[ readCallback ]" << endl;
     auto *clientSessData = (client_sess_data *)ptr;
     (void)bufferEvent;
 
-    int returnValue = session_on_received(clientSessData);
+    int returnValue = sessionOnReceived(clientSessData);
 }
 
-static void writecb(struct bufferevent *bufferEvent, void *ptr){
+
+/// writeCallback - Callback that gets invoked when all data in the bufferevent output buffer has been sent.
+///
+/// @param bufferEvent -
+/// @param ptr
+
+static void writeCallback(struct bufferevent *bufferEvent, void *ptr){
     cout << "[ write cb ]" << endl;
     return;
 }
 
 
-static void accept_callback(struct evconnlistener *conListener, int sock,
-                            struct sockaddr *address, int address_length, void *arg) {
+static void acceptCallback(struct evconnlistener *conListener, int sock,
+                           struct sockaddr *address, int address_length, void *arg) {
     application_ctx *appCtx = (application_ctx *) arg;
     client_sess_data *clientSessData;
-    cout << "[ accept_callback]: " << "sock: " << sock << ", address: " << address << endl;
+    cout << "[ acceptCallback]: " << "sock: " << sock << ", address: " << address << endl;
     (void) conListener;
 
-    clientSessData = create_client_session_data(appCtx, sock,address, address_length);
-    bufferevent_setcb(clientSessData->bufferEvent, readcb, writecb, event_callback, clientSessData);
+    clientSessData = createClientSessionData(appCtx, sock, address, address_length);
+    bufferevent_setcb(clientSessData->bufferEvent, readCallback, writeCallback, eventCallback, clientSessData);
 
 }
 
 
-static void server_listen(struct event_base *eventBase, const char *port, application_ctx *appCtx) {
-    /**
-     * Sets up and starts the server.
-     */
+/// serverListen - Sets up the server and starts listening on the given port.
+///
+/// @param eventBase - The application-wide event_base object to use with listeners.
+/// @param port - The port number the application should listen on.
+/// @param appCtx - The global application context object to use.
 
-    cout << "[ server_listen ]" << endl;
+static void serverListen(struct event_base *eventBase, const char *port, application_ctx *appCtx) {
+
+    cout << "[ serverListen ]" << endl;
 
     int return_value;
     struct addrinfo hints;
@@ -371,8 +488,8 @@ static void server_listen(struct event_base *eventBase, const char *port, applic
     for (rp = res; rp; rp = rp->ai_next) {
         struct evconnlistener *conListener;
         conListener = evconnlistener_new_bind(
-                eventBase, accept_callback, appCtx, LEV_OPT_CLOSE_ON_FREE | LEV_OPT_REUSEABLE,
-                16, rp->ai_addr, (int)rp->ai_addrlen);
+                eventBase, acceptCallback, appCtx, LEV_OPT_CLOSE_ON_FREE | LEV_OPT_REUSEABLE,
+                16, rp->ai_addr, (int) rp->ai_addrlen);
         if (conListener) {
             freeaddrinfo(res);
             return;
@@ -390,12 +507,12 @@ static void run(const char *port, const char *certKeyFile, const char *certFile)
     application_ctx appCtx;
     struct event_base *eventBase;
 
-    sslCtx = create_ssl_context();
-    configure_context(sslCtx, certKeyFile, certFile);
+    sslCtx = createSslContext();
+    configureContext(sslCtx, certKeyFile, certFile);
     eventBase = event_base_new();
-    create_application_context(&appCtx, sslCtx, eventBase);
+    createApplicationContext(&appCtx, sslCtx, eventBase);
 
-    server_listen(eventBase, port, &appCtx);
+    serverListen(eventBase, port, &appCtx);
 
     event_base_loop(eventBase, 0);
 
@@ -415,7 +532,7 @@ int main(int argc, char **argv) {
     act.sa_handler = SIG_IGN;
     sigaction(SIGPIPE, &act, NULL);
 
-    init_openssl();
+    initOpenssl();
 
     run(argv[1], argv[2], argv[3]);
     return 0;
