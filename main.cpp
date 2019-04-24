@@ -366,7 +366,7 @@ static int sessionOnReceived(client_sess_data *clientSessData) {
 
     if (length >= 9) {
         cout << "\nPayload: ";
-        if (data[3] == 0x04 && data[4] == 0x00) {
+        if (data[3] == Types::SETTINGS && data[4] == 0x00) {
             for (size_t i = 9; i < length; i += 6) {
                 cout << endl;
                 for (size_t j = i; j < i + 2; ++j) {
