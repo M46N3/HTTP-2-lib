@@ -427,6 +427,7 @@ static void settingsFrameHandler(client_sess_data *clientSessData, const unsigne
 //        bufferevent_write(clientSessData->bufferEvent, data, 9);
 //    }
 
+
 }
 
 static void windowUpdateFrameHandler(client_sess_data *clientSessData, const unsigned char *data, size_t length) {
