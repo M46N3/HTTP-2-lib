@@ -414,7 +414,7 @@ static void settingsFrameHandler(client_sess_data *clientSessData, const unsigne
     char flagArray[8] = {0};
     std::copy(flagString.begin(), flagString.end(), flagArray);
 
-    
+
 //    cout << "\nFlag ACK: " << flagArray[7] << endl;
 //    if (flagArray[7] == '1' && payloadLength != 0) {
 //        cout << "yippie kay yay madafaka" << endl;
@@ -428,6 +428,7 @@ static void settingsFrameHandler(client_sess_data *clientSessData, const unsigne
 //        char data[] = { 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 };
 //        bufferevent_write(clientSessData->bufferEvent, data, 9);
 //    }
+
 
 
 }
