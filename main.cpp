@@ -422,7 +422,6 @@ static void settingsFrameHandler(client_sess_data *clientSessData, const unsigne
 //        char dataSend[] = { 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 };
 //        bufferevent_write(clientSessData->bufferEvent, dataSend, 9);
 //    }
-
 //    cout << "payloadLength: " << payloadLength << endl;
 //    if (payloadLength % 6 != 0) {
 //        char data[] = { 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 };
