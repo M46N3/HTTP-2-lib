@@ -442,8 +442,7 @@ static void windowUpdateFrameHandler(client_sess_data *clientSessData, const uns
             ulong windowSizeIncrementValue;
             std::istringstream iss(windowSizeIncrementValueString);
             iss >> std::hex >> windowSizeIncrementValue;
-            cout << "\t" << windowSizeIncrementValue << " octets";
-            valuePrint += 6;
+            cout << "\t" << windowSizeIncrementValue << " octets??";
             valuePrint += 4;
         }
     }
