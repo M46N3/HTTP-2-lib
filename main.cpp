@@ -14,6 +14,7 @@
 #include <err.h>
 #include <netinet/tcp.h>
 #include "frames.hpp"
+#include <sstream>
 
 using namespace std;
 
@@ -398,22 +399,11 @@ static void settingsFrameHandler(client_sess_data *clientSessData, const unsigne
         }
         printf("%02x", data[i]);
         if (i == valuePrint) {
-            cout << "Index: " << i << endl;
-            ulong identifierValue = bitset<32>(data[i-3] + data[i-2] + data[i-1] + data[i]).to_ulong();
-            string identifierValueString = bitset<32>(data[i-3] + data[i-2] + data[i-1] + data[i]).to_string();
-            cout << endl;
-            printf("%02x", data[i-3]);
-            cout << endl;
-            printf("%02x", data[i-2]);
-            cout << endl;
-            printf("%02x", data[i-1]);
-            cout << endl;
-            printf("%02x", data[i]);
-            cout << endl;
-
-
-
-            cout << "\t" << identifierValue << "\t" << identifierValueString;
+            string identifierValueString = "0x" + bytesToString(data, (valuePrint-3), (valuePrint+1));
+            ulong identifierValue;
+            std::istringstream iss(identifierValueString);
+            iss >> std::hex >> identifierValue;
+            cout << "\t" << identifierValue;
             valuePrint += 6;
         }
     }
@@ -426,21 +416,14 @@ static void settingsFrameHandler(client_sess_data *clientSessData, const unsigne
     std::copy(flagString.begin(), flagString.end(), flagArray);
 
 
-    cout << "\nFlag ACK: " << flagArray[7] << endl;
-    if (flagArray[7] == '1' && payloadLength != 0) {
-        cout << "yippie kay yay madafaka" << endl;
-
-        // FRAME_SIZE_ERROR (0x6):
-
-
-
-        char dataSend[] = { 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 };
-
-
-
-        bufferevent_write(clientSessData->bufferEvent, dataSend, 9);
-
-    }
+//    cout << "\nFlag ACK: " << flagArray[7] << endl;
+//    if (flagArray[7] == '1' && payloadLength != 0) {
+//        cout << "yippie kay yay madafaka" << endl;
+//
+//        // FRAME_SIZE_ERROR (0x6):
+//        char dataSend[] = { 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 };
+//        bufferevent_write(clientSessData->bufferEvent, dataSend, 9);
+//    }
 
 //    cout << "payloadLength: " << payloadLength << endl;
 //    if (payloadLength % 6 != 0) {
