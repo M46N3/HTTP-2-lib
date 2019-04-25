@@ -393,7 +393,6 @@ static void settingsFrameHandler(client_sess_data *clientSessData, const unsigne
                 default:
                     break;
             }
-
             cout << "\nValue(32):\t\t\t\t\t";
             indexValue += 6;
         }
@@ -427,8 +426,27 @@ static void settingsFrameHandler(client_sess_data *clientSessData, const unsigne
 //        char data[] = { 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 };
 //        bufferevent_write(clientSessData->bufferEvent, data, 9);
 //    }
+}
 
-
+static void windowUpdateFrameHandler(client_sess_data *clientSessData, const unsigned char *data, size_t length) {
+    size_t windowSizeIncrementValueIndex = 9;
+    size_t valuePrint = 12;
+    for (size_t i = 9; i < length; ++i) {
+        if (i == windowSizeIncrementValueIndex) {
+            cout << "\nWindow Size Increment(31):\t";
+            windowSizeIncrementValueIndex += 4;
+        }
+        printf("%02x", data[i]);
+        if (i == valuePrint) {
+            string windowSizeIncrementValueString = "0x" + bytesToString(data, (valuePrint-3), (valuePrint+1));
+            ulong windowSizeIncrementValue;
+            std::istringstream iss(windowSizeIncrementValueString);
+            iss >> std::hex >> windowSizeIncrementValue;
+            cout << "\t" << windowSizeIncrementValue << " octets";
+            valuePrint += 6;
+            valuePrint += 4;
+        }
+    }
 }
 
 static void frameDefaultPrint(const unsigned char *data) {
@@ -487,6 +505,7 @@ static void frameHandler(client_sess_data *clientSessData, const unsigned char *
         case Types::WINDOW_UPDATE:
             cout << "WINDOW_UPDATE" << endl;
             frameDefaultPrint(data);
+            windowUpdateFrameHandler(clientSessData, data, length);
             break;
         case Types::CONTINUATION:
             cout << "CONTINUATION" << endl;
