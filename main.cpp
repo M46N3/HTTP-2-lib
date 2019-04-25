@@ -413,6 +413,8 @@ static void settingsFrameHandler(client_sess_data *clientSessData, const unsigne
 
     char flagArray[8] = {0};
     std::copy(flagString.begin(), flagString.end(), flagArray);
+
+
 //    cout << "\nFlag ACK: " << flagArray[7] << endl;
 //    if (flagArray[7] == '1' && payloadLength != 0) {
 //        cout << "yippie kay yay madafaka" << endl;
@@ -426,6 +428,7 @@ static void settingsFrameHandler(client_sess_data *clientSessData, const unsigne
 //        char data[] = { 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 };
 //        bufferevent_write(clientSessData->bufferEvent, data, 9);
 //    }
+
 
 
 }
@@ -454,7 +457,11 @@ static void frameDefaultPrint(const unsigned char *data) {
     for (size_t i = 0; i < 9; ++i) {
         if (i == 0) cout << "Length(24):\t\t\t\t\t";
         if (i == 3) {
-            cout << "\t\t" << bitset<24>(data[0] + data[1] + data[2]).to_ulong() << " octets";
+            string payloadLengthString = "0x" + bytesToString(data, (0), (3));
+            ulong payloadLength;
+            std::istringstream iss(payloadLengthString);
+            iss >> std::hex >> payloadLength;
+            cout << "\t\t" << payloadLength << " octets";
             cout << "\nType(8):\t\t\t\t\t";
         }
         if (i == 4) cout << "\nFlags(8)(bits):\t\t\t\t";
