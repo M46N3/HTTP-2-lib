@@ -220,7 +220,7 @@ struct client_sess_data {
 /// @param sock - file descriptor for the connection
 /// @param clientAddress - socket address of the client.
 /// @param addressLength - length of socket address.
-/// @return
+/// @return clientSessData - the newly created
 
 static client_sess_data *createClientSessionData(application_ctx *appCtx, int sock, struct sockaddr *clientAddress,
                                                  int addressLength) {
