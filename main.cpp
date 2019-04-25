@@ -359,6 +359,7 @@ static void dataFrameHandler(const unsigned char *data) {
 static void settingsFrameHandler(client_sess_data *clientSessData, const unsigned char *data, size_t length) {
     size_t indexIdentifier = 9;
     size_t indexValue = 11;
+    size_t valuePrint = 14;
     int payloadNumber = 1;
     for (size_t i = 9; i < length; ++i) {
         if (i == indexIdentifier) {
@@ -369,10 +370,51 @@ static void settingsFrameHandler(client_sess_data *clientSessData, const unsigne
             indexIdentifier += 6;
         }
         if (i == indexValue) {
+            switch (data[i-1]) {
+                case SettingsParameters::SETTINGS_HEADER_TABLE_SIZE:
+                    cout << "\t\tSETTINGS_HEADER_TABLE_SIZE";
+                    break;
+                case SettingsParameters::SETTINGS_ENABLE_PUSH:
+                    cout << "\t\tSETTINGS_ENABLE_PUSH";
+                    break;
+                case SettingsParameters::SETTINGS_MAX_CONCURRENT_STREAMS:
+                    cout << "\t\tSETTINGS_MAX_CONCURRENT_STREAMS";
+                    break;
+                case SettingsParameters::SETTINGS_INITIAL_WINDOW_SIZE:
+                    cout << "\t\tSETTINGS_INITIAL_WINDOW_SIZE";
+                    break;
+                case SettingsParameters::SETTINGS_MAX_FRAME_SIZE:
+                    cout << "\t\tSETTINGS_MAX_FRAME_SIZE";
+                    break;
+                case SettingsParameters::SETTINGS_MAX_HEADER_LIST_SIZE:
+                    cout << "\t\tSETTINGS_MAX_HEADER_LIST_SIZE";
+                    break;
+                default:
+                    break;
+            }
+
             cout << "\nValue(32):\t\t\t\t\t";
             indexValue += 6;
         }
         printf("%02x", data[i]);
+        if (i == valuePrint) {
+            cout << "Index: " << i << endl;
+            ulong identifierValue = bitset<32>(data[i-3] + data[i-2] + data[i-1] + data[i]).to_ulong();
+            string identifierValueString = bitset<32>(data[i-3] + data[i-2] + data[i-1] + data[i]).to_string();
+            cout << endl;
+            printf("%02x", data[i-3]);
+            cout << endl;
+            printf("%02x", data[i-2]);
+            cout << endl;
+            printf("%02x", data[i-1]);
+            cout << endl;
+            printf("%02x", data[i]);
+
+
+
+            cout << "\t" << identifierValue << "\t" << identifierValueString;
+            valuePrint += 6;
+        }
     }
 
     ulong payloadLength = bitset<24>(data[0] + data[1] + data[2]).to_ulong();
@@ -389,8 +431,13 @@ static void settingsFrameHandler(client_sess_data *clientSessData, const unsigne
 
         // FRAME_SIZE_ERROR (0x6):
 
-//        char dataSend[] = { 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 };
-//        bufferevent_write(clientSessData->bufferEvent, dataSend, 9);
+
+
+        char dataSend[] = { 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 };
+
+
+
+        bufferevent_write(clientSessData->bufferEvent, dataSend, 9);
 
     }
 
@@ -405,7 +452,10 @@ static void settingsFrameHandler(client_sess_data *clientSessData, const unsigne
 static void frameDefaultPrint(const unsigned char *data) {
     for (size_t i = 0; i < 9; ++i) {
         if (i == 0) cout << "Length(24):\t\t\t\t\t";
-        if (i == 3) cout << "\nType(8):\t\t\t\t\t";
+        if (i == 3) {
+            cout << "\t\t" << bitset<24>(data[0] + data[1] + data[2]).to_ulong() << " octets";
+            cout << "\nType(8):\t\t\t\t\t";
+        }
         if (i == 4) cout << "\nFlags(8)(bits):\t\t\t\t";
         if (i == 5) cout << "\nStream Identifier(R + 31):\t";
         if (i == 4) {
