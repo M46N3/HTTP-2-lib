@@ -409,6 +409,7 @@ static void settingsFrameHandler(client_sess_data *clientSessData, const unsigne
             printf("%02x", data[i-1]);
             cout << endl;
             printf("%02x", data[i]);
+            cout << endl;
 
 
 
