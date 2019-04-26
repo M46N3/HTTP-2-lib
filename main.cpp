@@ -354,6 +354,20 @@ static string bytesToString(const unsigned char *data, size_t firstIndex, size_t
     return res;
 }
 
+
+static ulong hexToUlong(string hexString) {
+    ulong hexDecimalValue;
+    if (hexString[0] == '0' && hexString[1] == 'x') {
+        std::istringstream iss(hexString);
+        iss >> std::hex >> hexDecimalValue;
+    } else {
+        string hex = "0x" + hexString;
+        std::istringstream iss(hex);
+        iss >> std::hex >> hexDecimalValue;
+    }
+    return hexDecimalValue;
+}
+
 static void dataFrameHandler(const unsigned char *data) {
     // Handle payload
 }
@@ -582,11 +596,24 @@ static void frameHandler(client_sess_data *clientSessData, const unsigned char *
         default:
             cout << "DEFAULT" << endl;
             string connectionPreface = "505249202a20485454502f322e300d0a0d0a534d0d0a0d0a";
-            string dataString = bytesToString(data, 0, length);
+            string dataString = bytesToString(data, 0, 24);
 
             if (connectionPreface == dataString) {
-                for(size_t i = 0; i < length; ++i) {
+                for(size_t i = 0; i < 24; ++i) {
                     printf("%02x", data[i]);
+                }
+                cout << endl;
+                for(size_t i = 24; i < length; ++i) {
+                    printf("%02x", data[i]);
+                }
+                cout << endl;
+                ulong currentPos = 24;
+                while (length > currentPos) {
+                    ulong nextFrameLength = hexToUlong(bytesToString(data, currentPos, (currentPos + 3)));
+                    ulong nextFrameTotLength = nextFrameLength + 9;
+                    frameHandler(clientSessData, (data+currentPos), nextFrameTotLength);
+                    currentPos += nextFrameTotLength;
+                    cout << "\n" << endl;
                 }
             } else {
                 cout << "Frame type is unknown" << endl;
