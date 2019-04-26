@@ -628,7 +628,7 @@ static void settingsFrameHandler(client_sess_data *clientSessData, const unsigne
     }
 
 
-//
+//    TODO: Kan kommentarene her fjernes?
 //    const bool padded = bitset<8>(data[4])[3];
 //    const bool priority = bitset<8>(data[4])[5];
 //
