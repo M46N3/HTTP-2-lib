@@ -15,6 +15,7 @@
 #include <netinet/tcp.h>
 #include "frames.hpp"
 #include <nghttp2/nghttp2.h>
+#include <sstream>
 
 using namespace std;
 
@@ -338,6 +339,21 @@ static void eventCallback(struct bufferevent *bufferEvent, short events, void *p
     }
 }
 
+static string bytesToString(const unsigned char *data, size_t firstIndex, size_t secondIndex) {
+    static const char characters[] = "0123456789abcdef";
+
+    std::string res((secondIndex - firstIndex) * 2, 0);
+
+    char *buf = (res.data());
+
+    for (size_t i = firstIndex; i < secondIndex; ++i) {
+        *buf++ = characters[data[i] >> 4];
+        *buf++ = characters[data[i] & 0x0F];
+    }
+
+    return res;
+}
+
 static void dataFrameHandler(const unsigned char *data) {
     // Handle payload
 }
@@ -403,6 +419,7 @@ static void headerFrameHandler(client_sess_data *clientSessData, const unsigned 
 static void settingsFrameHandler(client_sess_data *clientSessData, const unsigned char *data, size_t length) {
     size_t indexIdentifier = 9;
     size_t indexValue = 11;
+    size_t valuePrint = 14;
     int payloadNumber = 1;
     for (size_t i = 9; i < length; ++i) {
         if (i == indexIdentifier) {
@@ -413,13 +430,59 @@ static void settingsFrameHandler(client_sess_data *clientSessData, const unsigne
             indexIdentifier += 6;
         }
         if (i == indexValue) {
+            switch (data[i-1]) {
+                case SettingsParameters::SETTINGS_HEADER_TABLE_SIZE:
+                    cout << "\t\tSETTINGS_HEADER_TABLE_SIZE";
+                    break;
+                case SettingsParameters::SETTINGS_ENABLE_PUSH:
+                    cout << "\t\tSETTINGS_ENABLE_PUSH";
+                    break;
+                case SettingsParameters::SETTINGS_MAX_CONCURRENT_STREAMS:
+                    cout << "\t\tSETTINGS_MAX_CONCURRENT_STREAMS";
+                    break;
+                case SettingsParameters::SETTINGS_INITIAL_WINDOW_SIZE:
+                    cout << "\t\tSETTINGS_INITIAL_WINDOW_SIZE";
+                    break;
+                case SettingsParameters::SETTINGS_MAX_FRAME_SIZE:
+                    cout << "\t\tSETTINGS_MAX_FRAME_SIZE";
+                    break;
+                case SettingsParameters::SETTINGS_MAX_HEADER_LIST_SIZE:
+                    cout << "\t\tSETTINGS_MAX_HEADER_LIST_SIZE";
+                    break;
+                default:
+                    break;
+            }
             cout << "\nValue(32):\t\t\t\t\t";
             indexValue += 6;
         }
         printf("%02x", data[i]);
+        if (i == valuePrint) {
+            string identifierValueString = "0x" + bytesToString(data, (valuePrint-3), (valuePrint+1));
+            ulong identifierValue;
+            std::istringstream iss(identifierValueString);
+            iss >> std::hex >> identifierValue;
+            cout << "\t" << identifierValue;
+            valuePrint += 6;
+        }
     }
 
     ulong payloadLength = bitset<24>(data[0] + data[1] + data[2]).to_ulong();
+
+    string flagString = bitset<8>(data[4]).to_string();
+
+    char flagArray[8] = {0};
+    std::copy(flagString.begin(), flagString.end(), flagArray);
+
+
+//    cout << "\nFlag ACK: " << flagArray[7] << endl;
+//    if (flagArray[7] == '1' && payloadLength != 0) {
+//        cout << "yippie kay yay madafaka" << endl;
+//
+//        // FRAME_SIZE_ERROR (0x6):
+//        char dataSend[] = { 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 };
+//        bufferevent_write(clientSessData->bufferEvent, dataSend, 9);
+//    }
+//    cout << "payloadLength: " << payloadLength << endl;
 //    if (payloadLength % 6 != 0) {
 //        char data[] = { 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 };
 //        bufferevent_write(clientSessData->bufferEvent, data, 9);
@@ -429,10 +492,37 @@ static void settingsFrameHandler(client_sess_data *clientSessData, const unsigne
 
 }
 
+static void windowUpdateFrameHandler(client_sess_data *clientSessData, const unsigned char *data, size_t length) {
+    size_t windowSizeIncrementValueIndex = 9;
+    size_t valuePrint = 12;
+    for (size_t i = 9; i < length; ++i) {
+        if (i == windowSizeIncrementValueIndex) {
+            cout << "\nWindow Size Increment(31):\t";
+            windowSizeIncrementValueIndex += 4;
+        }
+        printf("%02x", data[i]);
+        if (i == valuePrint) {
+            string windowSizeIncrementValueString = "0x" + bytesToString(data, (valuePrint-3), (valuePrint+1));
+            ulong windowSizeIncrementValue;
+            std::istringstream iss(windowSizeIncrementValueString);
+            iss >> std::hex >> windowSizeIncrementValue;
+            cout << "\t" << windowSizeIncrementValue << " octets??";
+            valuePrint += 4;
+        }
+    }
+}
+
 static void frameDefaultPrint(const unsigned char *data) {
     for (size_t i = 0; i < 9; ++i) {
         if (i == 0) cout << "Length(24):\t\t\t\t\t";
-        if (i == 3) cout << "\nType(8):\t\t\t\t\t";
+        if (i == 3) {
+            string payloadLengthString = "0x" + bytesToString(data, (0), (3));
+            ulong payloadLength;
+            std::istringstream iss(payloadLengthString);
+            iss >> std::hex >> payloadLength;
+            cout << "\t\t" << payloadLength << " octets";
+            cout << "\nType(8):\t\t\t\t\t";
+        }
         if (i == 4) cout << "\nFlags(8)(bits):\t\t\t\t";
         if (i == 5) cout << "\nStream Identifier(R + 31):\t";
         if (i == 4) {
@@ -483,26 +573,23 @@ static void frameHandler(client_sess_data *clientSessData, const unsigned char *
         case Types::WINDOW_UPDATE:
             cout << "WINDOW_UPDATE" << endl;
             frameDefaultPrint(data);
+            windowUpdateFrameHandler(clientSessData, data, length);
             break;
         case Types::CONTINUATION:
             cout << "CONTINUATION" << endl;
             frameDefaultPrint(data);
             break;
         default:
-
-            string connectionPreface = "505249202a20485454502f322e300d0a0d0a534d0d0a0d0a";
-            string dataCompare = "";
-            for (size_t i = 0; i < length; ++i) {
-                dataCompare += data[i];
-            }
-//            cout << "Her er utrskrift" << endl;
-//            cout << dataCompare << endl;
-//              sdfs
-
-
             cout << "DEFAULT" << endl;
-            for(size_t i = 0; i < length; ++i) {
-                printf("%02x", data[i]);
+            string connectionPreface = "505249202a20485454502f322e300d0a0d0a534d0d0a0d0a";
+            string dataString = bytesToString(data, 0, length);
+
+            if (connectionPreface == dataString) {
+                for(size_t i = 0; i < length; ++i) {
+                    printf("%02x", data[i]);
+                }
+            } else {
+                cout << "Frame type is unknown" << endl;
             }
             break;
     }
@@ -534,28 +621,28 @@ static int sessionOnReceived(client_sess_data *clientSessData) {
 //        printf("%02x", data[i]);
 //    }
 //
-    if (length >= 9) {
-        if (data[3] == Types::SETTINGS && data[4] == 0x00) {
-            cout << "\nPayload: ";
-            for (size_t i = 9; i < length; i += 6) {
-                cout << endl;
-                for (size_t j = i; j < i + 2; ++j) {
-                    printf("%02x", data[j]);
-                }
-                cout << " : ";
-                for (size_t j = i + 2; j < i + 4; ++j) {
-                    printf("%02x", data[j]);
-                }
-            }
-            cout << "\nSending 'ACK' SETTINGS FRAME." << endl;
-            sendConnectionHeader(clientSessData);
-
-            char data[] = { 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 };
-            bufferevent_write(clientSessData->bufferEvent, data, 9);
-
-        }
-
-    }
+//    if (length >= 9) {
+//        cout << "\nPayload: ";
+//        if (data[3] == Types::SETTINGS && data[4] == 0x00) {
+//            for (size_t i = 9; i < length; i += 6) {
+//                cout << endl;
+//                for (size_t j = i; j < i + 2; ++j) {
+//                    printf("%02x", data[j]);
+//                }
+//                cout << " : ";
+//                for (size_t j = i + 2; j < i + 4; ++j) {
+//                    printf("%02x", data[j]);
+//                }
+//            }
+//            cout << "\nSending 'ACK' SETTINGS FRAME." << endl;
+//            sendConnectionHeader(clientSessData);
+//
+//            char data[] = { 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 };
+//            bufferevent_write(clientSessData->bufferEvent, data, 9);
+//
+//        }
+//
+//    }
 
     /*
     if (data[3] == 0x04 && data[4] == 0x0) {
