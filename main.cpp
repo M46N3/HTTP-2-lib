@@ -297,6 +297,112 @@ static int sendConnectionHeader(client_sess_data *ClientSessData) {
     return returnValue;
 }
 
+#define MAKE_NV(K, V)                                                          \
+  {                                                                            \
+    (uint8_t *)K, (uint8_t *)V, sizeof(K) - 1, sizeof(V) - 1,                  \
+        NGHTTP2_NV_FLAG_NONE                                                   \
+  }
+
+
+static void sendGetResponse(client_sess_data *ClientSessData) {
+    size_t rv;
+    nghttp2_hd_deflater *deflater;
+
+    rv = nghttp2_hd_deflate_new(&deflater, 4096);
+
+    if (rv != 0) {
+        fprintf(stderr, "nghttp2_hd_deflate_init failed with error: %s\n",
+                nghttp2_strerror(rv));
+        exit(EXIT_FAILURE);
+    }
+
+    nghttp2_nv nva[] = {
+            MAKE_NV(":status", "200"),
+            MAKE_NV("content-type", "text/html;charset=UTF-8")};
+
+    size_t nvlen = sizeof(nva) / sizeof(nva[0]);
+
+    uint8_t *buf;
+    size_t buflen;
+    size_t outlen;
+    size_t i;
+    size_t sum;
+
+    sum = 0;
+
+    for (i = 0; i < nvlen; ++i) {
+        sum += nva[i].namelen + nva[i].valuelen;
+    }
+
+    printf("Input (%zu byte(s)):\n\n", sum);
+
+    for (i = 0; i < nvlen; ++i) {
+        fwrite(nva[i].name, 1, nva[i].namelen, stdout);
+        printf(": ");
+        fwrite(nva[i].value, 1, nva[i].valuelen, stdout);
+        printf("\n");
+    }
+
+    buflen = nghttp2_hd_deflate_bound(deflater, nva, nvlen);
+    buf = static_cast<uint8_t *>(malloc(buflen));
+
+    rv = nghttp2_hd_deflate_hd(deflater, buf, buflen, nva, nvlen);
+
+    if (rv < 0) {
+        fprintf(stderr, "nghttp2_hd_deflate_hd() failed with error: %s\n",
+                nghttp2_strerror((int)rv));
+
+        free(buf);
+
+        exit(EXIT_FAILURE);
+    }
+
+
+    outlen = (size_t)rv;
+    cout << "outlen: " << outlen << endl;
+
+    unsigned char frameHeader[] = { 0x00, 0x00, (unsigned char) outlen, Types::HEADERS, END_HEADERS, 0x00, 0x00, 0x00, 0x01 };
+    unsigned char *frame = new unsigned char[9 + outlen];
+
+    for (size_t i = 0; i < 9; ++i) {
+        frame[i] = frameHeader[i];
+    }
+
+    for (size_t i = 0; i < outlen; ++i) {
+        frame[i+9] = buf[i];
+    }
+
+    bufferevent_write(ClientSessData->bufferEvent, frame, outlen+9);
+
+    string s = "<html>"
+               "<head>"
+               "<title>HTTP 2 page</title>"
+               "<link rel=\"shortcut icon\" href=\"about:blank\""
+               "</head>"
+               "<body>"
+               "<p>Hello World!</p>"
+               "</body></html>";
+    auto sLen = s.length();
+    // DATA FRAME:
+    cout << s[0] << endl;
+    cout << "sLen: " << sLen << endl;
+    //cout << bitset<24>(sLen) << endl;
+
+    unsigned char frameHeader2[] = {0x00, 0x00, (unsigned char) sLen, DATA, END_STREAM, 0x00, 0x00, 0x00, 0x01};
+    unsigned char *frame2 = new unsigned char[9 + sLen];
+
+    for (size_t i = 0; i < 9; ++i) {
+        frame2[i] = frameHeader2[i];
+    }
+
+    for (size_t i = 0; i < sLen; ++i) {
+        //bitset<8> b(s[i]);
+        //frame[i+9] = b.to_ulong();
+        frame2[i+9] = s[i];
+    }
+
+    bufferevent_write(ClientSessData->bufferEvent, frame2, sLen+9);
+}
 
 /// eventCallback - Callback invoked when there is an event on the sock filedescriptor.
 ///
@@ -432,6 +538,7 @@ static void headerFrameHandler(client_sess_data *clientSessData, const unsigned 
             break;
         }
     }
+    sendGetResponse(clientSessData);
 }
 
 static void settingsFrameHandler(client_sess_data *clientSessData, const unsigned char *data, size_t length) {
