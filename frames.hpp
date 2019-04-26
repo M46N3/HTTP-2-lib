@@ -18,6 +18,13 @@ enum Types {
     CONTINUATION = 0x9
 };
 
+enum DataFrameFlags {
+    END_STREAM = 0x1,
+    END_HEADERS = 0x4,
+    PADDED = 0x8,
+    PRIORITY_FLAG = 0x20
+};
+
 enum SettingsParameters {
     SETTINGS_HEADER_TABLE_SIZE = 0x1,
     SETTINGS_ENABLE_PUSH = 0x2,
