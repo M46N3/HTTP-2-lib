@@ -21,10 +21,16 @@ using namespace std;
 
 static unsigned char next_proto_list[256];
 static size_t next_proto_list_len;
+static bool printComments = true; // Turn off comments.
+static bool printTrackers = true; // boolean to turn on/off printing of tracker-comments.
+static bool printFrames = true; // boolean to turn on/off printing of frames.
+
 
 void initOpenssl() {
 
-    cout << "[ initOpenssl ]" << endl;
+    if (printTrackers) {
+        cout << "[ initOpenssl ]" << endl;
+    }
 
     SSL_load_error_strings();
     SSL_library_init();
@@ -43,7 +49,9 @@ void cleanup_openssl() {
 
 SSL_CTX *createSslContext() {
 
-    cout << "[ createSslContext ]" << endl;
+    if (printTrackers) {
+        cout << "[ createSslContext ]" << endl;
+    }
 
     const SSL_METHOD *method;
     SSL_CTX *ctx;
@@ -72,7 +80,9 @@ SSL_CTX *createSslContext() {
 static int nextProtocolCallback(SSL *s, const unsigned char **data,
                                 unsigned int *len, void *arg) {
 
-    cout << "[ nextProtocolCallback ]" << endl;
+    if (printTrackers) {
+        cout << "[ nextProtocolCallback ]" << endl;
+    }
 
     *data = next_proto_list;
     *len = (unsigned int)next_proto_list_len;
@@ -90,24 +100,30 @@ static int nextProtocolCallback(SSL *s, const unsigned char **data,
 
 static int selectProtocol(unsigned char **out, unsigned char *outlen, const unsigned char *in, unsigned int inlen) {
 
-    cout << "[ selectProtocol ]" << endl;
+    if (printTrackers) {
+        cout << "[ selectProtocol ]" << endl;
+    }
 
     unsigned int start_index = (unsigned int) in[0];
     unsigned int end_of_next_protocol = start_index ;
 
     unsigned int i = 0;
-    cout << endl << "Client supports following protocols, ordered according to preference: " << endl;
-    while (i < inlen) {
-        while (i <= end_of_next_protocol && i < inlen) {
-            cout << in[i];
+
+    if (printComments) {
+        cout << endl << "Client supports following protocols, ordered according to preference: " << endl;
+        while (i < inlen) {
+            while (i <= end_of_next_protocol && i < inlen) {
+                cout << in[i];
+                ++i;
+            }
+            cout << endl;
+            end_of_next_protocol += in[i] + 1;
             ++i;
+
         }
         cout << endl;
-        end_of_next_protocol += in[i] + 1;
-        ++i;
-
     }
-    cout << endl;
+
 
     *outlen = in[0];
     out[0] = (unsigned char*) "h2";
@@ -130,7 +146,9 @@ static int alpnSelectProtocolCallback(SSL *ssl, const unsigned char **out,
                                       unsigned char *outlength, const unsigned char *in,
                                       unsigned int inlen, void *arg) {
 
-    cout << "[ alpnSelectProtocolCallback ]" << endl;
+    if (printTrackers) {
+        cout << "[ alpnSelectProtocolCallback ]" << endl;
+    }
 
     int rv;
 
@@ -140,7 +158,9 @@ static int alpnSelectProtocolCallback(SSL *ssl, const unsigned char **out,
         return SSL_TLSEXT_ERR_NOACK;
     }
 
-    cout << "Server has chosen 'h2', meaning HTTP/2 over TLS" << endl;
+    if (printComments) {
+        cout << "Server has chosen 'h2', meaning HTTP/2 over TLS" << endl;
+    }
 
     return SSL_TLSEXT_ERR_OK;
 }
@@ -152,8 +172,9 @@ static int alpnSelectProtocolCallback(SSL *ssl, const unsigned char **out,
 /// @param ctx - reference to the SSL_CTX object to configure ALPN extension on.
 
 void configureAlpn(SSL_CTX *ctx) {
-
-    cout << "[ configureAlpn ]" << endl;
+    if (printTrackers) {
+        cout << "[ configureAlpn ]" << endl;
+    }
 
     next_proto_list[0] = 2;
     memcpy(&next_proto_list[1], "h2", 2);
@@ -173,8 +194,9 @@ void configureAlpn(SSL_CTX *ctx) {
 /// @param certFile - path to Certificate File to be used for TLS.
 
 void configureContext(SSL_CTX *ctx, const char *certKeyFile, const char *certFile) {
-
-    cout << "[ configureContext ]" << endl;
+    if (printTrackers) {
+        cout << "[ configureContext ]" << endl;
+    }
 
     /* Make server always choose the most appropriate curve for the client. */
     SSL_CTX_set_ecdh_auto(ctx, 1);
@@ -275,7 +297,10 @@ static void createApplicationContext(application_ctx *appCtx, SSL_CTX *sslCtx, s
     /**
      * Sets the application_ctx members, ctx and eventBase, to the given SSL_CTX and event_base objects
      */
-    cout << "[ createApplicationContext ]" << endl;
+
+    if (printTrackers) {
+        cout << "[ createApplicationContext ]" << endl;
+    }
 
     memset(appCtx, 0, sizeof(application_ctx));
     appCtx->ctx = sslCtx;
@@ -290,7 +315,10 @@ static void createApplicationContext(application_ctx *appCtx, SSL_CTX *sslCtx, s
 
 static int sendConnectionHeader(client_sess_data *ClientSessData) {
     int returnValue;
-    cout << "\nSending server SETTINGS FRAME." << endl;
+    if (printComments) {
+        cout << "\nSending server SETTINGS FRAME." << endl;
+    }
+
     char data[] = { 0x00, 0x00, 0x06, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x64 };
 
     returnValue = bufferevent_write(ClientSessData->bufferEvent, data, 15);
@@ -411,7 +439,9 @@ static void sendGetResponse(client_sess_data *ClientSessData) {
 /// @param ptr - clientSessionData object for the connection.
 
 static void eventCallback(struct bufferevent *bufferEvent, short events, void *ptr){
-    cout << " [ eventCallback ] " << endl;
+    if (printTrackers) {
+        cout << " [ eventCallback ] " << endl;
+    }
 
     client_sess_data *clientSessData = (client_sess_data *)ptr;
 
@@ -423,7 +453,9 @@ static void eventCallback(struct bufferevent *bufferEvent, short events, void *p
         SSL *ssl;
         (void)bufferEvent;
 
-        printf( "%s connected\n", clientSessData->clientAddress);
+        if (printComments) {
+            printf( "%s connected\n", clientSessData->clientAddress);
+        }
 
         ssl = bufferevent_openssl_get_ssl(bufferEvent);
 
@@ -542,60 +574,61 @@ static void headerFrameHandler(client_sess_data *clientSessData, const unsigned 
 }
 
 static void settingsFrameHandler(client_sess_data *clientSessData, const unsigned char *data, size_t length) {
-    size_t indexIdentifier = 9;
-    size_t indexValue = 11;
-    size_t valuePrint = 14;
-    int payloadNumber = 1;
-    for (size_t i = 9; i < length; ++i) {
-        if (i == indexIdentifier) {
-            // Print to track numbers of payload.
-            // cout << "\n---" << payloadNumber << "---";
-            payloadNumber++;
-            cout << "\nIdentifier(16):\t\t\t\t";
-            indexIdentifier += 6;
-        }
-        if (i == indexValue) {
-            switch (data[i-1]) {
-                case SettingsParameters::SETTINGS_HEADER_TABLE_SIZE:
-                    cout << "\t\tSETTINGS_HEADER_TABLE_SIZE";
-                    break;
-                case SettingsParameters::SETTINGS_ENABLE_PUSH:
-                    cout << "\t\tSETTINGS_ENABLE_PUSH";
-                    break;
-                case SettingsParameters::SETTINGS_MAX_CONCURRENT_STREAMS:
-                    cout << "\t\tSETTINGS_MAX_CONCURRENT_STREAMS";
-                    break;
-                case SettingsParameters::SETTINGS_INITIAL_WINDOW_SIZE:
-                    cout << "\t\tSETTINGS_INITIAL_WINDOW_SIZE";
-                    break;
-                case SettingsParameters::SETTINGS_MAX_FRAME_SIZE:
-                    cout << "\t\tSETTINGS_MAX_FRAME_SIZE";
-                    break;
-                case SettingsParameters::SETTINGS_MAX_HEADER_LIST_SIZE:
-                    cout << "\t\tSETTINGS_MAX_HEADER_LIST_SIZE";
-                    break;
-                default:
-                    break;
+    // Printing SETTINGS frame
+    if (printFrames) {
+        size_t indexIdentifier = 9;
+        size_t indexValue = 11;
+        size_t valuePrint = 14;
+        int payloadNumber = 1;
+        for (size_t i = 9; i < length; ++i) {
+            if (i == indexIdentifier) {
+                payloadNumber++;
+                cout << "\nIdentifier(16):\t\t\t\t";
+                indexIdentifier += 6;
             }
-            cout << "\nValue(32):\t\t\t\t\t";
-            indexValue += 6;
+            if (i == indexValue) {
+                switch (data[i-1]) {
+                    case SettingsParameters::SETTINGS_HEADER_TABLE_SIZE:
+                        cout << "\t\tSETTINGS_HEADER_TABLE_SIZE";
+                        break;
+                    case SettingsParameters::SETTINGS_ENABLE_PUSH:
+                        cout << "\t\tSETTINGS_ENABLE_PUSH";
+                        break;
+                    case SettingsParameters::SETTINGS_MAX_CONCURRENT_STREAMS:
+                        cout << "\t\tSETTINGS_MAX_CONCURRENT_STREAMS";
+                        break;
+                    case SettingsParameters::SETTINGS_INITIAL_WINDOW_SIZE:
+                        cout << "\t\tSETTINGS_INITIAL_WINDOW_SIZE";
+                        break;
+                    case SettingsParameters::SETTINGS_MAX_FRAME_SIZE:
+                        cout << "\t\tSETTINGS_MAX_FRAME_SIZE";
+                        break;
+                    case SettingsParameters::SETTINGS_MAX_HEADER_LIST_SIZE:
+                        cout << "\t\tSETTINGS_MAX_HEADER_LIST_SIZE";
+                        break;
+                    default:
+                        break;
+                }
+                cout << "\nValue(32):\t\t\t\t\t";
+                indexValue += 6;
+            }
+            printf("%02x", data[i]);
+            if (i == valuePrint) {
+                cout << "\t" << hexToUlong(bytesToString(data, (valuePrint-3), (valuePrint+1)));
+                valuePrint += 6;
+            }
         }
-        printf("%02x", data[i]);
-        if (i == valuePrint) {
-            cout << "\t" << hexToUlong(bytesToString(data, (valuePrint-3), (valuePrint+1)));
-            valuePrint += 6;
-        }
+        cout << endl << endl;
     }
 
-    ulong payloadLength = bitset<24>(data[0] + data[1] + data[2]).to_ulong();
 
-    string flagString = bitset<8>(data[4]).to_string();
-
-    char flagArray[8] = {0};
-    std::copy(flagString.begin(), flagString.end(), flagArray);
-
-
-//    cout << "\nFlag ACK: " << flagArray[7] << endl;
+//
+//    const bool padded = bitset<8>(data[4])[3];
+//    const bool priority = bitset<8>(data[4])[5];
+//
+//    ulong streamID = hexToUlong(bytesToString(data, 5, 9));
+//    cout << "StreamID: " << streamID << endl;
+//
 //    if (flagArray[7] == '1' && payloadLength != 0) {
 //        cout << "yippie kay yay madafaka" << endl;
 //
@@ -603,127 +636,193 @@ static void settingsFrameHandler(client_sess_data *clientSessData, const unsigne
 //        char dataSend[] = { 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 };
 //        bufferevent_write(clientSessData->bufferEvent, dataSend, 9);
 //    }
+
+
+//    if () {
+//
+//    }
+
+
+//    ulong payloadLength = bitset<24>(data[0] + data[1] + data[2]).to_ulong();
+//    cout << endl;
+//    cout << "Payload length: " << payloadLength << endl;
+//
+//    string flagString = bitset<8>(data[4]).to_string();
+//
+//    char flagArray[8] = {0};
+//    std::copy(flagString.begin(), flagString.end(), flagArray);
+    // ACK
+//            char data[] = { 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 };
+//            bufferevent_write(clientSessData->bufferEvent, data, 9);
+
+//    cout << "\nFlag ACK: " << flagArray[7] << endl;
 //    cout << "payloadLength: " << payloadLength << endl;
 //    if (payloadLength % 6 != 0) {
 //        char data[] = { 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 };
 //        bufferevent_write(clientSessData->bufferEvent, data, 9);
 //    }
-
-
-
 }
 
 static void windowUpdateFrameHandler(client_sess_data *clientSessData, const unsigned char *data, size_t length) {
-    size_t windowSizeIncrementValueIndex = 9;
-    size_t valuePrint = 12;
-    for (size_t i = 9; i < length; ++i) {
-        if (i == windowSizeIncrementValueIndex) {
-            cout << "\nWindow Size Increment(31):\t";
-            windowSizeIncrementValueIndex += 4;
+    // Printing WINDOW_UPDATE frame
+    if (printFrames) {
+        size_t windowSizeIncrementValueIndex = 9;
+        size_t valuePrint = 12;
+        for (size_t i = 9; i < length; ++i) {
+            if (i == windowSizeIncrementValueIndex) {
+                cout << "\nWindow Size Increment(31):\t";
+                windowSizeIncrementValueIndex += 4;
+            }
+            printf("%02x", data[i]);
+            if (i == valuePrint) {
+                cout << "\t" << hexToUlong(bytesToString(data, (valuePrint-3), (valuePrint+1))) << " octets??";
+                valuePrint += 4;
+            }
         }
-        printf("%02x", data[i]);
-        if (i == valuePrint) {
-            cout << "\t" << hexToUlong(bytesToString(data, (valuePrint-3), (valuePrint+1))) << " octets??";
-            valuePrint += 4;
-        }
+        cout << endl << endl;
     }
 }
 
 static void frameDefaultPrint(const unsigned char *data) {
-    for (size_t i = 0; i < 9; ++i) {
-        if (i == 0) cout << "Length(24):\t\t\t\t\t";
-        if (i == 3) {
-            cout << "\t\t" << hexToUlong(bytesToString(data, (0), (3))) << " octets";
-            cout << "\nType(8):\t\t\t\t\t";
-        }
-        if (i == 4) cout << "\nFlags(8)(bits):\t\t\t\t";
-        if (i == 5) cout << "\nStream Identifier(R + 31):\t";
-        if (i == 4) {
-            cout << bitset<8>(data[i]);
-        } else {
-            printf("%02x", data[i]);
+    // Printing Frame Format
+    if (printFrames) {
+        for (size_t i = 0; i < 9; ++i) {
+            if (i == 0) cout << "Length(24):\t\t\t\t\t";
+            if (i == 3) {
+                cout << "\t\t" << hexToUlong(bytesToString(data, (0), (3))) << " octets";
+                cout << "\nType(8):\t\t\t\t\t";
+            }
+            if (i == 4) {
+                cout << "\t\t\t";
+                switch (data[3]) {
+                    case Types::DATA:
+                        cout << "DATA";
+                        break;
+                    case Types::HEADERS:
+                        cout << "HEADER";
+                        break;
+                    case Types::PRIORITY:
+                        cout << "PRIORITY";
+                        break;
+                    case Types::RST_STREAM:
+                        cout << "RST_STREAM";
+                        break;
+                    case Types::SETTINGS:
+                        cout << "SETTINGS";
+                        break;
+                    case Types::PUSH_PROMISE:
+                        cout << "PUSH_PROMISE";
+                        break;
+                    case Types::PING:
+                        cout << "PING";
+                        break;
+                    case Types::GOAWAY:
+                        cout << "GOAWAY";
+                        break;
+                    case Types::WINDOW_UPDATE:
+                        cout << "WINDOW_UPDATE";
+                        break;
+                    case Types::CONTINUATION:
+                        cout << "CONTINUATION";
+                        break;
+                    default:
+                        cout << "UNKNOWN";
+                        break;
+                }
+                cout << "\nFlags(8)(bits):\t\t\t\t";
+            }
+            if (i == 5) cout << "\nStream Identifier(R + 31):\t";
+            if (i == 4) {
+                cout << bitset<8>(data[i]);
+            } else {
+                printf("%02x", data[i]);
+            }
+            if (i == 8) cout << "\t" << hexToUlong(bytesToString(data, 5, 9));
         }
     }
 }
 
 static void frameHandler(client_sess_data *clientSessData, const unsigned char *data, size_t length) {
-    // Print length, flag etc.
     switch (data[3]) {
         case Types::DATA:
-            cout << "DATA" << endl;
             frameDefaultPrint(data);
             break;
         case Types::HEADERS:
-            cout << "HEADER" << endl;
             frameDefaultPrint(data);
             headerFrameHandler(clientSessData, data, length);
             break;
         case Types::PRIORITY:
-            cout << "PRIORITY" << endl;
             frameDefaultPrint(data);
             break;
         case Types::RST_STREAM:
-            cout << "RST_STREAM" << endl;
             frameDefaultPrint(data);
             break;
         case Types::SETTINGS:
-            cout << "SETTINGS" << endl;
             frameDefaultPrint(data);
             settingsFrameHandler(clientSessData, data, length);
             break;
         case Types::PUSH_PROMISE:
-            cout << "PUSH_PROMISE" << endl;
             frameDefaultPrint(data);
             break;
         case Types::PING:
-            cout << "PING" << endl;
             frameDefaultPrint(data);
             break;
         case Types::GOAWAY:
-            cout << "GOAWAY" << endl;
             frameDefaultPrint(data);
             break;
         case Types::WINDOW_UPDATE:
-            cout << "WINDOW_UPDATE" << endl;
             frameDefaultPrint(data);
             windowUpdateFrameHandler(clientSessData, data, length);
             break;
         case Types::CONTINUATION:
-            cout << "CONTINUATION" << endl;
             frameDefaultPrint(data);
             break;
         default:
-            cout << "DEFAULT" << endl;
             string connectionPreface = "505249202a20485454502f322e300d0a0d0a534d0d0a0d0a";
             string dataString = bytesToString(data, 0, 24);
 
             if (connectionPreface == dataString) {
-                for(size_t i = 0; i < 24; ++i) {
-                    printf("%02x", data[i]);
-                }
-                cout << endl;
-                for(size_t i = 24; i < length; ++i) {
-                    printf("%02x", data[i]);
-                }
-                cout << endl;
-                ulong currentPos = 24;
-                while (length > currentPos) {
-                    ulong nextFrameLength = hexToUlong(bytesToString(data, currentPos, (currentPos + 3)));
-                    ulong nextFrameTotLength = nextFrameLength + 9;
-                    frameHandler(clientSessData, (data+currentPos), nextFrameTotLength);
-                    currentPos += nextFrameTotLength;
-                    cout << "\n" << endl;
-                    cout << "Length: " << length << endl;
-                    cout << "CurrentPost: " << currentPos << endl;
+                if (printFrames) {
+                    cout << "Connection preface:" << endl;
+
+                    for(size_t i = 0; i < 24; ++i) {
+                        cout << data[i];
+                    }
+
+                    for(size_t i = 0; i < 24; ++i) {
+                        printf("%02x", data[i]);
+                    }
+
+                    cout << endl << endl;
+
+                    if (length > 24) {
+                        for(size_t i = 24; i < length; ++i) {
+                            printf("%02x", data[i]);
+                        }
+
+                        cout << endl << endl;
+
+                        ulong currentPos = 24;
+                        while (length > currentPos) {
+                            ulong nextFrameLength = hexToUlong(bytesToString(data, currentPos, (currentPos + 3)));
+                            ulong nextFrameTotLength = nextFrameLength + 9;
+                            frameHandler(clientSessData, (data+currentPos), nextFrameTotLength);
+                            currentPos += nextFrameTotLength;
+                        }
+                    }
                 }
             } else {
-                cout << "Frame type is unknown" << endl;
+                if (printFrames) {
+                    cout << "Frame type is unknown" << endl;
+                }
             }
             break;
     }
 }
 
 static int sessionOnReceived(client_sess_data *clientSessData) {
+
+    /* TODO: Remove readlen, or make it function */
     ssize_t readlen;
     struct evbuffer *in = bufferevent_get_input(clientSessData->bufferEvent);
     size_t length = evbuffer_get_length(in);
@@ -731,67 +830,6 @@ static int sessionOnReceived(client_sess_data *clientSessData) {
 
     frameHandler(clientSessData, data, length);
 
-//    cout << "Length: " << length << endl;
-//
-//    cout << "Length: ";
-//    for (size_t i = 0; i < 3 ; ++i) {
-//        printf("%02x", data[i]);
-//    }
-//
-//    cout << "\nType: ";
-//    printf("%02x", data[3]);
-//
-//    cout << "\nFlags: ";
-//    printf("%02x", data[4]);
-//
-//    cout << "\nStream Identifier: ";
-//    for (size_t i = 5; i < 9 ; ++i) {
-//        printf("%02x", data[i]);
-//    }
-//
-//    if (length >= 9) {
-//        cout << "\nPayload: ";
-//        if (data[3] == Types::SETTINGS && data[4] == 0x00) {
-//            for (size_t i = 9; i < length; i += 6) {
-//                cout << endl;
-//                for (size_t j = i; j < i + 2; ++j) {
-//                    printf("%02x", data[j]);
-//                }
-//                cout << " : ";
-//                for (size_t j = i + 2; j < i + 4; ++j) {
-//                    printf("%02x", data[j]);
-//                }
-//            }
-//            cout << "\nSending 'ACK' SETTINGS FRAME." << endl;
-//            sendConnectionHeader(clientSessData);
-//
-//            char data[] = { 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 };
-//            bufferevent_write(clientSessData->bufferEvent, data, 9);
-//
-//        }
-//
-//    }
-
-    /*
-    if (data[3] == 0x04 && data[4] == 0x0) {
-        // SETTINGS FRAME:
-        bufferevent_write(clientSessData->bufferEvent, settingsframe(bitset<8>(0x01), bitset<31>(0x0)), 9);
-        cout << "Settings frame recieved" << endl;
-    }
-
-    if (data[3] == 0x01) {
-        string s = "<h1>Hello World!<h1>";
-        auto sLen = s.length();
-        // DATA FRAME:
-        //cout << s << endl;
-        //cout << sLen << endl;
-        //cout << bitset<24>(sLen) << endl;
-
-        //bufferevent_write(clientSessData->bufferEvent, dataframe(bitset<8>(0x1), bitset<31>(0x0), s, sLen), (sLen + 9));
-    }
-    */
-
-    cout << endl << endl;
     readlen = 1;
     if (readlen < 0) {
         printf("Error: error storing recevied data in client_sess_data");
@@ -811,7 +849,9 @@ static int sessionOnReceived(client_sess_data *clientSessData) {
 /// @param ptr - The user-specified context for this bufferevent, which is the ClientSessionData object.
 
 static void readCallback(struct bufferevent *bufferEvent, void *ptr){
-    cout << "[ readCallback ]" << endl;
+    if (printTrackers) {
+        cout << "[ readCallback ]" << endl;
+    }
     auto *clientSessData = (client_sess_data *)ptr;
     (void)bufferEvent;
 
@@ -825,7 +865,9 @@ static void readCallback(struct bufferevent *bufferEvent, void *ptr){
 /// @param ptr
 
 static void writeCallback(struct bufferevent *bufferEvent, void *ptr){
-    cout << "[ write cb ]" << endl;
+    if (printTrackers) {
+        cout << "[ write cb ]" << endl;
+    }
     return;
 }
 
@@ -834,7 +876,12 @@ static void acceptCallback(struct evconnlistener *conListener, int sock,
                            struct sockaddr *address, int address_length, void *arg) {
     application_ctx *appCtx = (application_ctx *) arg;
     client_sess_data *clientSessData;
-    cout << "[ acceptCallback]: " << "sock: " << sock << ", address: " << address << endl;
+
+    if (printTrackers) {
+        cout << "[ acceptCallback]: " << "sock: " << sock << ", address: " << address << endl;
+    }
+
+
     (void) conListener;
 
     clientSessData = createClientSessionData(appCtx, sock, address, address_length);
@@ -851,7 +898,9 @@ static void acceptCallback(struct evconnlistener *conListener, int sock,
 
 static void serverListen(struct event_base *eventBase, const char *port, application_ctx *appCtx) {
 
-    cout << "[ serverListen ]" << endl;
+    if (printTrackers) {
+        cout << "[ serverListen ]" << endl;
+    }
 
     int return_value;
     struct addrinfo hints;
@@ -886,7 +935,9 @@ static void serverListen(struct event_base *eventBase, const char *port, applica
 }
 
 static void run(const char *port, const char *certKeyFile, const char *certFile) {
-    cout << "[ run ]" << endl;
+    if (printTrackers) {
+        cout << "[ run ]" << endl;
+    }
 
     SSL_CTX *sslCtx;
     application_ctx appCtx;
