@@ -264,6 +264,12 @@ static client_sess_data *createClientSessionData(application_ctx *appCtx, int so
 }
 
 
+/// createApplicationContext - Initializes the application wide application_ctx object on the refernece given.
+///
+/// @param appCtx - reference to appCtx object to initialize.
+/// @param sslCtx - SSL_CTX object to use.
+/// @param eventBase_ - event_base object to use.
+
 static void createApplicationContext(application_ctx *appCtx, SSL_CTX *sslCtx, struct event_base *eventBase_) {
     /**
      * Sets the application_ctx members, ctx and eventBase, to the given SSL_CTX and event_base objects
@@ -332,9 +338,7 @@ static void eventCallback(struct bufferevent *bufferEvent, short events, void *p
             // TODO: delete_client_sess_data(clientSessData);
             return;
         }
-
         return;
-
     }
 }
 
@@ -365,7 +369,7 @@ static void settingsFrameHandler(client_sess_data *clientSessData, const unsigne
     for (size_t i = 9; i < length; ++i) {
         if (i == indexIdentifier) {
             // Print to track numbers of payload.
-            //cout << "\n---" << payloadNumber << "---";
+            // cout << "\n---" << payloadNumber << "---";
             payloadNumber++;
             cout << "\nIdentifier(16):\t\t\t\t";
             indexIdentifier += 6;
