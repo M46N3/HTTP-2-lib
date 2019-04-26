@@ -222,7 +222,7 @@ struct client_sess_data {
 /// @param sock - file descriptor for the connection
 /// @param clientAddress - socket address of the client.
 /// @param addressLength - length of socket address.
-/// @return
+/// @return clientSessData - the newly created
 
 static client_sess_data *createClientSessionData(application_ctx *appCtx, int sock, struct sockaddr *clientAddress,
                                                  int addressLength) {
@@ -264,6 +264,12 @@ static client_sess_data *createClientSessionData(application_ctx *appCtx, int so
 
 }
 
+
+/// createApplicationContext - Initializes the application wide application_ctx object on the refernece given.
+///
+/// @param appCtx - reference to appCtx object to initialize.
+/// @param sslCtx - SSL_CTX object to use.
+/// @param eventBase_ - event_base object to use.
 
 static void createApplicationContext(application_ctx *appCtx, SSL_CTX *sslCtx, struct event_base *eventBase_) {
     /**
@@ -439,9 +445,7 @@ static void eventCallback(struct bufferevent *bufferEvent, short events, void *p
             // TODO: delete_client_sess_data(clientSessData);
             return;
         }
-
         return;
-
     }
 }
 
@@ -458,6 +462,20 @@ static string bytesToString(const unsigned char *data, size_t firstIndex, size_t
     }
 
     return res;
+}
+
+
+static ulong hexToUlong(string hexString) {
+    ulong hexDecimalValue;
+    if (hexString[0] == '0' && hexString[1] == 'x') {
+        std::istringstream iss(hexString);
+        iss >> std::hex >> hexDecimalValue;
+    } else {
+        string hex = "0x" + hexString;
+        std::istringstream iss(hex);
+        iss >> std::hex >> hexDecimalValue;
+    }
+    return hexDecimalValue;
 }
 
 static void dataFrameHandler(const unsigned char *data) {
@@ -531,7 +549,7 @@ static void settingsFrameHandler(client_sess_data *clientSessData, const unsigne
     for (size_t i = 9; i < length; ++i) {
         if (i == indexIdentifier) {
             // Print to track numbers of payload.
-            //cout << "\n---" << payloadNumber << "---";
+            // cout << "\n---" << payloadNumber << "---";
             payloadNumber++;
             cout << "\nIdentifier(16):\t\t\t\t";
             indexIdentifier += 6;
@@ -564,11 +582,7 @@ static void settingsFrameHandler(client_sess_data *clientSessData, const unsigne
         }
         printf("%02x", data[i]);
         if (i == valuePrint) {
-            string identifierValueString = "0x" + bytesToString(data, (valuePrint-3), (valuePrint+1));
-            ulong identifierValue;
-            std::istringstream iss(identifierValueString);
-            iss >> std::hex >> identifierValue;
-            cout << "\t" << identifierValue;
+            cout << "\t" << hexToUlong(bytesToString(data, (valuePrint-3), (valuePrint+1)));
             valuePrint += 6;
         }
     }
@@ -609,11 +623,7 @@ static void windowUpdateFrameHandler(client_sess_data *clientSessData, const uns
         }
         printf("%02x", data[i]);
         if (i == valuePrint) {
-            string windowSizeIncrementValueString = "0x" + bytesToString(data, (valuePrint-3), (valuePrint+1));
-            ulong windowSizeIncrementValue;
-            std::istringstream iss(windowSizeIncrementValueString);
-            iss >> std::hex >> windowSizeIncrementValue;
-            cout << "\t" << windowSizeIncrementValue << " octets??";
+            cout << "\t" << hexToUlong(bytesToString(data, (valuePrint-3), (valuePrint+1))) << " octets??";
             valuePrint += 4;
         }
     }
@@ -623,11 +633,7 @@ static void frameDefaultPrint(const unsigned char *data) {
     for (size_t i = 0; i < 9; ++i) {
         if (i == 0) cout << "Length(24):\t\t\t\t\t";
         if (i == 3) {
-            string payloadLengthString = "0x" + bytesToString(data, (0), (3));
-            ulong payloadLength;
-            std::istringstream iss(payloadLengthString);
-            iss >> std::hex >> payloadLength;
-            cout << "\t\t" << payloadLength << " octets";
+            cout << "\t\t" << hexToUlong(bytesToString(data, (0), (3))) << " octets";
             cout << "\nType(8):\t\t\t\t\t";
         }
         if (i == 4) cout << "\nFlags(8)(bits):\t\t\t\t";
@@ -689,11 +695,26 @@ static void frameHandler(client_sess_data *clientSessData, const unsigned char *
         default:
             cout << "DEFAULT" << endl;
             string connectionPreface = "505249202a20485454502f322e300d0a0d0a534d0d0a0d0a";
-            string dataString = bytesToString(data, 0, length);
+            string dataString = bytesToString(data, 0, 24);
 
             if (connectionPreface == dataString) {
-                for(size_t i = 0; i < length; ++i) {
+                for(size_t i = 0; i < 24; ++i) {
                     printf("%02x", data[i]);
+                }
+                cout << endl;
+                for(size_t i = 24; i < length; ++i) {
+                    printf("%02x", data[i]);
+                }
+                cout << endl;
+                ulong currentPos = 24;
+                while (length > currentPos) {
+                    ulong nextFrameLength = hexToUlong(bytesToString(data, currentPos, (currentPos + 3)));
+                    ulong nextFrameTotLength = nextFrameLength + 9;
+                    frameHandler(clientSessData, (data+currentPos), nextFrameTotLength);
+                    currentPos += nextFrameTotLength;
+                    cout << "\n" << endl;
+                    cout << "Length: " << length << endl;
+                    cout << "CurrentPost: " << currentPos << endl;
                 }
             } else {
                 cout << "Frame type is unknown" << endl;
