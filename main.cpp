@@ -14,6 +14,7 @@
 #include <err.h>
 #include <netinet/tcp.h>
 #include "frames.hpp"
+#include <nghttp2/nghttp2.h>
 #include <sstream>
 
 using namespace std;
@@ -361,6 +362,64 @@ static void dataFrameHandler(const unsigned char *data) {
     // Handle payload
 }
 
+static void headerFrameHandler(client_sess_data *clientSessData, const unsigned char *data, size_t length) {
+    // Checks if the padded and priority flags for the header frame are set
+    const bool padded = bitset<8>(data[4])[3];
+    const bool priority = bitset<8>(data[4])[5];
+
+    cout << "\nPayload:";
+
+    // HPACK decoding:
+    nghttp2_hd_inflater *inflater;
+    int rv = nghttp2_hd_inflate_new(&inflater);
+
+    if (rv != 0) {
+        fprintf(stderr, "nghttp2_hd_inflate_init failed with error: %s\n",
+                nghttp2_strerror(rv));
+        exit(EXIT_FAILURE);
+    }
+
+    ulong padlength = 0;
+    if (padded) {
+        padlength = bitset<8>(data[9]).to_ulong();
+    }
+
+    auto *in = (uint8_t*)data + 9 + (priority ? 5 : 0) + (padded ? 1 : 0);
+    size_t inlen = length - 9 - (priority ? 5 : 0) - padlength;
+
+    for (;;) {
+        nghttp2_nv nv;
+        int inflate_flags = 0;
+        size_t proclen;
+        int in_final = 1 ;
+
+        rv = nghttp2_hd_inflate_hd(inflater, &nv, &inflate_flags, in, inlen, in_final);
+
+        if (rv < 0) {
+            fprintf(stderr, "inflate failed with error code %zd", rv);
+            exit(EXIT_FAILURE);
+        }
+
+        proclen = (size_t)rv;
+
+        in += proclen;
+        inlen -= proclen;
+
+        if (inflate_flags & NGHTTP2_HD_INFLATE_EMIT) {
+            printf("\n%s : %s", nv.name, nv.value);
+        }
+
+        if (inflate_flags & NGHTTP2_HD_INFLATE_FINAL) {
+            nghttp2_hd_inflate_end_headers(inflater);
+            break;
+        }
+
+        if ((inflate_flags & NGHTTP2_HD_INFLATE_EMIT) == 0 && inlen == 0) {
+            break;
+        }
+    }
+}
+
 static void settingsFrameHandler(client_sess_data *clientSessData, const unsigned char *data, size_t length) {
     size_t indexIdentifier = 9;
     size_t indexValue = 11;
@@ -397,7 +456,6 @@ static void settingsFrameHandler(client_sess_data *clientSessData, const unsigne
                 default:
                     break;
             }
-
             cout << "\nValue(32):\t\t\t\t\t";
             indexValue += 6;
         }
@@ -418,6 +476,8 @@ static void settingsFrameHandler(client_sess_data *clientSessData, const unsigne
 
     char flagArray[8] = {0};
     std::copy(flagString.begin(), flagString.end(), flagArray);
+
+
 //    cout << "\nFlag ACK: " << flagArray[7] << endl;
 //    if (flagArray[7] == '1' && payloadLength != 0) {
 //        cout << "yippie kay yay madafaka" << endl;
@@ -433,13 +493,38 @@ static void settingsFrameHandler(client_sess_data *clientSessData, const unsigne
 //    }
 
 
+
+}
+
+static void windowUpdateFrameHandler(client_sess_data *clientSessData, const unsigned char *data, size_t length) {
+    size_t windowSizeIncrementValueIndex = 9;
+    size_t valuePrint = 12;
+    for (size_t i = 9; i < length; ++i) {
+        if (i == windowSizeIncrementValueIndex) {
+            cout << "\nWindow Size Increment(31):\t";
+            windowSizeIncrementValueIndex += 4;
+        }
+        printf("%02x", data[i]);
+        if (i == valuePrint) {
+            string windowSizeIncrementValueString = "0x" + bytesToString(data, (valuePrint-3), (valuePrint+1));
+            ulong windowSizeIncrementValue;
+            std::istringstream iss(windowSizeIncrementValueString);
+            iss >> std::hex >> windowSizeIncrementValue;
+            cout << "\t" << windowSizeIncrementValue << " octets??";
+            valuePrint += 4;
+        }
+    }
 }
 
 static void frameDefaultPrint(const unsigned char *data) {
     for (size_t i = 0; i < 9; ++i) {
         if (i == 0) cout << "Length(24):\t\t\t\t\t";
         if (i == 3) {
-            cout << "\t\t" << bitset<24>(data[0] + data[1] + data[2]).to_ulong() << " octets";
+            string payloadLengthString = "0x" + bytesToString(data, (0), (3));
+            ulong payloadLength;
+            std::istringstream iss(payloadLengthString);
+            iss >> std::hex >> payloadLength;
+            cout << "\t\t" << payloadLength << " octets";
             cout << "\nType(8):\t\t\t\t\t";
         }
         if (i == 4) cout << "\nFlags(8)(bits):\t\t\t\t";
@@ -462,6 +547,7 @@ static void frameHandler(client_sess_data *clientSessData, const unsigned char *
         case Types::HEADERS:
             cout << "HEADER" << endl;
             frameDefaultPrint(data);
+            headerFrameHandler(clientSessData, data, length);
             break;
         case Types::PRIORITY:
             cout << "PRIORITY" << endl;
@@ -491,6 +577,7 @@ static void frameHandler(client_sess_data *clientSessData, const unsigned char *
         case Types::WINDOW_UPDATE:
             cout << "WINDOW_UPDATE" << endl;
             frameDefaultPrint(data);
+            windowUpdateFrameHandler(clientSessData, data, length);
             break;
         case Types::CONTINUATION:
             cout << "CONTINUATION" << endl;
@@ -579,7 +666,6 @@ static int sessionOnReceived(client_sess_data *clientSessData) {
         //bufferevent_write(clientSessData->bufferEvent, dataframe(bitset<8>(0x1), bitset<31>(0x0), s, sLen), (sLen + 9));
     }
     */
-
 
     cout << endl << endl;
     readlen = 1;
