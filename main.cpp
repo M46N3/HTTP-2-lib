@@ -16,6 +16,7 @@
 #include "frames.hpp"
 #include <nghttp2/nghttp2.h>
 #include <sstream>
+#include <fstream>
 
 using namespace std;
 
@@ -305,7 +306,8 @@ static int sendConnectionHeader(client_sess_data *ClientSessData) {
 
 
 static void sendGetResponse(client_sess_data *ClientSessData) {
-    size_t rv;
+    // HEADER FRAME:
+    ssize_t rv;
     nghttp2_hd_deflater *deflater;
 
     rv = nghttp2_hd_deflate_new(&deflater, 4096);
@@ -318,7 +320,8 @@ static void sendGetResponse(client_sess_data *ClientSessData) {
 
     nghttp2_nv nva[] = {
             MAKE_NV(":status", "200"),
-            MAKE_NV("content-type", "text/html;charset=UTF-8")};
+            MAKE_NV("content-type", "text/html;charset=UTF-8")
+    };
 
     size_t nvlen = sizeof(nva) / sizeof(nva[0]);
 
@@ -326,15 +329,14 @@ static void sendGetResponse(client_sess_data *ClientSessData) {
     size_t buflen;
     size_t outlen;
     size_t i;
-    size_t sum;
-
-    sum = 0;
+    size_t sum = 0;
 
     for (i = 0; i < nvlen; ++i) {
         sum += nva[i].namelen + nva[i].valuelen;
     }
 
-    printf("Input (%zu byte(s)):\n\n", sum);
+    //printf("Input (%zu byte(s)):\n\n", sum);
+    cout << "\n\nHEADER FIELDS SENT:" << endl;
 
     for (i = 0; i < nvlen; ++i) {
         fwrite(nva[i].name, 1, nva[i].namelen, stdout);
@@ -357,49 +359,56 @@ static void sendGetResponse(client_sess_data *ClientSessData) {
         exit(EXIT_FAILURE);
     }
 
-
     outlen = (size_t)rv;
-    cout << "outlen: " << outlen << endl;
+    //cout << "outlen: " << outlen << endl;
 
-    unsigned char frameHeader[] = { 0x00, 0x00, (unsigned char) outlen, Types::HEADERS, END_HEADERS, 0x00, 0x00, 0x00, 0x01 };
-    unsigned char *frame = new unsigned char[9 + outlen];
+    unsigned char frameHeader[] = { 0x00, 0x00, (unsigned char) outlen,     // Length
+                                    Types::HEADERS,                         // Type
+                                    END_HEADERS,                            // Flags
+                                    0x00, 0x00, 0x00, 0x01 };               // Stream-ID
+    auto *frame = new unsigned char[9 + outlen];
 
-    for (size_t i = 0; i < 9; ++i) {
-        frame[i] = frameHeader[i];
-    }
-
-    for (size_t i = 0; i < outlen; ++i) {
-        frame[i+9] = buf[i];
-    }
+    for (size_t i = 0; i < 9; ++i) frame[i] = frameHeader[i];
+    for (size_t i = 0; i < outlen; ++i) frame[i+9] = buf[i];
 
     bufferevent_write(ClientSessData->bufferEvent, frame, outlen+9);
 
-    string s = "<html>"
-               "<head>"
-               "<title>HTTP 2 page</title>"
-               "<link rel=\"shortcut icon\" href=\"about:blank\""
-               "</head>"
-               "<body>"
-               "<p>Hello World!</p>"
-               "</body></html>";
-    auto sLen = s.length();
     // DATA FRAME:
-    cout << s[0] << endl;
-    cout << "sLen: " << sLen << endl;
-    //cout << bitset<24>(sLen) << endl;
+    string s;
+    ifstream in("../index.html");
+    if (in) {
+        s = string((istreambuf_iterator<char>(in)), istreambuf_iterator<char>());
+    } else {
+        cout << "Could not read index.html" << endl;
+        // TODO: Return 404, check if file is found before sending 200
+    }
+    auto sLen = s.length();
+    //cout << "sLen: " << sLen << endl;
 
-    unsigned char frameHeader2[] = {0x00, 0x00, (unsigned char) sLen, DATA, END_STREAM, 0x00, 0x00, 0x00, 0x01};
-    unsigned char *frame2 = new unsigned char[9 + sLen];
-
-    for (size_t i = 0; i < 9; ++i) {
-        frame2[i] = frameHeader2[i];
+    size_t sLen1 = sLen;
+    size_t sLen2 = 0;
+    size_t sLen3 = 0;
+    if (sLen > 255 && sLen < 65536) {                   // Big enough to need 2 bytes to represent length
+        sLen2 = sLen / 256;
+        sLen1 = sLen % 256;
+        // cout << sLen2 << "\t" << sLen1 << endl;
+    } else if (sLen > 65535 && sLen < 16777216) {       // Big enough to need 3 bytes to represent length
+        sLen3 = sLen / 65536;
+        sLen2 = (sLen % 65536) / 256;
+        sLen1 = sLen % 256;
+        // cout << sLen3 << "\t" <<sLen2 << "\t" << sLen1 << endl;
+    } else {                                            // Big enough to need more than 1 frame
+        // TODO: Handle payloads, long enough to need more than 1 frame
     }
 
-    for (size_t i = 0; i < sLen; ++i) {
-        //bitset<8> b(s[i]);
-        //frame[i+9] = b.to_ulong();
-        frame2[i+9] = s[i];
-    }
+    unsigned char frameHeader2[] = {(unsigned char) sLen3, (unsigned char) sLen2, (unsigned char) sLen1,    // Length
+                                    DATA,                                                                   // Type
+                                    END_STREAM,                                                             // Flags
+                                    0x00, 0x00, 0x00, 0x01};                                                // Stream-ID
+    auto *frame2 = new unsigned char[9 + sLen];
+
+    for (size_t i = 0; i < 9; ++i) frame2[i] = frameHeader2[i];
+    for (size_t i = 0; i < sLen; ++i) frame2[i+9] = s[i];
 
     bufferevent_write(ClientSessData->bufferEvent, frame2, sLen+9);
 }
@@ -437,9 +446,6 @@ static void eventCallback(struct bufferevent *bufferEvent, short events, void *p
             /* TODO: delete_client_sess_data(clientSessData); */
             return;
         }
-
-        // SETTINGS FRAME:
-        //bufferevent_write(bufferEvent, settingsframe(bitset<8>(0x0), bitset<31>(0x0)), 9);
 
         if(sendConnectionHeader(clientSessData) != 0) {
             // TODO: delete_client_sess_data(clientSessData);
@@ -484,8 +490,8 @@ static void dataFrameHandler(const unsigned char *data) {
 
 static void headerFrameHandler(client_sess_data *clientSessData, const unsigned char *data, size_t length) {
     // Checks if the padded and priority flags for the header frame are set
-    const bool padded = bitset<8>(data[4])[3];
-    const bool priority = bitset<8>(data[4])[5];
+    const bool padded = bitset<8>(data[4])[3];      // PADDED = 0x8
+    const bool priority = bitset<8>(data[4])[5];    // PRIORITY = 0x20
 
     cout << "\nPayload:";
 
