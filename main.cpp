@@ -343,6 +343,10 @@ static void dataFrameHandler(const unsigned char *data) {
 }
 
 static void headerFrameHandler(client_sess_data *clientSessData, const unsigned char *data, size_t length) {
+    // Checks if the padded and priority flags for the header frame are set
+    const bool padded = bitset<8>(data[4])[3];
+    const bool priority = bitset<8>(data[4])[5];
+
     cout << "\nPayload:";
 
     // HPACK decoding:
@@ -355,8 +359,13 @@ static void headerFrameHandler(client_sess_data *clientSessData, const unsigned 
         exit(EXIT_FAILURE);
     }
 
-    auto *in = (uint8_t*)data + 9;
-    size_t inlen = length - 9;
+    ulong padlength = 0;
+    if (padded) {
+        padlength = bitset<8>(data[9]).to_ulong();
+    }
+
+    auto *in = (uint8_t*)data + 9 + (priority ? 5 : 0) + (padded ? 1 : 0);
+    size_t inlen = length - 9 - (priority ? 5 : 0) - padlength;
 
     for (;;) {
         nghttp2_nv nv;
