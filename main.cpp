@@ -236,6 +236,8 @@ struct client_sess_data {
     application_ctx *appCtx;
     //h2_session *session;
     char *clientAddress;
+    nghttp2_hd_inflater *inflater;
+    nghttp2_hd_deflater *deflater;
 } client_session_data;
 
 
@@ -281,6 +283,24 @@ static client_sess_data *createClientSessionData(application_ctx *appCtx, int so
         clientSessData->clientAddress = strdup("(unknown)");
     } else {
         clientSessData->clientAddress = strdup(host);
+    }
+
+    // Initiate HPACK inflater
+    int rv = nghttp2_hd_inflate_new(&clientSessData->inflater);
+
+    if (rv != 0) {
+        fprintf(stderr, "nghttp2_hd_inflate_init failed with error: %s\n",
+                nghttp2_strerror(rv));
+        exit(EXIT_FAILURE);
+    }
+
+    // Initiate HPACK deflater
+    rv = nghttp2_hd_deflate_new(&clientSessData->deflater, 4096);
+
+    if (rv != 0) {
+        fprintf(stderr, "nghttp2_hd_deflate_init failed with error: %s\n",
+                nghttp2_strerror(rv));
+        exit(EXIT_FAILURE);
     }
 
     return clientSessData;
@@ -333,18 +353,9 @@ static int sendConnectionHeader(client_sess_data *ClientSessData) {
   }
 
 
-static void sendGetResponse(client_sess_data *ClientSessData) {
+static void sendGetResponse(client_sess_data *ClientSessData, const unsigned char *data) {
     // HEADER FRAME:
     ssize_t rv;
-    nghttp2_hd_deflater *deflater;
-
-    rv = nghttp2_hd_deflate_new(&deflater, 4096);
-
-    if (rv != 0) {
-        fprintf(stderr, "nghttp2_hd_deflate_init failed with error: %s\n",
-                nghttp2_strerror(rv));
-        exit(EXIT_FAILURE);
-    }
 
     nghttp2_nv nva[] = {
             MAKE_NV(":status", "200"),
@@ -372,11 +383,12 @@ static void sendGetResponse(client_sess_data *ClientSessData) {
         fwrite(nva[i].value, 1, nva[i].valuelen, stdout);
         printf("\n");
     }
+    printf("\n");
 
-    buflen = nghttp2_hd_deflate_bound(deflater, nva, nvlen);
+    buflen = nghttp2_hd_deflate_bound(ClientSessData->deflater, nva, nvlen);
     buf = static_cast<uint8_t *>(malloc(buflen));
 
-    rv = nghttp2_hd_deflate_hd(deflater, buf, buflen, nva, nvlen);
+    rv = nghttp2_hd_deflate_hd(ClientSessData->deflater, buf, buflen, nva, nvlen);
 
     if (rv < 0) {
         fprintf(stderr, "nghttp2_hd_deflate_hd() failed with error: %s\n",
@@ -393,7 +405,7 @@ static void sendGetResponse(client_sess_data *ClientSessData) {
     unsigned char frameHeader[] = { 0x00, 0x00, (unsigned char) outlen,     // Length
                                     Types::HEADERS,                         // Type
                                     END_HEADERS,                            // Flags
-                                    0x00, 0x00, 0x00, 0x01 };               // Stream-ID
+                                    data[5], data[6], data[7], data[8]};               // Stream-ID
     auto *frame = new unsigned char[9 + outlen];
 
     for (size_t i = 0; i < 9; ++i) frame[i] = frameHeader[i];
@@ -432,7 +444,7 @@ static void sendGetResponse(client_sess_data *ClientSessData) {
     unsigned char frameHeader2[] = {(unsigned char) sLen3, (unsigned char) sLen2, (unsigned char) sLen1,    // Length
                                     DATA,                                                                   // Type
                                     END_STREAM,                                                             // Flags
-                                    0x00, 0x00, 0x00, 0x01};                                                // Stream-ID
+                                    data[5], data[6], data[7], data[8]};                                                // Stream-ID
     auto *frame2 = new unsigned char[9 + sLen];
 
     for (size_t i = 0; i < 9; ++i) frame2[i] = frameHeader2[i];
@@ -527,15 +539,7 @@ static void headerFrameHandler(client_sess_data *clientSessData, const unsigned 
 
     cout << "\nPayload:";
 
-    // HPACK decoding:
-    nghttp2_hd_inflater *inflater;
-    int rv = nghttp2_hd_inflate_new(&inflater);
-
-    if (rv != 0) {
-        fprintf(stderr, "nghttp2_hd_inflate_init failed with error: %s\n",
-                nghttp2_strerror(rv));
-        exit(EXIT_FAILURE);
-    }
+    ssize_t rv;
 
     ulong padlength = 0;
     if (padded) {
@@ -551,7 +555,7 @@ static void headerFrameHandler(client_sess_data *clientSessData, const unsigned 
         size_t proclen;
         int in_final = 1 ;
 
-        rv = nghttp2_hd_inflate_hd(inflater, &nv, &inflate_flags, in, inlen, in_final);
+        rv = nghttp2_hd_inflate_hd(clientSessData->inflater, &nv, &inflate_flags, in, inlen, in_final);
 
         if (rv < 0) {
             fprintf(stderr, "inflate failed with error code %zd", rv);
@@ -568,7 +572,7 @@ static void headerFrameHandler(client_sess_data *clientSessData, const unsigned 
         }
 
         if (inflate_flags & NGHTTP2_HD_INFLATE_FINAL) {
-            nghttp2_hd_inflate_end_headers(inflater);
+            nghttp2_hd_inflate_end_headers(clientSessData->inflater);
             break;
         }
 
@@ -576,7 +580,7 @@ static void headerFrameHandler(client_sess_data *clientSessData, const unsigned 
             break;
         }
     }
-    sendGetResponse(clientSessData);
+    sendGetResponse(clientSessData, data);
 }
 
 static void settingsFrameHandler(client_sess_data *clientSessData, const unsigned char *data, size_t length) {
@@ -667,6 +671,21 @@ static void settingsFrameHandler(client_sess_data *clientSessData, const unsigne
 //        char data[] = { 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 };
 //        bufferevent_write(clientSessData->bufferEvent, data, 9);
 //    }
+}
+
+static void pingFrameHandler(client_sess_data *clientSessData, const unsigned char *data, size_t length) {
+    const bool ack = bitset<8>(data[4])[0];      // ACK = 0x1
+
+    // Respond to ping if ack flag is not set
+    if (!ack) {
+        auto *response = new unsigned char[length];
+        for (size_t i = 0; i < length; ++i) response[i] = data[i];
+        response[4] = 0x1;
+        bufferevent_write(clientSessData->bufferEvent, response, length);
+        cout << "\nResponded to PING frame" << endl;
+    } else {
+        cout << "\nRevieved PING response" << endl;
+    }
 }
 
 static void windowUpdateFrameHandler(client_sess_data *clientSessData, const unsigned char *data, size_t length) {
@@ -772,6 +791,7 @@ static void frameHandler(client_sess_data *clientSessData, const unsigned char *
             break;
         case Types::PING:
             frameDefaultPrint(data);
+            pingFrameHandler(clientSessData, data, length);
             break;
         case Types::GOAWAY:
             frameDefaultPrint(data);
