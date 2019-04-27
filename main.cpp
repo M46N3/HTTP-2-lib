@@ -121,11 +121,13 @@ int main(int argc, char **argv) {
     sigaction(SIGPIPE, &act, NULL);
 
     if (argc == 5 && argv[4] == string("--verbose")) {
-        printComments = true;
-        printTrackers = true;
-        printFrames = true;
+        printComments = true; // Turn off comments.
+        printTrackers = true; // boolean to turn on/off printing of tracker-comments.
+        printFrames = true; // boolean to turn on/off printing of frames.
     } else {
-        printComments = printTrackers = printFrames = false;
+        printComments = false; // Turn off comments.
+        printTrackers = false; // boolean to turn on/off printing of tracker-comments.
+        printFrames = false; // boolean to turn on/off printing of frames.
     }
 
     initOpenssl();
