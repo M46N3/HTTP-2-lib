@@ -13,5 +13,5 @@ public:
     static struct ClientSessionData *createClientSessionData(struct ApplicationContext *appCtx, int sock, struct sockaddr *clientAddress, int addressLength);
     static string bytesToString(const unsigned char *data, size_t firstIndex, size_t secondIndex);
     static ulong hexToUlong(string hexString);
-    static void sendGetResponse(struct ClientSessionData *clientSessData);
+    static void sendGetResponse(struct ClientSessionData *clientSessData, const unsigned char *data);
 };

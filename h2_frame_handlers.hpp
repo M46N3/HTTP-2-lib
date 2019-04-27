@@ -11,5 +11,6 @@ public:
     static void frameDefaultPrint(const unsigned char *data);
     static void headerFrameHandler(struct ClientSessionData *clientSessData, const unsigned char *data, size_t length);
     static void settingsFrameHandler(struct ClientSessionData *clientSessData, const unsigned char *data, size_t length);
+    static void pingFrameHandler(struct ClientSessionData *clientSessData, const unsigned char *data, size_t length);
     static void windowUpdateFrameHandler(struct ClientSessionData *clientSessData, const unsigned char *data, size_t length);
 };

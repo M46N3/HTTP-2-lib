@@ -6,6 +6,7 @@
 #include "h2_frames.hpp"
 #include <nghttp2/nghttp2.h>
 #include <string.h>
+#include <event2/bufferevent_ssl.h>
 
 
 bool printFrames = true;
@@ -34,6 +35,7 @@ void h2_frame_handlers::frameHandler(struct ClientSessionData *clientSessData, c
             break;
         case Types::PING:
             frameDefaultPrint(data);
+            pingFrameHandler(clientSessData, data, length);
             break;
         case Types::GOAWAY:
             frameDefaultPrint(data);
@@ -156,14 +158,7 @@ void h2_frame_handlers::headerFrameHandler(ClientSessionData *clientSessData, co
     cout << "\nPayload:";
 
     // HPACK decoding:
-    nghttp2_hd_inflater *inflater;
-    int rv = nghttp2_hd_inflate_new(&inflater);
-
-    if (rv != 0) {
-        fprintf(stderr, "nghttp2_hd_inflate_init failed with error: %s\n",
-                nghttp2_strerror(rv));
-        exit(EXIT_FAILURE);
-    }
+    ssize_t rv;
 
     ulong padlength = 0;
     if (padded) {
@@ -173,13 +168,16 @@ void h2_frame_handlers::headerFrameHandler(ClientSessionData *clientSessData, co
     auto *in = (uint8_t*)data + 9 + (priority ? 5 : 0) + (padded ? 1 : 0);
     size_t inlen = length - 9 - (priority ? 5 : 0) - padlength;
 
+    string method;
+    string path;
+
     for (;;) {
         nghttp2_nv nv;
         int inflate_flags = 0;
         size_t proclen;
         int in_final = 1 ;
 
-        rv = nghttp2_hd_inflate_hd(inflater, &nv, &inflate_flags, in, inlen, in_final);
+        rv = nghttp2_hd_inflate_hd(clientSessData->inflater, &nv, &inflate_flags, in, inlen, in_final);
 
         if (rv < 0) {
             fprintf(stderr, "inflate failed with error code %zd", rv);
@@ -193,10 +191,14 @@ void h2_frame_handlers::headerFrameHandler(ClientSessionData *clientSessData, co
 
         if (inflate_flags & NGHTTP2_HD_INFLATE_EMIT) {
             printf("\n%s : %s", nv.name, nv.value);
+            string name = (char*) nv.name;
+            string value = (char*) nv.value;
+            if (name == ":method") method = value;
+            if (name == ":path") path = value;
         }
 
         if (inflate_flags & NGHTTP2_HD_INFLATE_FINAL) {
-            nghttp2_hd_inflate_end_headers(inflater);
+            nghttp2_hd_inflate_end_headers(clientSessData->inflater);
             break;
         }
 
@@ -204,7 +206,10 @@ void h2_frame_handlers::headerFrameHandler(ClientSessionData *clientSessData, co
             break;
         }
     }
-    h2_utils::sendGetResponse(clientSessData);
+    cout << "\nMethod: " << method << ", Path: " << path << endl;
+    if (method == "GET") {
+        h2_utils::sendGetResponse(clientSessData, data);
+    }
 }
 
 
@@ -298,6 +303,20 @@ void h2_frame_handlers::settingsFrameHandler(ClientSessionData *clientSessData, 
 //    }
 }
 
+void h2_frame_handlers::pingFrameHandler(ClientSessionData *clientSessData, const unsigned char *data, size_t length) {
+    const bool ack = bitset<8>(data[4])[0];      // ACK = 0x1
+
+    // Respond to ping if ack flag is not set
+    if (!ack) {
+        auto *response = new unsigned char[length];
+        for (size_t i = 0; i < length; ++i) response[i] = data[i];
+        response[4] = 0x1;
+        bufferevent_write(clientSessData->bufferEvent, response, length);
+        cout << "\nResponded to PING frame" << endl;
+    } else {
+        cout << "\nRevieved PING response" << endl;
+    }
+}
 
 void h2_frame_handlers::windowUpdateFrameHandler(ClientSessionData *clientSessData, const unsigned char *data, size_t length) {
     // Printing WINDOW_UPDATE frame
