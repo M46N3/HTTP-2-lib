@@ -3,6 +3,7 @@
 #pragma once
 #include <stddef.h>
 #include <string>
+#include "h2_structs.hpp"
 
 using namespace std;
 
@@ -13,5 +14,8 @@ public:
     static struct ClientSessionData *createClientSessionData(struct ApplicationContext *appCtx, int sock, struct sockaddr *clientAddress, int addressLength);
     static string bytesToString(const unsigned char *data, size_t firstIndex, size_t secondIndex);
     static ulong hexToUlong(string hexString);
-    static void sendGetResponse(struct ClientSessionData *clientSessData, const unsigned char *data);
+    static void sendGetResponse(struct ClientSessionData *clientSessData, const unsigned char *data, string path);
+    static string resolvePath(string path);
+    static void getResponse200(struct ClientSessionData *clientSessData, const unsigned char *data, string filepath);
+    static void getResponse404(struct ClientSessionData *clientSessData, const unsigned char *data);
 };
