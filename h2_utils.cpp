@@ -108,6 +108,24 @@ struct ClientSessionData *h2_utils::createClientSessionData(struct ApplicationCo
         clientSessData->clientAddress = strdup(host);
     }
 
+    // Initiate HPACK inflater
+    int rv = nghttp2_hd_inflate_new(&clientSessData->inflater);
+
+    if (rv != 0) {
+        fprintf(stderr, "nghttp2_hd_inflate_init failed with error: %s\n",
+                nghttp2_strerror(rv));
+        exit(EXIT_FAILURE);
+    }
+
+    // Initiate HPACK deflater
+    rv = nghttp2_hd_deflate_new(&clientSessData->deflater, 4096);
+
+    if (rv != 0) {
+        fprintf(stderr, "nghttp2_hd_deflate_init failed with error: %s\n",
+                nghttp2_strerror(rv));
+        exit(EXIT_FAILURE);
+    }
+
     return clientSessData;
 }
 
@@ -147,18 +165,9 @@ ulong h2_utils::hexToUlong(string hexString) {
   }
 
 
-void h2_utils::sendGetResponse(ClientSessionData *clientSessData) {
+void h2_utils::sendGetResponse(ClientSessionData *ClientSessData, const unsigned char *data) {
     // HEADER FRAME:
     ssize_t rv;
-    nghttp2_hd_deflater *deflater;
-
-    rv = nghttp2_hd_deflate_new(&deflater, 4096);
-
-    if (rv != 0) {
-        fprintf(stderr, "nghttp2_hd_deflate_init failed with error: %s\n",
-                nghttp2_strerror(rv));
-        exit(EXIT_FAILURE);
-    }
 
     nghttp2_nv nva[] = {
             MAKE_NV(":status", "200"),
@@ -186,11 +195,12 @@ void h2_utils::sendGetResponse(ClientSessionData *clientSessData) {
         fwrite(nva[i].value, 1, nva[i].valuelen, stdout);
         printf("\n");
     }
+    printf("\n");
 
-    buflen = nghttp2_hd_deflate_bound(deflater, nva, nvlen);
+    buflen = nghttp2_hd_deflate_bound(ClientSessData->deflater, nva, nvlen);
     buf = static_cast<uint8_t *>(malloc(buflen));
 
-    rv = nghttp2_hd_deflate_hd(deflater, buf, buflen, nva, nvlen);
+    rv = nghttp2_hd_deflate_hd(ClientSessData->deflater, buf, buflen, nva, nvlen);
 
     if (rv < 0) {
         fprintf(stderr, "nghttp2_hd_deflate_hd() failed with error: %s\n",
@@ -207,13 +217,13 @@ void h2_utils::sendGetResponse(ClientSessionData *clientSessData) {
     unsigned char frameHeader[] = { 0x00, 0x00, (unsigned char) outlen,     // Length
                                     Types::HEADERS,                         // Type
                                     END_HEADERS,                            // Flags
-                                    0x00, 0x00, 0x00, 0x01 };               // Stream-ID
+                                    data[5], data[6], data[7], data[8] };               // Stream-ID
     auto *frame = new unsigned char[9 + outlen];
 
     for (size_t i = 0; i < 9; ++i) frame[i] = frameHeader[i];
     for (size_t i = 0; i < outlen; ++i) frame[i+9] = buf[i];
 
-    bufferevent_write(clientSessData->bufferEvent, frame, outlen+9);
+    bufferevent_write(ClientSessData->bufferEvent, frame, outlen+9);
 
     // DATA FRAME:
     string s;
@@ -246,11 +256,11 @@ void h2_utils::sendGetResponse(ClientSessionData *clientSessData) {
     unsigned char frameHeader2[] = {(unsigned char) sLen3, (unsigned char) sLen2, (unsigned char) sLen1,    // Length
                                     DATA,                                                                   // Type
                                     END_STREAM,                                                             // Flags
-                                    0x00, 0x00, 0x00, 0x01};                                                // Stream-ID
+                                    data[5], data[6], data[7], data[8]};                                                // Stream-ID
     auto *frame2 = new unsigned char[9 + sLen];
 
     for (size_t i = 0; i < 9; ++i) frame2[i] = frameHeader2[i];
     for (size_t i = 0; i < sLen; ++i) frame2[i+9] = s[i];
 
-    bufferevent_write(clientSessData->bufferEvent, frame2, sLen+9);
+    bufferevent_write(ClientSessData->bufferEvent, frame2, sLen+9);
 }
