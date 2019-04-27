@@ -8,6 +8,7 @@
 #include "h2_structs.hpp"
 #include "h2_frame_handlers.hpp"
 #include "h2_frames.hpp"
+#include "h2_global.hpp"
 #include <iostream>
 #include <string.h>
 #include <nghttp2/nghttp2.h>
@@ -21,9 +22,6 @@
 #include <string.h>
 #include <sstream>
 #include <fstream>
-
-
-bool printComments = true;
 
 using namespace std;
 
