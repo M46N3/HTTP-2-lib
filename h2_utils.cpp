@@ -1,3 +1,7 @@
+#include <utility>
+
+#include <utility>
+
 // h2_utils.cpp
 
 #include "h2_utils.hpp"
@@ -84,7 +88,7 @@ struct ClientSessionData *h2_utils::createClientSessionData(struct ApplicationCo
     ssl = SSL_new(appCtx->ctx);
     if (!ssl) {
         errx(1, "Could not create TLS session object: %s",
-             ERR_error_string(ERR_get_error(), NULL));
+             ERR_error_string(ERR_get_error(), nullptr));
     }
 
     clientSessData = (ClientSessionData *)malloc(sizeof(ClientSessionData));
@@ -100,7 +104,7 @@ struct ClientSessionData *h2_utils::createClientSessionData(struct ApplicationCo
 
     bufferevent_enable(clientSessData->bufferEvent, EV_READ | EV_WRITE);
 
-    returnValue = getnameinfo(clientAddress, (socklen_t)addressLength, host, sizeof(host), NULL, 0, NI_NUMERICHOST);
+    returnValue = getnameinfo(clientAddress, (socklen_t)addressLength, host, sizeof(host), nullptr, 0, NI_NUMERICHOST);
 
     if (returnValue != 0) {
         clientSessData->clientAddress = strdup("(unknown)");
@@ -164,8 +168,26 @@ ulong h2_utils::hexToUlong(string hexString) {
         NGHTTP2_NV_FLAG_NONE                                                   \
   }
 
+void h2_utils::sendGetResponse(ClientSessionData *ClientSessData, const unsigned char *data, string path) {
+    string filepath = resolvePath(std::move(path));
+    if (!filepath.empty()) {
+        getResponse200(ClientSessData, data, filepath);
+    } else {
+        getResponse404(ClientSessData, data);
+    }
+}
 
-void h2_utils::sendGetResponse(ClientSessionData *ClientSessData, const unsigned char *data) {
+string h2_utils::resolvePath(string path) {
+    // TODO: Find routes from serverwide list of routes
+    // TODO: Handle different file types (.css and .js)
+    if (path == "/") {
+        return "../index.html";
+    } else {
+        return "";
+    }
+}
+
+void h2_utils::getResponse200(struct ClientSessionData *clientSessData, const unsigned char *data, string filepath) {
     // HEADER FRAME:
     ssize_t rv;
 
@@ -197,37 +219,37 @@ void h2_utils::sendGetResponse(ClientSessionData *ClientSessData, const unsigned
     }
     printf("\n");
 
-    buflen = nghttp2_hd_deflate_bound(ClientSessData->deflater, nva, nvlen);
+    buflen = nghttp2_hd_deflate_bound(clientSessData->deflater, nva, nvlen);
     buf = static_cast<uint8_t *>(malloc(buflen));
 
-    rv = nghttp2_hd_deflate_hd(ClientSessData->deflater, buf, buflen, nva, nvlen);
+    rv = nghttp2_hd_deflate_hd(clientSessData->deflater, buf, buflen, nva, nvlen);
 
     if (rv < 0) {
         fprintf(stderr, "nghttp2_hd_deflate_hd() failed with error: %s\n",
-                nghttp2_strerror((int)rv));
+                nghttp2_strerror((int) rv));
 
         free(buf);
 
         exit(EXIT_FAILURE);
     }
 
-    outlen = (size_t)rv;
+    outlen = (size_t) rv;
     //cout << "outlen: " << outlen << endl;
 
-    unsigned char frameHeader[] = { 0x00, 0x00, (unsigned char) outlen,     // Length
-                                    Types::HEADERS,                         // Type
-                                    END_HEADERS,                            // Flags
-                                    data[5], data[6], data[7], data[8] };               // Stream-ID
+    unsigned char frameHeader[] = {0x00, 0x00, (unsigned char) outlen,     // Length
+                                   Types::HEADERS,                         // Type
+                                   END_HEADERS,                            // Flags
+                                   data[5], data[6], data[7], data[8]};               // Stream-ID
     auto *frame = new unsigned char[9 + outlen];
 
-    for (size_t i = 0; i < 9; ++i) frame[i] = frameHeader[i];
-    for (size_t i = 0; i < outlen; ++i) frame[i+9] = buf[i];
+    for (i = 0; i < 9; ++i) frame[i] = frameHeader[i];
+    for (i = 0; i < outlen; ++i) frame[i + 9] = buf[i];
 
-    bufferevent_write(ClientSessData->bufferEvent, frame, outlen+9);
+    bufferevent_write(clientSessData->bufferEvent, frame, outlen + 9);
 
     // DATA FRAME:
     string s;
-    ifstream in("../index.html");
+    ifstream in(filepath);
     if (in) {
         s = string((istreambuf_iterator<char>(in)), istreambuf_iterator<char>());
     } else {
@@ -253,14 +275,74 @@ void h2_utils::sendGetResponse(ClientSessionData *ClientSessData, const unsigned
         // TODO: Handle payloads, long enough to need more than 1 frame
     }
 
-    unsigned char frameHeader2[] = {(unsigned char) sLen3, (unsigned char) sLen2, (unsigned char) sLen1,    // Length
+    unsigned char frameHeader2[] = {(unsigned char) sLen3, (unsigned char) sLen2, (unsigned char) sLen1,   // Length
                                     DATA,                                                                   // Type
                                     END_STREAM,                                                             // Flags
-                                    data[5], data[6], data[7], data[8]};                                                // Stream-ID
+                                    data[5], data[6], data[7], data[8]};                                    // Stream-ID
     auto *frame2 = new unsigned char[9 + sLen];
 
-    for (size_t i = 0; i < 9; ++i) frame2[i] = frameHeader2[i];
-    for (size_t i = 0; i < sLen; ++i) frame2[i+9] = s[i];
+    for (i = 0; i < 9; ++i) frame2[i] = frameHeader2[i];
+    for (i = 0; i < sLen; ++i) frame2[i + 9] = (unsigned char) s[i];
 
-    bufferevent_write(ClientSessData->bufferEvent, frame2, sLen+9);
+    bufferevent_write(clientSessData->bufferEvent, frame2, sLen + 9);
+}
+
+void h2_utils::getResponse404(struct ClientSessionData *clientSessData, const unsigned char *data) {
+    // HEADER FRAME:
+    ssize_t rv;
+
+    nghttp2_nv nva[] = {
+            MAKE_NV(":status", "404")
+    };
+
+    size_t nvlen = sizeof(nva) / sizeof(nva[0]);
+
+    uint8_t *buf;
+    size_t buflen;
+    size_t outlen;
+    size_t i;
+    size_t sum = 0;
+
+    for (i = 0; i < nvlen; ++i) {
+        sum += nva[i].namelen + nva[i].valuelen;
+    }
+
+    //printf("Input (%zu byte(s)):\n\n", sum);
+    cout << "\n\nHEADER FIELDS SENT:" << endl;
+
+    for (i = 0; i < nvlen; ++i) {
+        fwrite(nva[i].name, 1, nva[i].namelen, stdout);
+        printf(": ");
+        fwrite(nva[i].value, 1, nva[i].valuelen, stdout);
+        printf("\n");
+    }
+    printf("\n");
+
+    buflen = nghttp2_hd_deflate_bound(clientSessData->deflater, nva, nvlen);
+    buf = static_cast<uint8_t *>(malloc(buflen));
+
+    rv = nghttp2_hd_deflate_hd(clientSessData->deflater, buf, buflen, nva, nvlen);
+
+    if (rv < 0) {
+        fprintf(stderr, "nghttp2_hd_deflate_hd() failed with error: %s\n",
+                nghttp2_strerror((int) rv));
+
+        free(buf);
+
+        exit(EXIT_FAILURE);
+    }
+
+    outlen = (size_t) rv;
+    //cout << "outlen: " << outlen << endl;
+
+    unsigned char frameHeader[] = {0x00, 0x00, (unsigned char) outlen,     // Length
+                                   Types::HEADERS,                         // Type
+                                   END_HEADERS | END_STREAM,                            // Flags
+                                   data[5], data[6], data[7], data[8]};               // Stream-ID
+    auto *frame = new unsigned char[9 + outlen];
+
+    for (i = 0; i < 9; ++i) frame[i] = frameHeader[i];
+    for (i = 0; i < outlen; ++i) frame[i + 9] = buf[i];
+
+    bufferevent_write(clientSessData->bufferEvent, frame, outlen + 9);
 }

@@ -190,7 +190,7 @@ void h2_frame_handlers::headerFrameHandler(ClientSessionData *clientSessData, co
         inlen -= proclen;
 
         if (inflate_flags & NGHTTP2_HD_INFLATE_EMIT) {
-            printf("\n%s : %s", nv.name, nv.value);
+            printf("\n%s : %s", (char*) nv.name, (char*) nv.value);
             string name = (char*) nv.name;
             string value = (char*) nv.value;
             if (name == ":method") method = value;
@@ -206,9 +206,9 @@ void h2_frame_handlers::headerFrameHandler(ClientSessionData *clientSessData, co
             break;
         }
     }
-    cout << "\nMethod: " << method << ", Path: " << path << endl;
+    //cout << "\nMethod: " << method << ", Path: " << path << endl;
     if (method == "GET") {
-        h2_utils::sendGetResponse(clientSessData, data);
+        h2_utils::sendGetResponse(clientSessData, data, path);
     }
 }
 
