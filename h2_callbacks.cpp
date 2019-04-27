@@ -1,26 +1,51 @@
 // h2_callbacks.cpp
+
+#include "h2_structs.hpp"
 #include "h2_callbacks.hpp"
+#include "h2_utils.hpp"
 #include <iostream>
 #include <string.h>
 #include <event2/bufferevent_ssl.h>
 #include <openssl/ssl.h>
 
 using namespace std;
+bool printTrackers = true;
+//bool printComments = true;
+
 
 /// readCallback - Callback triggered when there is data to be read in the evbuffer.
 ///
 /// @param bufferEvent - The bufferevent that triggered the callback.
 /// @param ptr - The user-specified context for this bufferevent, which is the ClientSessionData object.
+
 void h2_callbacks::readCallback(struct bufferevent *bufferEvent, void *ptr) {
     cout << "[ readCallback ]" << endl;
-    auto *clientSessData = (client_sess_data *)ptr;
+    auto *clientSessData = (ClientSessionData *)ptr;
     (void)bufferEvent;
 
-    int returnValue = sessionOnReceived(clientSessData);
+    int returnValue = h2_utils::sessionOnReceived(clientSessData);
 }
 
+void h2_callbacks::writeCallback(struct bufferevent *bufferEvent, void *ptr){
+    if (printTrackers) {
+        cout << "[ write cb ]" << endl;
+    }
+    return;
+}
+
+
+/// eventCallback - Callback invoked when there is an event on the sock filedescriptor.
+///
+/// @param bufferEvent - bufferevent object associated with the connection.
+/// @param events - flag type conjunction of error and/or event type.
+/// @param ptr - clientSessionData object for the connection.
+
 void h2_callbacks::eventCallback(struct bufferevent *bufferEvent, short events, void *ptr) {
-    client_sess_data *clientSessData = (client_sess_data *)ptr;
+    if (printTrackers) {
+        cout << " [ eventCallback ] " << endl;
+    }
+
+    auto *clientSessData = (ClientSessionData *)ptr;
 
 
     if (events & BEV_EVENT_CONNECTED) {
@@ -32,6 +57,7 @@ void h2_callbacks::eventCallback(struct bufferevent *bufferEvent, short events, 
 
         printf( "%s connected\n", clientSessData->clientAddress);
 
+
         ssl = bufferevent_openssl_get_ssl(bufferEvent);
 
         /* Negotiate ALPN on initial connection */
@@ -41,18 +67,31 @@ void h2_callbacks::eventCallback(struct bufferevent *bufferEvent, short events, 
 
         if (alpn == NULL || alpnlen != 2 || memcmp("h2", alpn, 2) != 0) {
             printf("%s h2 negotiation failed\n", clientSessData->clientAddress);
-            /* TODO: delete_client_sess_data(clientSessData); */
-            return;
-        }
-
-        /*
-        if(send_connection_header(clientSessData) != 0 ||
-            client_sess_send(clientSessData) != 0) {
             // TODO: delete_client_sess_data(clientSessData);
             return;
         }
 
+        if(h2_utils::sendConnectionHeader(clientSessData) != 0) {
+            // TODO: delete_client_sess_data(clientSessData);
+            return;
+        }
         return;
-        */
     }
+}
+
+void h2_callbacks::acceptCallback(struct evconnlistener *conListener, int sock,
+                                  struct sockaddr *address, int address_length, void *arg) {
+    auto *appCtx = (ApplicationContext *) arg;
+    ClientSessionData *clientSessData;
+
+    if (printTrackers) {
+        cout << "[ acceptCallback]: " << "sock: " << sock << ", address: " << address << endl;
+    }
+
+
+    (void) conListener;
+
+    clientSessData = h2_utils::createClientSessionData(appCtx, sock, address, address_length);
+    bufferevent_setcb(clientSessData->bufferEvent, readCallback, writeCallback, eventCallback, clientSessData);
+
 }
