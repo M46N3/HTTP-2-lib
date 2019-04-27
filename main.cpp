@@ -587,7 +587,7 @@ static void headerFrameHandler(client_sess_data *clientSessData, const unsigned 
             break;
         }
     }
-    //cout << "\nMethod: " << method << ", Path: " << path << endl;
+    cout << "\nMethod: " << method << ", Path: " << path << endl;
     if (method == "GET") {
         sendGetResponse(clientSessData, data);
     }
