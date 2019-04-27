@@ -24,15 +24,9 @@
 
 using namespace std;
 
-static unsigned char next_proto_list[256];
-static size_t next_proto_list_len;
-
-
 bool printComments; // Turn off comments.
 bool printTrackers; // boolean to turn on/off printing of tracker-comments.
 bool printFrames; // boolean to turn on/off printing of frames.
-
-
 
 void initOpenssl() {
     if (printTrackers) {
@@ -46,14 +40,6 @@ void initOpenssl() {
 void cleanup_openssl() {
     EVP_cleanup();
 }
-
-
-struct stream_data {
-    struct stream_data *prev, *next;
-    char *requested_path;
-    int32_t stream_id;
-    int sock;
-} stream_data;
 
 
 /// serverListen - Sets up the server and starts listening on the given port.
@@ -126,7 +112,7 @@ int main(int argc, char **argv) {
     struct sigaction act;
 
     if (argc < 4) {
-        cerr << "http2-server PORT PRIVATE_KEY_FILE CERT_FILE\n" << endl;
+        cerr << "http2-server PORT PRIVATE_KEY_FILE CERT_FILE [OPTIONAL FLAG]--verbose\n" << endl;
         exit(EXIT_FAILURE);
     }
 
@@ -134,9 +120,13 @@ int main(int argc, char **argv) {
     act.sa_handler = SIG_IGN;
     sigaction(SIGPIPE, &act, NULL);
 
-    printComments = true;
-    printTrackers = true;
-    printFrames = true;
+    if (argc == 5 && argv[4] == string("--verbose")) {
+        printComments = true;
+        printTrackers = true;
+        printFrames = true;
+    } else {
+        printComments = printTrackers = printFrames = false;
+    }
 
     initOpenssl();
 
