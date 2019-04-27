@@ -7,9 +7,8 @@
 #include <nghttp2/nghttp2.h>
 #include <string.h>
 #include <event2/bufferevent_ssl.h>
+#include "h2_global.hpp"
 
-
-bool printFrames = true;
 
 void h2_frame_handlers::frameHandler(struct ClientSessionData *clientSessData, const unsigned char *data, size_t length) {
     switch (data[3]) {

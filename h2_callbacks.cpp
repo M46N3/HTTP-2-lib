@@ -3,14 +3,13 @@
 #include "h2_structs.hpp"
 #include "h2_callbacks.hpp"
 #include "h2_utils.hpp"
+#include "h2_global.hpp"
 #include <iostream>
 #include <string.h>
 #include <event2/bufferevent_ssl.h>
 #include <openssl/ssl.h>
 
 using namespace std;
-bool printTrackers = true;
-//bool printComments = true;
 
 
 /// readCallback - Callback triggered when there is data to be read in the evbuffer.
