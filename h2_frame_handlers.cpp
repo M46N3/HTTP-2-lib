@@ -260,47 +260,25 @@ void h2_frame_handlers::settingsFrameHandler(ClientSessionData *clientSessData, 
         }
         cout << endl << endl;
     }
+    const bool acknowledge = bitset<8>(data[4])[0];      // ACK = 0x1
+    ulong payloadLength = h2_utils::hexToUlong(h2_utils::bytesToString(data, 0, 3));
 
 
-//    TODO: Kan kommentarene her fjernes?
-//    const bool padded = bitset<8>(data[4])[3];
-//    const bool priority = bitset<8>(data[4])[5];
-//
-//    ulong streamID = hexToUlong(bytesToString(data, 5, 9));
-//    cout << "StreamID: " << streamID << endl;
-//
-//    if (flagArray[7] == '1' && payloadLength != 0) {
-//        cout << "yippie kay yay madafaka" << endl;
-//
-//        // FRAME_SIZE_ERROR (0x6):
-//        char dataSend[] = { 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 };
-//        bufferevent_write(clientSessData->bufferEvent, dataSend, 9);
-//    }
+    //    TODO: Do more than just acknowledge the settings frame. Save data from settings frame.
+    if (!acknowledge) {
+        unsigned char ackSettingsFrame[] = { 0x00, 0x00, 0x00, Types::SETTINGS, 0x01, 0x00, 0x00, 0x00, 0x00 };
+        bufferevent_write(clientSessData->bufferEvent, ackSettingsFrame, 9);
+    }
 
-
-//    if () {
-//
-//    }
-
-
-//    ulong payloadLength = bitset<24>(data[0] + data[1] + data[2]).to_ulong();
-//    cout << endl;
-//    cout << "Payload length: " << payloadLength << endl;
-//
-//    string flagString = bitset<8>(data[4]).to_string();
-//
-//    char flagArray[8] = {0};
-//    std::copy(flagString.begin(), flagString.end(), flagArray);
-    // ACK
-//            char data[] = { 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 };
-//            bufferevent_write(clientSessData->bufferEvent, data, 9);
-
-//    cout << "\nFlag ACK: " << flagArray[7] << endl;
-//    cout << "payloadLength: " << payloadLength << endl;
-//    if (payloadLength % 6 != 0) {
-//        char data[] = { 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00 };
-//        bufferevent_write(clientSessData->bufferEvent, data, 9);
-//    }
+    if (acknowledge && payloadLength != 0) {
+//        TODO: Send GOAWAY connection error.
+        cout << "GOAWAY" << endl << endl;
+        unsigned char goawayFrame[] = { 0x00, 0x00, 0x08, Types::GOAWAY, 0x00,
+                                        0x00, 0x00, 0x00, 0x00,
+                                        data[5], data[6], data[7], data[8],
+                                        0x00, 0x00, 0x00, ErrorCodes::FRAME_SIZE_ERROR };
+        bufferevent_write(clientSessData->bufferEvent, goawayFrame, 17);
+    }
 }
 
 void h2_frame_handlers::pingFrameHandler(ClientSessionData *clientSessData, const unsigned char *data, size_t length) {
