@@ -549,6 +549,9 @@ static void headerFrameHandler(client_sess_data *clientSessData, const unsigned 
     auto *in = (uint8_t*)data + 9 + (priority ? 5 : 0) + (padded ? 1 : 0);
     size_t inlen = length - 9 - (priority ? 5 : 0) - padlength;
 
+    string method;
+    string path;
+
     for (;;) {
         nghttp2_nv nv;
         int inflate_flags = 0;
@@ -569,6 +572,10 @@ static void headerFrameHandler(client_sess_data *clientSessData, const unsigned 
 
         if (inflate_flags & NGHTTP2_HD_INFLATE_EMIT) {
             printf("\n%s : %s", nv.name, nv.value);
+            string name = (char*) nv.name;
+            string value = (char*) nv.value;
+            if (name == ":method") method = value;
+            if (name == ":path") path = value;
         }
 
         if (inflate_flags & NGHTTP2_HD_INFLATE_FINAL) {
@@ -580,7 +587,10 @@ static void headerFrameHandler(client_sess_data *clientSessData, const unsigned 
             break;
         }
     }
-    sendGetResponse(clientSessData, data);
+    //cout << "\nMethod: " << method << ", Path: " << path << endl;
+    if (method == "GET") {
+        sendGetResponse(clientSessData, data);
+    }
 }
 
 static void settingsFrameHandler(client_sess_data *clientSessData, const unsigned char *data, size_t length) {
