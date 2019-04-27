@@ -1,5 +1,6 @@
-#ifndef NETTVERKSPROG_PROSJEKT_H2_STRUCTS_H
-#define NETTVERKSPROG_PROSJEKT_H2_STRUCTS_H
+// h2_structs.hpp
+
+#pragma once
 #include <openssl/ssl.h>
 
 struct ApplicationContext {
@@ -8,10 +9,9 @@ struct ApplicationContext {
 };
 
 struct ClientSessionData {
-    struct stream_data root;
+    //struct stream_data root;
     struct bufferevent *bufferEvent;
     struct ApplicationContext *appCtx;
     //h2_session *session;
     char *clientAddress;
 };
-#endif //NETTVERKSPROG_PROSJEKT_H2_STRUCTS_H

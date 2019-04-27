@@ -1,3 +1,6 @@
+// frames.hpp
+
+#pragma once
 #include <cstdio>
 #include <bitset>
 #include <iostream>
@@ -51,6 +54,7 @@ enum ErrorCodes {
     HTTP_1_1_REQUIRED = 0xd
 };
 
+/*
 struct frame {
     bitset<24> length;
     bitset<8> type;
@@ -79,15 +83,16 @@ char* settingsframe(bitset<8> flags, bitset<31> stream_id) {
     settings.r = bitset<1>(0x0);
     settings.stream_id = stream_id;
 
-    /*cout << settings.length << endl;
+    cout << settings.length << endl;
     cout << settings.type << endl;
     cout << settings.flags << endl;
     cout << settings.r << endl;
     cout << settings.stream_id << endl;
-    cout << getAll(settings) << endl;*/
+    cout << getAll(settings) << endl;
 
     return getBytes(settings);
 }
+
 
 char* getBytes(frame frame) {
     string s = frame.length.to_string() + frame.type.to_string() + frame.flags.to_string() + frame.r.to_string() + frame.stream_id.to_string();
@@ -120,3 +125,4 @@ char* getBytesString(frame frame, const string &payload, size_t len) {
     }
     return chars;
 }
+ */
