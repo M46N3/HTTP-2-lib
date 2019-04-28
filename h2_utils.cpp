@@ -196,7 +196,7 @@ void h2_utils::addRoute(ApplicationContext *appCtx, string path, string filepath
 string h2_utils::resolvePath(ClientSessionData *clientSessData, string path) {
     string filepath = publicDir + path;
     ifstream in(filepath);
-    cout << filepath << endl;
+    //cout << filepath << endl;
 
     if (!clientSessData->appCtx->routes[path].empty()) {
         filepath = publicDir + clientSessData->appCtx->routes[path];
