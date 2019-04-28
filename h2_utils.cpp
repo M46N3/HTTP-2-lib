@@ -32,6 +32,8 @@
 #include <string.h>
 #include <sstream>
 #include <fstream>
+#include <regex>
+#include <iterator>
 
 using namespace std;
 
@@ -210,15 +212,34 @@ string h2_utils::resolvePath(ClientSessionData *clientSessData, string path) {
 }
 
 void h2_utils::getResponse200(struct ClientSessionData *clientSessData, const unsigned char *data, string filepath) {
+    regex filetype_regex(".{1}\\w+$");
+    auto filetype_found = sregex_iterator(filepath.begin(), filepath.end(), filetype_regex);
+    smatch match = *filetype_found;
+    string filetype = match.str();
+    cout << filetype << endl;
+
     // HEADER FRAME:
     ssize_t rv;
 
-    nghttp2_nv nva[] = {
+    uint8_t *content_type;
+    if (filetype == ".html") content_type = (uint8_t*)"text/html;charset=UTF-8";
+    else if (filetype == ".css") content_type = (uint8_t*)"text/css;charset=UTF-8";
+    else return;
+
+    nghttp2_nv nvaHTML[] = {
             MAKE_NV(":status", "200"),
             MAKE_NV("content-type", "text/html;charset=UTF-8")
     };
 
-    size_t nvlen = sizeof(nva) / sizeof(nva[0]);
+    nghttp2_nv nvaCSS[] = {
+            MAKE_NV(":status", "200"),
+            MAKE_NV("content-type", "text/css;charset=UTF-8")
+    };
+
+    nghttp2_nv nvaJS[] = {
+            MAKE_NV(":status", "200"),
+            MAKE_NV("content-type", "text/javascript;charset=UTF-8")
+    };
 
     uint8_t *buf;
     size_t buflen;
@@ -226,27 +247,81 @@ void h2_utils::getResponse200(struct ClientSessionData *clientSessData, const un
     size_t i;
     size_t sum = 0;
 
-    for (i = 0; i < nvlen; ++i) {
-        sum += nva[i].namelen + nva[i].valuelen;
-    }
-
-    //printf("Input (%zu byte(s)):\n\n", sum);
-    if (printFrames) {
-        cout << "\nHEADER FIELDS SENT:" << endl;
+    if (filetype == ".html") {
+        size_t nvlen = sizeof(nvaHTML) / sizeof(nvaHTML[0]);
 
         for (i = 0; i < nvlen; ++i) {
-            fwrite(nva[i].name, 1, nva[i].namelen, stdout);
-            printf(": ");
-            fwrite(nva[i].value, 1, nva[i].valuelen, stdout);
+            sum += nvaHTML[i].namelen + nvaHTML[i].valuelen;
+        }
+
+        //printf("Input (%zu byte(s)):\n\n", sum);
+        if (printFrames) {
+            cout << "\nHEADER FIELDS SENT:" << endl;
+
+            for (i = 0; i < nvlen; ++i) {
+                fwrite(nvaHTML[i].name, 1, nvaHTML[i].namelen, stdout);
+                printf(": ");
+                fwrite(nvaHTML[i].value, 1, nvaHTML[i].valuelen, stdout);
+                printf("\n");
+            }
             printf("\n");
         }
-        printf("\n");
+
+        buflen = nghttp2_hd_deflate_bound(clientSessData->deflater, nvaHTML, nvlen);
+        buf = static_cast<uint8_t *>(malloc(buflen));
+
+        rv = nghttp2_hd_deflate_hd(clientSessData->deflater, buf, buflen, nvaHTML, nvlen);
+    } else if (filetype == ".css") {
+        size_t nvlen = sizeof(nvaCSS) / sizeof(nvaCSS[0]);
+
+        for (i = 0; i < nvlen; ++i) {
+            sum += nvaCSS[i].namelen + nvaCSS[i].valuelen;
+        }
+
+        //printf("Input (%zu byte(s)):\n\n", sum);
+        if (printFrames) {
+            cout << "\nHEADER FIELDS SENT:" << endl;
+
+            for (i = 0; i < nvlen; ++i) {
+                fwrite(nvaCSS[i].name, 1, nvaCSS[i].namelen, stdout);
+                printf(": ");
+                fwrite(nvaCSS[i].value, 1, nvaCSS[i].valuelen, stdout);
+                printf("\n");
+            }
+            printf("\n");
+        }
+
+        buflen = nghttp2_hd_deflate_bound(clientSessData->deflater, nvaCSS, nvlen);
+        buf = static_cast<uint8_t *>(malloc(buflen));
+
+        rv = nghttp2_hd_deflate_hd(clientSessData->deflater, buf, buflen, nvaCSS, nvlen);
+    } else if (filetype == ".js") {
+        size_t nvlen = sizeof(nvaJS) / sizeof(nvaJS[0]);
+
+        for (i = 0; i < nvlen; ++i) {
+            sum += nvaJS[i].namelen + nvaJS[i].valuelen;
+        }
+
+        //printf("Input (%zu byte(s)):\n\n", sum);
+        if (printFrames) {
+            cout << "\nHEADER FIELDS SENT:" << endl;
+
+            for (i = 0; i < nvlen; ++i) {
+                fwrite(nvaJS[i].name, 1, nvaJS[i].namelen, stdout);
+                printf(": ");
+                fwrite(nvaJS[i].value, 1, nvaJS[i].valuelen, stdout);
+                printf("\n");
+            }
+            printf("\n");
+        }
+
+        buflen = nghttp2_hd_deflate_bound(clientSessData->deflater, nvaJS, nvlen);
+        buf = static_cast<uint8_t *>(malloc(buflen));
+
+        rv = nghttp2_hd_deflate_hd(clientSessData->deflater, buf, buflen, nvaJS, nvlen);
+    } else {
+        return;
     }
-
-    buflen = nghttp2_hd_deflate_bound(clientSessData->deflater, nva, nvlen);
-    buf = static_cast<uint8_t *>(malloc(buflen));
-
-    rv = nghttp2_hd_deflate_hd(clientSessData->deflater, buf, buflen, nva, nvlen);
 
     if (rv < 0) {
         fprintf(stderr, "nghttp2_hd_deflate_hd() failed with error: %s\n",
@@ -272,14 +347,8 @@ void h2_utils::getResponse200(struct ClientSessionData *clientSessData, const un
     bufferevent_write(clientSessData->bufferEvent, frame, outlen + 9);
 
     // DATA FRAME:
-    string s;
     ifstream in(filepath);
-    if (in) {
-        s = string((istreambuf_iterator<char>(in)), istreambuf_iterator<char>());
-    } else {
-        cout << "Could not read index.html" << endl;
-        // TODO: Return 404, check if file is found before sending 200
-    }
+    string s = string((istreambuf_iterator<char>(in)), istreambuf_iterator<char>());
     auto sLen = s.length();
     //cout << "sLen: " << sLen << endl;
 
