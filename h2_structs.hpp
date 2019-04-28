@@ -4,12 +4,14 @@
 #include <openssl/ssl.h>
 #include <nghttp2/nghttp2.h>
 #include <unordered_map>
-#include <string>
+#include <string.h>
+
+using namespace std;
 
 struct ApplicationContext {
     SSL_CTX *ctx;
     struct event_base *eventBase;
-    std::unordered_map<std::string, std::string> routes;
+    unordered_map<string, string> routes;
 };
 
 struct ClientSessionData {

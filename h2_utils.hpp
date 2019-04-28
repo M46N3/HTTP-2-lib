@@ -15,7 +15,8 @@ public:
     static string bytesToString(const unsigned char *data, size_t firstIndex, size_t secondIndex);
     static ulong hexToUlong(string hexString);
     static void sendGetResponse(struct ClientSessionData *clientSessData, const unsigned char *data, string path);
-    static void addPath(struct ApplicationContext *appCtx, string path, string filepath);
+    static void setPublicDir(string dir);
+    static void addRoute(struct ApplicationContext *appCtx, string path, string filepath);
     static string resolvePath(struct ClientSessionData *clientSessData, string path);
     static void getResponse200(struct ClientSessionData *clientSessData, const unsigned char *data, string filepath);
     static void getResponse404(struct ClientSessionData *clientSessData, const unsigned char *data);
