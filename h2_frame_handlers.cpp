@@ -154,7 +154,7 @@ void h2_frame_handlers::headerFrameHandler(ClientSessionData *clientSessData, co
     const bool padded = bitset<8>(data[4])[3];      // PADDED = 0x8
     const bool priority = bitset<8>(data[4])[5];    // PRIORITY = 0x20
 
-    cout << "\nPayload:";
+    if (printFrames) cout << "\nPayload:";
 
     // HPACK decoding:
     ssize_t rv;
@@ -189,7 +189,7 @@ void h2_frame_handlers::headerFrameHandler(ClientSessionData *clientSessData, co
         inlen -= proclen;
 
         if (inflate_flags & NGHTTP2_HD_INFLATE_EMIT) {
-            printf("\n%s : %s", (char*) nv.name, (char*) nv.value);
+            if (printFrames) printf("\n%s : %s", (char*) nv.name, (char*) nv.value);
             string name = (char*) nv.name;
             string value = (char*) nv.value;
             if (name == ":method") method = value;

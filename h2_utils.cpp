@@ -2,6 +2,8 @@
 
 #include <utility>
 
+#include <utility>
+
 // h2_utils.cpp
 
 #include "h2_utils.hpp"
@@ -167,7 +169,7 @@ ulong h2_utils::hexToUlong(string hexString) {
   }
 
 void h2_utils::sendGetResponse(ClientSessionData *ClientSessData, const unsigned char *data, string path) {
-    string filepath = resolvePath(std::move(path));
+    string filepath = resolvePath(ClientSessData, std::move(path));
     if (!filepath.empty()) {
         getResponse200(ClientSessData, data, filepath);
     } else {
@@ -175,11 +177,15 @@ void h2_utils::sendGetResponse(ClientSessionData *ClientSessData, const unsigned
     }
 }
 
-string h2_utils::resolvePath(string path) {
+void h2_utils::addPath(ApplicationContext *appCtx, string path, string filepath) {
+    appCtx->routes[path] = std::move(filepath);
+}
+
+string h2_utils::resolvePath(ClientSessionData *clientSessData, string path) {
     // TODO: Find routes from serverwide list of routes
     // TODO: Handle different file types (.css and .js)
-    if (path == "/") {
-        return "../index.html";
+    if (!clientSessData->appCtx->routes[path].empty()) {
+        return clientSessData->appCtx->routes[path];
     } else {
         return "";
     }
@@ -207,15 +213,17 @@ void h2_utils::getResponse200(struct ClientSessionData *clientSessData, const un
     }
 
     //printf("Input (%zu byte(s)):\n\n", sum);
-    cout << "\n\nHEADER FIELDS SENT:" << endl;
+    if (printFrames) {
+        cout << "\nHEADER FIELDS SENT:" << endl;
 
-    for (i = 0; i < nvlen; ++i) {
-        fwrite(nva[i].name, 1, nva[i].namelen, stdout);
-        printf(": ");
-        fwrite(nva[i].value, 1, nva[i].valuelen, stdout);
+        for (i = 0; i < nvlen; ++i) {
+            fwrite(nva[i].name, 1, nva[i].namelen, stdout);
+            printf(": ");
+            fwrite(nva[i].value, 1, nva[i].valuelen, stdout);
+            printf("\n");
+        }
         printf("\n");
     }
-    printf("\n");
 
     buflen = nghttp2_hd_deflate_bound(clientSessData->deflater, nva, nvlen);
     buf = static_cast<uint8_t *>(malloc(buflen));
@@ -305,16 +313,18 @@ void h2_utils::getResponse404(struct ClientSessionData *clientSessData, const un
         sum += nva[i].namelen + nva[i].valuelen;
     }
 
-    //printf("Input (%zu byte(s)):\n\n", sum);
-    cout << "\n\nHEADER FIELDS SENT:" << endl;
+    if (printFrames) {
+        //printf("Input (%zu byte(s)):\n\n", sum);
+        cout << "\n\nHEADER FIELDS SENT:" << endl;
 
-    for (i = 0; i < nvlen; ++i) {
-        fwrite(nva[i].name, 1, nva[i].namelen, stdout);
-        printf(": ");
-        fwrite(nva[i].value, 1, nva[i].valuelen, stdout);
+        for (i = 0; i < nvlen; ++i) {
+            fwrite(nva[i].name, 1, nva[i].namelen, stdout);
+            printf(": ");
+            fwrite(nva[i].value, 1, nva[i].valuelen, stdout);
+            printf("\n");
+        }
         printf("\n");
     }
-    printf("\n");
 
     buflen = nghttp2_hd_deflate_bound(clientSessData->deflater, nva, nvlen);
     buf = static_cast<uint8_t *>(malloc(buflen));

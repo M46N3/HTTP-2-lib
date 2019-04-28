@@ -21,12 +21,14 @@
 #include "h2_structs.hpp"
 #include "h2_config.hpp"
 #include "h2_global.hpp"
+#include "h2_utils.hpp"
 
 using namespace std;
 
 bool printComments; // Turn off comments.
 bool printTrackers; // boolean to turn on/off printing of tracker-comments.
 bool printFrames; // boolean to turn on/off printing of frames.
+ApplicationContext appCtx;
 
 void initOpenssl() {
     if (printTrackers) {
@@ -92,13 +94,17 @@ static void run(const char *port, const char *certKeyFile, const char *certFile)
     }
 
     SSL_CTX *sslCtx;
-    ApplicationContext appCtx;
+    //ApplicationContext appCtx;
     struct event_base *eventBase;
+    std::unordered_map<std::string, std::string> routes = {};
 
     sslCtx = h2_config::createSslContext();
     h2_config::configureContext(sslCtx, certKeyFile, certFile);
     eventBase = event_base_new();
-    h2_config::createApplicationContext(&appCtx, sslCtx, eventBase);
+    h2_config::createApplicationContext(&appCtx, sslCtx, eventBase, routes);
+
+    h2_utils::addPath(&appCtx, "/", "../index.html");
+    h2_utils::addPath(&appCtx, "/2", "../index2.html");
 
     serverListen(eventBase, port, &appCtx);
 
@@ -118,7 +124,7 @@ int main(int argc, char **argv) {
 
     memset(&act, 0, sizeof(struct sigaction));
     act.sa_handler = SIG_IGN;
-    sigaction(SIGPIPE, &act, NULL);
+    sigaction(SIGPIPE, &act, nullptr);
 
     if (argc == 5 && argv[4] == string("--verbose")) {
         printComments = true; // Turn off comments.
