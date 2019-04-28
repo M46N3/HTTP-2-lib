@@ -1,17 +1,3 @@
-#include <utility>
-
-#include <utility>
-
-#include <utility>
-
-#include <utility>
-
-#include <utility>
-
-#include <utility>
-
-#include <utility>
-
 // h2_utils.cpp
 
 #include "h2_utils.hpp"
@@ -178,6 +164,13 @@ ulong h2_utils::hexToUlong(string hexString) {
         NGHTTP2_NV_FLAG_NONE                                                   \
   }
 
+
+/// sendGetResponse - Send a get response when recieving a request
+///
+/// @param ClientSessData - ClientSessionData
+/// @param data - pointer to array with the request
+/// @param path - where to find requested resource
+
 void h2_utils::sendGetResponse(ClientSessionData *ClientSessData, const unsigned char *data, string path) {
     string filepath = resolvePath(ClientSessData, std::move(path));
     if (!filepath.empty()) {
@@ -187,13 +180,31 @@ void h2_utils::sendGetResponse(ClientSessionData *ClientSessData, const unsigned
     }
 }
 
+
+/// setPublicDir - set the path to be used as public directory on the server
+///
+/// @param dir - string with the path
+
 void h2_utils::setPublicDir(string dir) {
     publicDir = std::move(dir);
 }
 
+
+/// addRoute - Add a route for a file to be served on
+///
+/// @param appCtx - ApplicationContext for whole server
+/// @param path - route to serve
+/// @param filepath - path of the file to serve, in publicDir
+
 void h2_utils::addRoute(ApplicationContext *appCtx, string path, string filepath) {
     appCtx->routes[path] = std::move(filepath);
 }
+
+/// resolvePath - resolves user-defined routes, and returns the filepath in publicDir
+///
+/// @param clientSessData - ClientSessionData to access list of routes
+/// @param path - path to resolve
+/// @return string - filepath in publicDir
 
 string h2_utils::resolvePath(ClientSessionData *clientSessData, string path) {
     string filepath = publicDir + path;
@@ -211,6 +222,13 @@ string h2_utils::resolvePath(ClientSessionData *clientSessData, string path) {
     }
 }
 
+
+/// getResponse200 - responds to get request with html, js or css file
+///
+/// @param clientSessData - ClientSessionData, Used to respond to correct client
+/// @param data - pointer to array containing request
+/// @param filepath - where the requested file is located
+
 void h2_utils::getResponse200(struct ClientSessionData *clientSessData, const unsigned char *data, string filepath) {
     regex filetype_regex(".{1}\\w+$");
     auto filetype_found = sregex_iterator(filepath.begin(), filepath.end(), filetype_regex);
@@ -220,11 +238,6 @@ void h2_utils::getResponse200(struct ClientSessionData *clientSessData, const un
 
     // HEADER FRAME:
     ssize_t rv;
-
-    uint8_t *content_type;
-    if (filetype == ".html") content_type = (uint8_t*)"text/html;charset=UTF-8";
-    else if (filetype == ".css") content_type = (uint8_t*)"text/css;charset=UTF-8";
-    else return;
 
     nghttp2_nv nvaHTML[] = {
             MAKE_NV(":status", "200"),
@@ -335,7 +348,19 @@ void h2_utils::getResponse200(struct ClientSessionData *clientSessData, const un
     outlen = (size_t) rv;
     //cout << "outlen: " << outlen << endl;
 
-    unsigned char frameHeader[] = {0x00, 0x00, (unsigned char) outlen,     // Length
+    size_t outlen1 = outlen;
+    size_t outlen2 = 0;
+    size_t outlen3 = 0;
+    if (outlen < 16777216) {       // Big enough to need 3 bytes to represent length
+        outlen3 = outlen / 65536;
+        outlen2 = (outlen % 65536) / 256;
+        outlen1 = outlen % 256;
+        // cout << outlen3 << "\t" << outlen2 << "\t" << outlen1 << endl;
+    } else {                                            // Big enough to need more than 1 frame
+        // TODO: Handle payloads, long enough to need more than 1 frame
+    }
+
+    unsigned char frameHeader[] = {(unsigned char) outlen3, (unsigned char) outlen2, (unsigned char) outlen1,     // Length
                                    Types::HEADERS,                         // Type
                                    END_HEADERS,                            // Flags
                                    data[5], data[6], data[7], data[8]};               // Stream-ID
@@ -355,11 +380,7 @@ void h2_utils::getResponse200(struct ClientSessionData *clientSessData, const un
     size_t sLen1 = sLen;
     size_t sLen2 = 0;
     size_t sLen3 = 0;
-    if (sLen > 255 && sLen < 65536) {                   // Big enough to need 2 bytes to represent length
-        sLen2 = sLen / 256;
-        sLen1 = sLen % 256;
-        // cout << sLen2 << "\t" << sLen1 << endl;
-    } else if (sLen > 65535 && sLen < 16777216) {       // Big enough to need 3 bytes to represent length
+    if (sLen < 16777216) {       // Big enough to need 3 bytes to represent length
         sLen3 = sLen / 65536;
         sLen2 = (sLen % 65536) / 256;
         sLen1 = sLen % 256;
@@ -379,6 +400,12 @@ void h2_utils::getResponse200(struct ClientSessionData *clientSessData, const un
 
     bufferevent_write(clientSessData->bufferEvent, frame2, sLen + 9);
 }
+
+
+/// getResponse404 - sends a 404 Not Found response
+///
+/// @param clientSessData - ClientSessionData
+/// @param data - pointer to array containing request
 
 void h2_utils::getResponse404(struct ClientSessionData *clientSessData, const unsigned char *data) {
     // HEADER FRAME:
