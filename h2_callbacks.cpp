@@ -18,7 +18,7 @@ using namespace std;
 /// @param ptr - The user-specified context for this bufferevent, which is the ClientSessionData object.
 
 void h2_callbacks::readCallback(struct bufferevent *bufferEvent, void *ptr) {
-    cout << "[ readCallback ]" << endl;
+    if (printTrackers) cout << "[ readCallback ]" << endl;
     auto *clientSessData = (ClientSessionData *)ptr;
     (void)bufferEvent;
 
