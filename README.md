@@ -13,7 +13,7 @@ Development port: 8443
 
 
 ## Introduction
-This is an introduction..
+This library is an implementation of the [RFC 7540](https://tools.ietf.org/html/rfc7540) - Hypertext Transfer Protocol Version 2 (HTTP/2) in c++.
 
 
 ## Implemented functionality
