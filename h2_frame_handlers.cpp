@@ -289,9 +289,9 @@ void h2_frame_handlers::pingFrameHandler(ClientSessionData *clientSessData, cons
         for (size_t i = 0; i < length; ++i) response[i] = data[i];
         response[4] = 0x1;
         bufferevent_write(clientSessData->bufferEvent, response, length);
-        cout << "\nResponded to PING frame" << endl;
+        if (printFrames) cout << "\nResponded to PING frame" << endl;
     } else {
-        cout << "\nRevieved PING response" << endl;
+        if (printFrames) cout << "\nRevieved PING response" << endl;
     }
 }
 

@@ -29,6 +29,7 @@ bool printComments; // Turn off comments.
 bool printTrackers; // boolean to turn on/off printing of tracker-comments.
 bool printFrames; // boolean to turn on/off printing of frames.
 ApplicationContext appCtx;
+string publicDir;
 
 void initOpenssl() {
     if (printTrackers) {
@@ -96,15 +97,17 @@ static void run(const char *port, const char *certKeyFile, const char *certFile)
     SSL_CTX *sslCtx;
     //ApplicationContext appCtx;
     struct event_base *eventBase;
-    std::unordered_map<std::string, std::string> routes = {};
+    unordered_map<string, string> routes = {};
 
     sslCtx = h2_config::createSslContext();
     h2_config::configureContext(sslCtx, certKeyFile, certFile);
     eventBase = event_base_new();
     h2_config::createApplicationContext(&appCtx, sslCtx, eventBase, routes);
 
-    h2_utils::addPath(&appCtx, "/", "../index.html");
-    h2_utils::addPath(&appCtx, "/2", "../index2.html");
+    // Configure routes and public directory
+    h2_utils::setPublicDir("../public");
+    h2_utils::addRoute(&appCtx, "/", "/index.html");
+    h2_utils::addRoute(&appCtx, "/2", "/index2.html");
 
     serverListen(eventBase, port, &appCtx);
 

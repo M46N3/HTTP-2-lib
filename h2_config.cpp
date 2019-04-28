@@ -1,3 +1,7 @@
+#include <utility>
+
+#include <utility>
+
 // h2_config.cpp
 
 #include "h2_config.hpp"
@@ -144,7 +148,7 @@ void h2_config::createApplicationContext(ApplicationContext *appCtx, SSL_CTX *ss
     memset(appCtx, 0, sizeof(ApplicationContext));
     appCtx->ctx = sslCtx;
     appCtx->eventBase = eventBase_;
-    appCtx->routes = routes;
+    appCtx->routes = std::move(routes);
 }
 
 

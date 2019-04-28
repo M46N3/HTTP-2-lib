@@ -4,6 +4,14 @@
 
 #include <utility>
 
+#include <utility>
+
+#include <utility>
+
+#include <utility>
+
+#include <utility>
+
 // h2_utils.cpp
 
 #include "h2_utils.hpp"
@@ -177,15 +185,25 @@ void h2_utils::sendGetResponse(ClientSessionData *ClientSessData, const unsigned
     }
 }
 
-void h2_utils::addPath(ApplicationContext *appCtx, string path, string filepath) {
+void h2_utils::setPublicDir(string dir) {
+    publicDir = std::move(dir);
+}
+
+void h2_utils::addRoute(ApplicationContext *appCtx, string path, string filepath) {
     appCtx->routes[path] = std::move(filepath);
 }
 
 string h2_utils::resolvePath(ClientSessionData *clientSessData, string path) {
-    // TODO: Find routes from serverwide list of routes
-    // TODO: Handle different file types (.css and .js)
+    string filepath = publicDir + path;
+    ifstream in(filepath);
+    cout << filepath << endl;
+
     if (!clientSessData->appCtx->routes[path].empty()) {
-        return clientSessData->appCtx->routes[path];
+        filepath = publicDir + clientSessData->appCtx->routes[path];
+        return filepath;
+    } else if (in) {
+        // TODO: Handle different file types (.css and .js)
+        return filepath;
     } else {
         return "";
     }
