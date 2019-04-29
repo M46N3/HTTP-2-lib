@@ -34,10 +34,10 @@ HTTP-2-lib is an implementation of the [RFC 7540](https://tools.ietf.org/html/rf
 
 ## Installing dependencies
 Dependencies needed to use HTTP-2-lib:
-* [Boost](https://github.com/boostorg/boost): 
-* [libevent](https://github.com/libevent/libevent): 
-* [nghttp2](https://github.com/nghttp2/nghttp2): 
-* [OpenSSL](https://github.com/openssl/openssl): 
+* [Boost](https://github.com/boostorg/boost): Used for unit testing.
+* [libevent](https://github.com/libevent/libevent): Used for asynchronous buffer read and write.
+* [nghttp2](https://github.com/nghttp2/nghttp2): HPACK to compress and decompress header frames.
+* [OpenSSL](https://github.com/openssl/openssl): TLS and ALPN support.
 
 
 ## Compiling and running
