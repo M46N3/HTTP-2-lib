@@ -286,8 +286,9 @@ void h2_frame_handlers::settingsFrameHandler(ClientSessionData *clientSessData, 
     }
 
     if (acknowledge && payloadLength != 0) {
-//        TODO: Send GOAWAY connection error.
-        cout << "GOAWAY" << endl << endl;
+        if (printFrames) {
+            cout << "GOAWAY" << endl << endl;
+        }
         unsigned char goawayFrame[] = { 0x00, 0x00, 0x08, Types::GOAWAY, 0x00,
                                         0x00, 0x00, 0x00, 0x00,
                                         data[5], data[6], data[7], data[8],

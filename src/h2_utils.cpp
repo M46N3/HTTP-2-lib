@@ -203,7 +203,6 @@ string h2_utils::resolvePath(ClientSessionData *clientSessData, string path) {
         filepath = publicDir + clientSessData->appCtx->routes[path];
         return filepath;
     } else if (in) {
-        // TODO: Handle different file types (.css and .js)
         return filepath;
     } else {
         return "";
