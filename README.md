@@ -13,7 +13,7 @@
 <p align="center">
   <a href="https://m46n3.github.io/HTTP-2-lib/">Documentation</a>
   ·
-  <a href="www.nrk.no">CI LØSNING!!!!</a>
+  <a href="https://www.nrk.no/">CI LØSNING!!!!</a>
 </p>
 
 
