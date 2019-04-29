@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
     struct sigaction act;
 
     if (argc < 2) {
-        cerr << "Nettverksprog_prosjekt PORT [OPTIONAL FLAG]--verbose\n" << endl;
+        cerr << "HTTP-2-lib-server PORT [OPTIONAL FLAG]--verbose\n" << endl;
         exit(EXIT_FAILURE);
     }
 
