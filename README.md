@@ -10,6 +10,13 @@
   More efficient use of network resources, reduced perception of latency and multiple concurrent exchanges on the same connection.
 </p>
 
+<p align="center">
+  <a href="https://m46n3.github.io/HTTP-2-lib/">Documentation</a>
+  ·
+  <a href="www.nrk.no">CI LØSNING!!!!</a>
+</p>
+
+
 ## Table of contents
 
 - [Introduction](#introduction)
