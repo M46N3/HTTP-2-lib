@@ -10,4 +10,7 @@ language: cpp
 install:
   - chmod +x install_dependencies.sh
   - sudo ./install_dependencies.sh
-  -
+  - mkdir build && cd build
+  - cmake ..
+  - make
+
