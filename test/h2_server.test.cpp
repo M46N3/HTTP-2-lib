@@ -1,8 +1,6 @@
 #include <boost/test/unit_test.hpp>
 #include "../include/HTTP-2-lib/h2_server.hpp"
 #include "../src/h2_global.hpp"
-#include <string>
-#include <sstream>
 
 BOOST_AUTO_TEST_SUITE(test_suite_h2_server)
 

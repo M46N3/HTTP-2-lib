@@ -2,15 +2,10 @@
 
 #include "../include/HTTP-2-lib/h2_server.hpp"
 #include "h2_global.hpp"
-#include "h2_structs.hpp"
 #include "h2_callbacks.hpp"
 #include "h2_config.hpp"
-#include "h2_utils.hpp"
 #include <iostream>
 #include <netinet/tcp.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <openssl/ssl.h>
 #include <event2/listener.h>
 
 using namespace std;

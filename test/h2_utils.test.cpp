@@ -1,8 +1,5 @@
 #include <boost/test/unit_test.hpp>
 #include "../src/h2_utils.hpp"
-#include "../src/h2_global.hpp"
-#include <string>
-#include <sstream>
 
 using namespace std;
 
