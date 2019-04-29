@@ -1,0 +1,13 @@
+sudo: required
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install g++ make binutils autoconf automake autotools-dev libtool pkg-config zlib1g-dev libcunit1-dev libssl-dev libxml2-dev libev-dev libevent-dev -y
+
+# Enable C++ support
+language: cpp
+
+# Install dependencies
+install:
+  - chmod +x install_dependencies.sh
+  - sudo ./install_dependencies.sh
+  -

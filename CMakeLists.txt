@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.12)
 project(Nettverksprog_prosjekt)
 
 find_path(EVENT_INCLUDE_DIR event.h
