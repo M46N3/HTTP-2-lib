@@ -26,18 +26,6 @@
 
 using namespace std;
 
-/*
-bool printComments; // Turn off comments.
-bool printTrackers; // boolean to turn on/off printing of tracker-comments.
-bool printFrames; // boolean to turn on/off printing of frames.
-ApplicationContext appCtx;
-string publicDir;
-*/
-
-void cleanup_openssl() {
-    EVP_cleanup();
-}
-
 int main(int argc, char **argv) {
     struct sigaction act;
 
@@ -55,9 +43,9 @@ int main(int argc, char **argv) {
         printTrackers = true; // boolean to turn on/off printing of tracker-comments.
         printFrames = true; // boolean to turn on/off printing of frames.
     } else {
-        printComments = false; // Turn off comments.
-        printTrackers = false; // boolean to turn on/off printing of tracker-comments.
-        printFrames = false; // boolean to turn on/off printing of frames.
+        printComments = false;
+        printTrackers = false;
+        printFrames = false;
     }
 
     h2_server::run(argv[1], argv[2], argv[3]);

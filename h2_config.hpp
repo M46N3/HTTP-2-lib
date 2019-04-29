@@ -19,4 +19,5 @@ public:
     static SSL_CTX *createSslContext();
     static void configureContext(SSL_CTX *ctx, const char *certKeyFile, const char *certFile);
     static void initOpenssl();
+    static void cleanup_openssl();
 };

@@ -211,3 +211,7 @@ void h2_config::initOpenssl() {
     SSL_library_init();
     OpenSSL_add_ssl_algorithms();
 }
+
+void h2_config::cleanup_openssl() {
+    EVP_cleanup();
+}
