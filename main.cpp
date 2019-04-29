@@ -13,7 +13,7 @@
 #include <signal.h>
 #include <err.h>
 #include <netinet/tcp.h>
-#include "h2_frames.hpp"
+#include "h2_enums.hpp"
 #include <nghttp2/nghttp2.h>
 #include <sstream>
 #include <fstream>

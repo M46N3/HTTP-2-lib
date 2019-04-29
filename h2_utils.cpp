@@ -3,7 +3,7 @@
 #include "h2_utils.hpp"
 #include "h2_structs.hpp"
 #include "h2_frame_handlers.hpp"
-#include "h2_frames.hpp"
+#include "h2_enums.hpp"
 #include "h2_global.hpp"
 #include <iostream>
 #include <string.h>
