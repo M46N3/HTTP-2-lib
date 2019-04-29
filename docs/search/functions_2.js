@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['cleanup_5fopenssl',['cleanup_openssl',['../classh2__config.html#a921f0ece9327e5324dbe478bb13e37fb',1,'h2_config']]],
+  ['cleanupopenssl',['cleanupOpenssl',['../classh2__config.html#ad6c34cc068311b57b96a95d228837568',1,'h2_config']]],
   ['configurealpn',['configureAlpn',['../classh2__config.html#adcd6fd3a9a3be8a5ea70e2a6e1988bac',1,'h2_config']]],
   ['configurecontext',['configureContext',['../classh2__config.html#acef781cb9a7766163b5214154793d821',1,'h2_config']]],
   ['createapplicationcontext',['createApplicationContext',['../classh2__config.html#adddf07923b8999ef50cab71aff7aee1e',1,'h2_config']]],

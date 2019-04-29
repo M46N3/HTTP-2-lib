@@ -69,12 +69,14 @@ $(function() {
  </a> </p>
 <h3 align="center">HTTP-2-lib</h3>
 <p>More efficient use of network resources, reduced perception of latency and multiple concurrent exchanges on the same connection. </p>
+<p><a href="https://m46n3.github.io/HTTP-2-lib/">Documentation</a> · <a href="https://www.nrk.no/">CI LØSNING!!!!</a> </p>
 <h2>Table of contents</h2>
 <ul>
 <li><a href="#introduction">Introduction</a></li>
 <li><a href="#prerequisites">Prerequisites</a></li>
 <li><a href="#installing-dependencies">Installing dependencies</a></li>
 <li><a href="#compiling-and-running">Compiling and running</a></li>
+<li><a href="#how-to-use">How to use</a></li>
 <li><a href="#short-introduction-to-HTTP2">Short introduction to HTTP2</a></li>
 <li><a href="#whats-included">What's included</a></li>
 <li><a href="#implemented-functionality">Implemented functionality</a></li>
@@ -96,7 +98,9 @@ $(function() {
 <li><a href="https://github.com/openssl/openssl">OpenSSL</a>: TLS and ALPN support.</li>
 </ul>
 <h2>Compiling and running</h2>
-<p>Text.. </p><div class="fragment"><div class="line">git clone https://github.com/M46N3/HTTP-2-lib.git</div></div><!-- fragment --><h2>Short introduction to HTTP2</h2>
+<p>Text.. </p><div class="fragment"><div class="line">git clone https://github.com/M46N3/HTTP-2-lib.git</div></div><!-- fragment --><h2>How to use</h2>
+<p>Text...</p>
+<h2>Short introduction to HTTP2</h2>
 <p>HTTP/2 has the same purpose as earlier versions of HTTP: to provide a standard way for web browsers and servers to talk to each other. The HTTP-protocol is in the application layer in the OSI-model. HTTP/2 provides an optimized transport for HTTP semantics and aims to be more efficient than earlier version of HTTP.</p>
 <p>HTTP/2 enables more efficient processing of messages with binary message framing. The original request response messages are divided into header-frames and data-frames. Header-frames is the same as headers in earlier versions, and data-frames is the same as body, but is sent as individually frames on the same stream.</p>
 <p>Head-of-line-blocking have been a problem in earlier versions of HTTP, HTTP/2 introduced multiplexing, which reduced the amount of head-of-line-blocking. Multiplexing of requests is achieved by each having HTTP request/response exchange associated with its own stream. Streams are largely independent of each other, so a blocked or stalled request or response does not prevent progress on other streams.</p>
