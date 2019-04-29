@@ -52,10 +52,10 @@ HTTP/2 has the same purpose as earlier versions of HTTP: to provide a standard w
 HTTP/2 enables more efficient processing of messages with binary message framing. The original request response messages are divided into header-frames and data-frames. Header-frames is the same as headers in earlier versions, and data-frames is the same as body, but is sent as individually frames on the same stream.
 
 Head-of-line-blocking have been a problem in earlier versions of HTTP, HTTP/2 introduced multiplexing, which reduced the amount of head-of-line-blocking. Multiplexing of requests is achieved by each having HTTP request/response exchange associated with its own stream. Streams are largely independent of each other, so a blocked or stalled request or response does not prevent progress on other streams.
-Flow control and prioritization is also important for HTTP/2, these ensure that it is possible to efficiently use multiplexed streams. 
-Server push is a new feature in HTTP/2 to make request/response more efficient.
 
-Server push allows a server to speculatively send data to a client that the server anticipates the client will need. For example, if the client is requesting index.html, the server push style.css and script.js to the client, because it predict that it will need it soon.
+Flow control and prioritization is also important for HTTP/2, these features ensure that it is possible to efficiently use multiplexed streams. 
+
+Server push is a new feature in HTTP/2 to make request/response more efficient. Server push allows a server to speculatively send data to a client that the server anticipates the client will need. For example, if the client is requesting index.html, the server push style.css and script.js to the client, because it predict that it will need it soon.
 
 In earlier version of HTTP we did not compress header fields, HTTP/2 is the first version to introduce header field compression. Because HTTP header fields used in a connection can contain large amounts of redundant data, we sent unnecessary amount of data instead of compressing it and reduce the amount of data sent over the connection.
 
@@ -67,15 +67,6 @@ Within the download you'll find the following directories and files:
 
 ```text
 HTTP-2-lib/
-├── cmake-build-debug/
-|   ├── CMakeFiles/
-|   ├── cmake_install.cmake
-|   ├── CMakeChache.txt
-|   ├── HTTP-2-lib-server
-|   ├── Makefile
-|   ├── report
-|   └── Tests
-|
 ├── include/
 |   └── HTTP-2-lib/
 |       └── h2_server.hpp
@@ -101,18 +92,19 @@ HTTP-2-lib/
 |   └── h2_utils.hpp
 │
 ├── tests/
-|    └── h2_utils.test.cpp
+|   ├── h2_server.test.cpp
+|   ├── h2_utils.test.cpp
+|   └── main.test.cpp
 |
 ├── cert.pem
 ├── CMakeLists.txt
 ├── main.cpp
 ├── key.pem
 └── README.md
-
 ```
 
 ## Implemented functionality
-We have implemented..
+HTTP-2-lib supports https, this is done by using [TLS]( https://tools.ietf.org/html/rfc5246) with [ALPN]( https://tools.ietf.org/html/rfc7301) extension. ALPN extension is used to negotiate the use of HTTP/2 with the client. Not all web browsers supports HTTP/2 over TLS, you can check which web browser that are supported [here]( https://caniuse.com/#search=http2).
 
 
 ## Future work
@@ -121,6 +113,7 @@ We have implemented..
 ## External information
 - [RFC 7540 - Hypertext Transfer Protocol Version 2 (HTTP/2)](https://tools.ietf.org/html/rfc7540)
 - [RFC 7541 - HPACK: Header Compression for HTTP/2](https://tools.ietf.org/html/rfc7541)
+- [RFC 5246 - The Transport Layer Security (TLS) Protocol Version 1.2](https://tools.ietf.org/html/rfc5246)
 - [RFC 7301 - Transport Layer Security (TLS), Application-Layer Protocol Negotiation Extension](https://tools.ietf.org/html/rfc7301)
 - [Tutorial:HTTP/2 server](https://nghttp2.org/documentation/tutorial-server.html#)
 - [Tutorial:HPACK API](https://nghttp2.org/documentation/tutorial-hpack.html)
