@@ -24,3 +24,12 @@ tar --bzip2 -xf ./boost_1_68_0.tar.bz2
 ls -al
 cp -r boost_1_68_0 /usr/local/
 rm -r boost_1_68_0
+
+# Openssl
+wget -O https://www.openssl.org/source/openssl-1.1.1b.tar.gz
+mv openssl-1.1.1b.tar.gz /usr/local/src/
+tar -xf /usr/local/src/openssl-1.1.1b.tar.gz
+cd /usr/local/src/openssl-1.1.1b
+./config --prefix=/usr/local/ssl --openssldir=/usr/local/ssl shared zlib
+make
+sudo make install

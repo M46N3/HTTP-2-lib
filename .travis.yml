@@ -2,7 +2,7 @@ sudo: required
 dist: xenial
 before_install:
   - sudo apt-get update
-  - sudo apt-get install g++-8 make binutils autoconf automake autotools-dev libtool pkg-config zlib1g-dev libcunit1-dev libssl-dev libxml2-dev libev-dev -y
+  - sudo apt-get install g++-8 make binutils autoconf automake autotools-dev libtool pkg-config zlib1g-dev libcunit1-dev libxml2-dev libev-dev -y
 
 # Enable C++ support
 language: cpp
@@ -28,8 +28,8 @@ script:
   - sudo ln -s /usr/bin/gcc-8 /usr/local/bin/gcc
   - sudo ln -s /usr/bin/g++-8 /usr/local/bin/g++
   # Export CC and CXX to tell cmake which compiler to use
-  - sudo export CC=/usr/bin/gcc-8
-  - sudo export CXX=/usr/bin/g++-8
+  - export CC=/usr/bin/gcc-8
+  - export CXX=/usr/bin/g++-8
   # Check versions of gcc, g++ and cmake
   - gcc -v && g++ -v && cmake --version
   # Run your build commands next
