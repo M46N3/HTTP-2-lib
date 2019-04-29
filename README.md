@@ -113,6 +113,7 @@ We have implemented..
 ## External information
 - [RFC 7540 - Hypertext Transfer Protocol Version 2 (HTTP/2)](https://tools.ietf.org/html/rfc7540)
 - [RFC 7541 - HPACK: Header Compression for HTTP/2](https://tools.ietf.org/html/rfc7541)
+- [RFC 5246 - The Transport Layer Security (TLS) Protocol Version 1.2](https://tools.ietf.org/html/rfc5246)
 - [RFC 7301 - Transport Layer Security (TLS), Application-Layer Protocol Negotiation Extension](https://tools.ietf.org/html/rfc7301)
 - [Tutorial:HTTP/2 server](https://nghttp2.org/documentation/tutorial-server.html#)
 - [Tutorial:HPACK API](https://nghttp2.org/documentation/tutorial-hpack.html)
