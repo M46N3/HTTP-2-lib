@@ -24,6 +24,7 @@
 - [Installing dependencies](#installing-dependencies)
 - [Compiling and running](#compiling-and-running)
 - [How to use](#how-to-use)
+- [Testing](#testing)
 - [Short introduction to HTTP2](#short-introduction-to-HTTP2)
 - [What's included](#whats-included)
 - [Implemented functionality](#implemented-functionality)
@@ -55,8 +56,17 @@ git clone https://github.com/M46N3/HTTP-2-lib.git
 ```
 
 ## How to use
-Text...
 
+```cpp
+int main() {
+  int y = SOME_MACRO_REFERENCE;
+  int x = 5 + 6;
+  cout << "Hello World! " << x << std::endl();
+}
+```
+
+## Testing
+Text...
 
 ## Short introduction to HTTP2
 HTTP/2 has the same purpose as earlier versions of HTTP: to provide a standard way for web browsers and servers to talk to each other. The HTTP-protocol is in the application layer in the OSI-model. HTTP/2 provides an optimized transport for HTTP semantics and aims to be more efficient than earlier version of HTTP.
@@ -120,6 +130,12 @@ HTTP-2-lib supports https, this is done by using [TLS]( https://tools.ietf.org/h
 
 
 ## Future work
+HTTP-2-lib is far from finished. The library is expected to include more features in the future such as flow control, server push, and its own implementation of the HPACK-algorithm. We also want to support bigger payloads with multiple frames.
+
+List of missing features:
+- [5.1. Stream States](https://tools.ietf.org/html/rfc7540#section-5.1)
+- [5.2. Flow Control](https://tools.ietf.org/html/rfc7540#section-5.2)
+- [5.3. Stream Priority]( https://tools.ietf.org/html/rfc7540#section-5.3)
 
 
 ## External information
