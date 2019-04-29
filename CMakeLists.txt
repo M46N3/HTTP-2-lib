@@ -33,7 +33,7 @@ find_package_handle_standard_args(NGHTTP2
 set(NGHTTP2_INCLUDE_DIRS ${NGHTTP2_INCLUDE_DIR})
 set(NGHTTP2_LIBRARIES ${NGHTTP2_LIBRARY})
 
-find_package(Boost 1.68.0)
+find_package(Boost) #1.68.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y -pthread -Wall -Wextra -Wno-unused-parameter")
