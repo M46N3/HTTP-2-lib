@@ -60,11 +60,65 @@ $(function() {
 </iframe>
 </div>
 
-<div class="header">
+<div class="PageDoc"><div class="header">
   <div class="headertitle">
 <div class="title">HTTP-2-lib Documentation</div>  </div>
 </div><!--header-->
 <div class="contents">
+<div class="textblock"><p><a href="https://github.com/M46N3/HTTP-2-lib/"><img src="http://i66.tinypic.com/2dkhfzt.png" alt="HTTP-2-lib logo" width="100" height="100" class="inline"/>
+ </a> </p>
+<h3 align="center">HTTP-2-lib</h3>
+<p>More efficient use of network resources, reduced perception of latency and multiple concurrent exchanges on the same connection. </p>
+<h2>Table of contents</h2>
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#installing-dependencies">Installing dependencies</a></li>
+<li><a href="#compiling-and-running">Compiling and running</a></li>
+<li><a href="#short-introduction-to-HTTP2">Short introduction to HTTP2</a></li>
+<li><a href="#whats-included">What's included</a></li>
+<li><a href="#implemented-functionality">Implemented functionality</a></li>
+<li><a href="#future-work">Future work</a></li>
+<li><a href="#external-information">External information</a></li>
+</ul>
+<h2>Introduction</h2>
+<p>HTTP-2-lib is an implementation of the <a href="https://tools.ietf.org/html/rfc7540">RFC 7540</a> - Hypertext Transfer Protocol Version 2 (HTTP/2) in C++. It is important to notice that this library is a work in progress, so there will be some missing HTTP/2-functionalities.</p>
+<h2>Prerequisites</h2>
+<ul>
+<li>Linux</li>
+<li><a href="https://gcc.gnu.org/">C++ compiler</a></li>
+</ul>
+<h2>Installing dependencies</h2>
+<p>Dependencies needed to use HTTP-2-lib:</p><ul>
+<li><a href="https://github.com/boostorg/boost">Boost</a>: Used for unit testing.</li>
+<li><a href="https://github.com/libevent/libevent">libevent</a>: Used for asynchronous buffer read and write.</li>
+<li><a href="https://github.com/nghttp2/nghttp2">nghttp2</a>: HPACK to compress and decompress header frames.</li>
+<li><a href="https://github.com/openssl/openssl">OpenSSL</a>: TLS and ALPN support.</li>
+</ul>
+<h2>Compiling and running</h2>
+<p>Text.. </p><div class="fragment"><div class="line">git clone https://github.com/M46N3/HTTP-2-lib.git</div></div><!-- fragment --><h2>Short introduction to HTTP2</h2>
+<p>HTTP/2 has the same purpose as earlier versions of HTTP: to provide a standard way for web browsers and servers to talk to each other. The HTTP-protocol is in the application layer in the OSI-model. HTTP/2 provides an optimized transport for HTTP semantics and aims to be more efficient than earlier version of HTTP.</p>
+<p>HTTP/2 enables more efficient processing of messages with binary message framing. The original request response messages are divided into header-frames and data-frames. Header-frames is the same as headers in earlier versions, and data-frames is the same as body, but is sent as individually frames on the same stream.</p>
+<p>Head-of-line-blocking have been a problem in earlier versions of HTTP, HTTP/2 introduced multiplexing, which reduced the amount of head-of-line-blocking. Multiplexing of requests is achieved by each having HTTP request/response exchange associated with its own stream. Streams are largely independent of each other, so a blocked or stalled request or response does not prevent progress on other streams.</p>
+<p>Flow control and prioritization is also important for HTTP/2, these features ensure that it is possible to efficiently use multiplexed streams.</p>
+<p>Server push is a new feature in HTTP/2 to make request/response more efficient. Server push allows a server to speculatively send data to a client that the server anticipates the client will need. For example, if the client is requesting index.html, the server push style.css and script.js to the client, because it predict that it will need it soon.</p>
+<p>In earlier version of HTTP we did not compress header fields, HTTP/2 is the first version to introduce header field compression. Because HTTP header fields used in a connection can contain large amounts of redundant data, we sent unnecessary amount of data instead of compressing it and reduce the amount of data sent over the connection.</p>
+<h2>What's included</h2>
+<p>Within the download you'll find the following directories and files:</p>
+<div class="fragment"><div class="line">HTTP-2-lib/</div><div class="line">├── include/</div><div class="line">|   └── HTTP-2-lib/</div><div class="line">|       └── h2_server.hpp</div><div class="line">|</div><div class="line">├── public/</div><div class="line">|   ├── index.html</div><div class="line">|   ├── index2.html</div><div class="line">|   ├── script.js</div><div class="line">|   └── style.css</div><div class="line">|   </div><div class="line">├── src/</div><div class="line">|   ├── h2_callbacks.cpp</div><div class="line">|   ├── h2_callback.hpp</div><div class="line">|   ├── h2_config.cpp</div><div class="line">|   ├── h2_config.hpp</div><div class="line">|   ├── h2_enums.hpp</div><div class="line">|   ├── h2_frame_handlers.cpp</div><div class="line">|   ├── h2_frame_handlers.hpp</div><div class="line">|   ├── h2_global.hpp</div><div class="line">|   ├── h2_server.cpp</div><div class="line">|   ├── h2_structs.hpp</div><div class="line">|   ├── h2_utils.cpp</div><div class="line">|   └── h2_utils.hpp</div><div class="line">│</div><div class="line">├── tests/</div><div class="line">|   ├── h2_server.test.cpp</div><div class="line">|   ├── h2_utils.test.cpp</div><div class="line">|   └── main.test.cpp</div><div class="line">|</div><div class="line">├── cert.pem</div><div class="line">├── CMakeLists.txt</div><div class="line">├── main.cpp</div><div class="line">├── key.pem</div><div class="line">└── README.md</div></div><!-- fragment --><h2>Implemented functionality</h2>
+<p>HTTP-2-lib supports https, this is done by using <a href="https://tools.ietf.org/html/rfc5246">TLS</a> with <a href="https://tools.ietf.org/html/rfc7301">ALPN</a> extension. ALPN extension is used to negotiate the use of HTTP/2 with the client. Not all web browsers supports HTTP/2 over TLS, you can check which web browser that are supported <a href="https://caniuse.com/#search=http2">here</a>.</p>
+<h2>Future work</h2>
+<h2>External information</h2>
+<ul>
+<li><a href="https://tools.ietf.org/html/rfc7540">RFC 7540 - Hypertext Transfer Protocol Version 2 (HTTP/2)</a></li>
+<li><a href="https://tools.ietf.org/html/rfc7541">RFC 7541 - HPACK: Header Compression for HTTP/2</a></li>
+<li><a href="https://tools.ietf.org/html/rfc5246">RFC 5246 - The Transport Layer Security (TLS) Protocol Version 1.2</a></li>
+<li><a href="https://tools.ietf.org/html/rfc7301">RFC 7301 - Transport Layer Security (TLS), Application-Layer Protocol Negotiation Extension</a></li>
+<li><a href="https://nghttp2.org/documentation/tutorial-server.html#">Tutorial:HTTP/2 server</a></li>
+<li><a href="https://nghttp2.org/documentation/tutorial-hpack.html">Tutorial:HPACK API</a></li>
+<li><a href="https://www.amazon.com/Learning-HTTP-Practical-Guide-Beginners/dp/1491962445">Book: O'Reilly Media, Learning HTTP/2, A practical guide for beginners</a> </li>
+</ul>
+</div></div><!-- PageDoc -->
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
