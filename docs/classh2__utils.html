@@ -62,8 +62,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
-<a href="classh2__utils-members.html">List of all members</a>  </div>
+<a href="#pub-static-methods">Static Public Member Functions</a>  </div>
   <div class="headertitle">
 <div class="title">h2_utils Class Reference</div>  </div>
 </div><!--header-->
@@ -85,10 +84,6 @@ Static Public Member Functions</h2></td></tr>
 <tr class="separator:a45fbb9091f2f43d0eeda3d60fc78696f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a81aa277d8e9c16002aec254a67357558"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh2__utils.html#a81aa277d8e9c16002aec254a67357558">sendGetResponse</a> (struct <a class="el" href="structClientSessionData.html">ClientSessionData</a> *clientSessData, const unsigned char *data, string path)</td></tr>
 <tr class="separator:a81aa277d8e9c16002aec254a67357558"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a694a3506b1098a0c7378d4f55026d5fb"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh2__utils.html#a694a3506b1098a0c7378d4f55026d5fb">setPublicDir</a> (string dir)</td></tr>
-<tr class="separator:a694a3506b1098a0c7378d4f55026d5fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a31d372c3f9304d92483b3fe513cf083f"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh2__utils.html#a31d372c3f9304d92483b3fe513cf083f">addRoute</a> (struct <a class="el" href="structApplicationContext.html">ApplicationContext</a> *<a class="el" href="h2__server_8cpp.html#a903cd4596cf49b17b0985186b1ce3e6d">appCtx</a>, string path, string filepath)</td></tr>
-<tr class="separator:a31d372c3f9304d92483b3fe513cf083f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a12b0fd6caaf10b8b2680c95f969da86d"><td class="memItemLeft" align="right" valign="top">static string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh2__utils.html#a12b0fd6caaf10b8b2680c95f969da86d">resolvePath</a> (struct <a class="el" href="structClientSessionData.html">ClientSessionData</a> *clientSessData, string path)</td></tr>
 <tr class="separator:a12b0fd6caaf10b8b2680c95f969da86d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0967e8daf54902682f8af79e53de69f0"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh2__utils.html#a0967e8daf54902682f8af79e53de69f0">getResponse200</a> (struct <a class="el" href="structClientSessionData.html">ClientSessionData</a> *clientSessData, const unsigned char *data, string filepath)</td></tr>
@@ -97,57 +92,6 @@ Static Public Member Functions</h2></td></tr>
 <tr class="separator:a3a6f4358fab20df1504f8e4389fdd6e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a31d372c3f9304d92483b3fe513cf083f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a31d372c3f9304d92483b3fe513cf083f">&#9670;&nbsp;</a></span>addRoute()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void h2_utils::addRoute </td>
-          <td>(</td>
-          <td class="paramtype">struct <a class="el" href="structApplicationContext.html">ApplicationContext</a> *&#160;</td>
-          <td class="paramname"><em>appCtx</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">string&#160;</td>
-          <td class="paramname"><em>path</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">string&#160;</td>
-          <td class="paramname"><em>filepath</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<p>addRoute - Add a route for a file to be served on</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">appCtx</td><td>- <a class="el" href="structApplicationContext.html">ApplicationContext</a> for whole server </td></tr>
-    <tr><td class="paramname">path</td><td>- route to serve </td></tr>
-    <tr><td class="paramname">filepath</td><td>- path of the file to serve, in publicDir </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 <a id="a9969241c0924ceef77fc0046f7ecafb7"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9969241c0924ceef77fc0046f7ecafb7">&#9670;&nbsp;</a></span>bytesToString()</h2>
 
@@ -523,39 +467,6 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-
-</div>
-</div>
-<a id="a694a3506b1098a0c7378d4f55026d5fb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a694a3506b1098a0c7378d4f55026d5fb">&#9670;&nbsp;</a></span>setPublicDir()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void h2_utils::setPublicDir </td>
-          <td>(</td>
-          <td class="paramtype">string&#160;</td>
-          <td class="paramname"><em>dir</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<p>setPublicDir - set the path to be used as public directory on the server</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">dir</td><td>- string with the path </td></tr>
-  </table>
-  </dd>
-</dl>
 
 </div>
 </div>

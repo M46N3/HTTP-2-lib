@@ -34,7 +34,7 @@ h2_server::h2_server(const char *certKeyFile, const char *certFile) {
     h2_config::createApplicationContext(&appCtx, sslCtx, eventBase, routes);
 }
 
-/// setPublicDir - set the path to be used as public directory on the server
+/// Set the path to be used as public directory on the server
 ///
 /// @param dir - string with the path
 
@@ -42,7 +42,7 @@ void h2_server::setPublicDir(string dir) {
     publicDir = std::move(dir);
 }
 
-/// addRoute - Add a route for a file to be served on
+/// Add a route for a file to be served on
 ///
 /// @param appCtx - ApplicationContext for whole server
 /// @param path - route to serve
