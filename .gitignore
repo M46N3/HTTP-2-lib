@@ -124,3 +124,5 @@ modules.xml
 .idea/sonarlint
 
 # End of https://www.gitignore.io/api/c++,clion+all
+
+Doxyfile
