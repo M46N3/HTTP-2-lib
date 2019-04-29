@@ -1,7 +1,7 @@
 #! /bin/bash
 
 sudo apt-get update
-sudo apt-get install g++ make binutils autoconf automake autotools-dev cmake libtool pkg-config zlib1g-dev libcunit1-dev libssl-dev libxml2-dev libev-dev libnghttp2-devlibevent-dev -y
+sudo apt-get install g++ make binutils autoconf automake autotools-dev cmake libtool pkg-config zlib1g-dev libcunit1-dev libssl-dev libxml2-dev libev-dev libnghttp2-dev libevent-dev -y
 
 
 # Download, build, and install nghttp2
