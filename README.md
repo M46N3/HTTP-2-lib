@@ -67,15 +67,6 @@ Within the download you'll find the following directories and files:
 
 ```text
 HTTP-2-lib/
-├── cmake-build-debug/
-|   ├── CMakeFiles/
-|   ├── cmake_install.cmake
-|   ├── CMakeChache.txt
-|   ├── HTTP-2-lib-server
-|   ├── Makefile
-|   ├── report
-|   └── Tests
-|
 ├── include/
 |   └── HTTP-2-lib/
 |       └── h2_server.hpp
@@ -101,14 +92,15 @@ HTTP-2-lib/
 |   └── h2_utils.hpp
 │
 ├── tests/
-|    └── h2_utils.test.cpp
+|   ├── h2_server.test.cpp
+|   ├── h2_utils.test.cpp
+|   └── main.test.cpp
 |
 ├── cert.pem
 ├── CMakeLists.txt
 ├── main.cpp
 ├── key.pem
 └── README.md
-
 ```
 
 ## Implemented functionality
