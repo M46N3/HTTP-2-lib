@@ -203,6 +203,9 @@ void h2_config::configureContext(SSL_CTX *ctx, const char *certKeyFile, const ch
     configureAlpn(ctx);
 }
 
+
+// TODO: Comment function initOpenssl
+
 void h2_config::initOpenssl() {
     if (printTrackers) {
         cout << "[ initOpenssl ]" << endl;
@@ -211,6 +214,9 @@ void h2_config::initOpenssl() {
     SSL_library_init();
     OpenSSL_add_ssl_algorithms();
 }
+
+
+// TODO: Comment function cleanup_openssl
 
 void h2_config::cleanup_openssl() {
     EVP_cleanup();
