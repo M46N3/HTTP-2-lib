@@ -1,25 +1,18 @@
 // h2_utils.cpp
 
 #include "h2_utils.hpp"
-#include "h2_structs.hpp"
 #include "h2_frame_handlers.hpp"
 #include "h2_enums.hpp"
 #include "h2_global.hpp"
-#include <iostream>
-#include <string.h>
-#include <nghttp2/nghttp2.h>
 #include <event.h>
-#include <event2/event.h>
 #include <event2/listener.h>
 #include <event2/bufferevent_ssl.h>
 #include <openssl/err.h>
 #include <err.h>
 #include <netinet/tcp.h>
-#include <string.h>
 #include <sstream>
 #include <fstream>
 #include <regex>
-#include <iterator>
 
 using namespace std;
 

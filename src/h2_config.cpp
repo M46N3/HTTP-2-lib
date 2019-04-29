@@ -4,9 +4,7 @@
 #include "h2_structs.hpp"
 #include "h2_global.hpp"
 #include <iostream>
-#include <string.h>
 #include <openssl/err.h>
-#include "h2_global.hpp"
 
 using namespace std;
 
