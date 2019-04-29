@@ -53,6 +53,12 @@ Dependencies needed to use HTTP-2-lib:
 Text..
 ```sh
 git clone https://github.com/M46N3/HTTP-2-lib.git
+cd HTTP-2-lib/
+mkdir build
+cd build/
+cmake ..
+make
+./HTTP-2-lib-server 8443
 ```
 
 ## How to use
