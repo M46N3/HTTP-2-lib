@@ -16,6 +16,7 @@
 - [Prerequisites](#prerequisites)
 - [Installing dependencies](installing-dependencies)
 - [Compiling and running](compiling-and-running)
+- [Short introduction to HTTP/2](short-introduction-to-http/2)
 - [What's included](#whats-included)
 - [Implemented functionality](#implemented-functionality)
 - [Future work](#future-work)
@@ -26,10 +27,14 @@
 ## Introduction
 This library is an implementation of the [RFC 7540](https://tools.ietf.org/html/rfc7540) - Hypertext Transfer Protocol Version 2 (HTTP/2) in c++.
 
+
 ## Prerequisites
+Text..
 * Linux
 
+
 ## Installing dependencies
+Text..
 * [Boost](https://github.com/boostorg/boost)
 * [libevent](https://github.com/libevent/libevent)
 * [nghttp2](https://github.com/nghttp2/nghttp2)
@@ -37,9 +42,23 @@ This library is an implementation of the [RFC 7540](https://tools.ietf.org/html/
 
 
 ## Compiling and running
+Text..
 ```sh
 git clone https://github.com/M46N3/HTTP-2-lib.git
 ```
+
+## Short introduction to HTTP/2
+HTTP/2 has the same purpose as earlier versions of HTTP: to provide a standard way for web browsers and servers to talk to each other. The HTTP-protocol is in the application layer in the OSI-model. HTTP/2 provides an optimized transport for HTTP semantics and aims to be more efficient than earlier version of HTTP.
+
+HTTP/2 enables more efficient processing of messages with binary message framing. The original request response messages are divided into header-frames and data-frames. Header-frames is the same as headers in earlier versions, and data-frames is the same as body, but is sent as individually frames on the same stream.
+
+Head-of-line-blocking have been a problem in earlier versions of HTTP, HTTP/2 introduced multiplexing, which reduced the amount of head-of-line-blocking. Multiplexing of requests is achieved by each having HTTP request/response exchange associated with its own stream. Streams are largely independent of each other, so a blocked or stalled request or response does not prevent progress on other streams.
+Flow control and prioritization is also important for HTTP/2, these ensure that it is possible to efficiently use multiplexed streams. 
+Server push is a new feature in HTTP/2 to make request/response more efficient.
+
+Server push allows a server to speculatively send data to a client that the server anticipates the client will need. For example, if the client is requesting index.html, the server push style.css and script.js to the client, because it predict that it will need it soon.
+
+In earlier version of HTTP we did not compress header fields, HTTP/2 is the first version to introduce header field compression. Because HTTP header fields used in a connection can contain large amounts of redundant data, we sent unnecessary amount of data instead of compressing it and reduce the amount of data sent over the connection.
 
 
 
