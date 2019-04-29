@@ -67,23 +67,29 @@ It is recommended to use a C++ IDE, you then have to follow the instruction for 
 
 
 ## How to use
-Remember to generate your own private key and certificate.
+Initialize server instance with path to private key and certificate. Remember to generate your own private key and certificate for security reasons.
 ```cpp
-// Initialize server instance with path to private key and certificate
 h2_server server = h2_server("../key.pem", "../cert.pem");
-
-// Set path to the directory you want to serve
+```
+Set path to the directory you want to serve.
+```cpp
 h2_server::setPublicDir("../public");
-
-// Add routes to specific files, inside the public directory
+```
+Add routes to specific files, the files should be located in the public directory.
+```cpp
 h2_server::addRoute("/", "/index.html");
-
-// Start the server on a specified port
-server.run("8443");
+```
+Start the server on a specified port.
+```cpp
+server.run("443");
 ```
 
 ## Testing
-Text...
+If you want to run the tests from the terminal, use the following commands to print detailed information about the tests:
+```sh
+cd HTTP-2-lib/build/
+./Tests --log_level=all --report_sink=./report --report_format=HRF --report_level=detailed
+```
 
 ## Short introduction to HTTP2
 HTTP/2 has the same purpose as earlier versions of HTTP: to provide a standard way for web browsers and servers to talk to each other. The HTTP-protocol is in the application layer in the OSI-model. HTTP/2 provides an optimized transport for HTTP semantics and aims to be more efficient than earlier version of HTTP.
