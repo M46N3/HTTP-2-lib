@@ -138,10 +138,12 @@ HTTP-2-lib/
 ## Implemented functionality
 HTTP-2-lib supports https, this is done by using [TLS]( https://tools.ietf.org/html/rfc5246) with [ALPN]( https://tools.ietf.org/html/rfc7301) extension. ALPN extension is used to negotiate the use of HTTP/2 with the client. Not all web browsers supports HTTP/2 over TLS, you can check which web browsers that are supported [here]( https://caniuse.com/#search=http2).
 
-Asynchronous reading and writing of frames are implemented with libevent. This feature makes it possible to read and write frames back and forth between server and client simultaneously.
+Asynchronous reading and writing of frames are implemented with libevent. This feature makes it possible to read and write frames back and forth between the server and multiple clients simultaneously.
+
+Currently the HTTP-2-lib server only supports GET requests, with the filetypes requested being .html, .css or .js.
 
 ## Future work
-HTTP-2-lib is far from finished. The library is expected to include more features in the future such as flow control, server push, and its own implementation of the HPACK-algorithm. We also want to support bigger payloads with multiple frames.
+HTTP-2-lib is far from finished. The library is expected to include more features in the future such as flow control, server push, and its own implementation of the HPACK-algorithm. We also want to support bigger payloads with multiple frames. To have a complete HTTP/2 library it would also be essential to implement support for POST, PUT and DELETE requests. The GET request should also support more filetypes, such as images.
 
 List of missing features:
 - [5.1. Stream States](https://tools.ietf.org/html/rfc7540#section-5.1)
