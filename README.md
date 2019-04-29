@@ -14,9 +14,9 @@
 
 - [Introduction](#introduction)
 - [Prerequisites](#prerequisites)
-- [Installing dependencies](installing-dependencies)
-- [Compiling and running](compiling-and-running)
-- [Short introduction to HTTP/2](short-introduction-to-http/2)
+- [Installing dependencies](#installing-dependencies)
+- [Compiling and running](#compiling-and-running)
+- [Short introduction to HTTP/2](#short-introduction-to-http/2)
 - [What's included](#whats-included)
 - [Implemented functionality](#implemented-functionality)
 - [Future work](#future-work)
