@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION ${CMAKE_VERSION}) #VERSION 3.12)
 project(Nettverksprog_prosjekt)
 
 find_path(EVENT_INCLUDE_DIR event.h
