@@ -28,9 +28,10 @@ rm -r boost_1_68_0
 # Openssl
 wget -O openssl-1.1.1b.tar.gz https://www.openssl.org/source/openssl-1.1.1b.tar.gz
 mv openssl-1.1.1b.tar.gz /usr/local/src/
-tar -xf /usr/local/src/openssl-1.1.1b.tar.gz
-ls /usr/local/src
-cd /usr/local/src/openssl-1.1.1b
+cd /usr/local/src
+tar -xf openssl-1.1.1b.tar.gz
+ls
+cd openssl-1.1.1b
 ./config --prefix=/usr/local/ssl --openssldir=/usr/local/ssl shared zlib
 make
 sudo make install
