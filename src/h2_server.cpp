@@ -21,6 +21,9 @@ bool printFrames; // boolean to turn on/off printing of frames.
 ApplicationContext appCtx;
 string publicDir;
 
+/// Initiates a h2_server object
+/// \param certKeyFile - path to .pem key file
+/// \param certFile - path to .pem certificate file
 
 h2_server::h2_server(const char *certKeyFile, const char *certFile) {
     h2_config::initOpenssl();
@@ -52,7 +55,7 @@ void h2_server::addRoute(string path, string filepath) {
     appCtx.routes[path] = std::move(filepath);
 }
 
-/// serverListen - Sets up the server and starts listening on the given port.
+/// Sets up the server and starts listening on the given port.
 ///
 /// @param eventBase - The application-wide event_base object to use with listeners.
 /// @param port - The port number the application should listen on.
@@ -94,6 +97,9 @@ void h2_server::serverListen(struct event_base *eventBase, const char *port, App
     // if for loop above does not return, starting the listener has failed
     printf("%s", "Error: Could not start listener");
 }
+
+/// Runs the server on provided port
+/// \param port - port to run server on
 
 void h2_server::run(const char *port) {
     if (printTrackers) {

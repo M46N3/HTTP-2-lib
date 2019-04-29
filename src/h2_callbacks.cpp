@@ -12,7 +12,7 @@
 using namespace std;
 
 
-/// readCallback - Callback triggered when there is data to be read in the evbuffer.
+/// Callback triggered when there is data to be read in the evbuffer.
 ///
 /// @param bufferEvent - The bufferevent that triggered the callback.
 /// @param ptr - The user-specified context for this bufferevent, which is the ClientSessionData object.
@@ -25,15 +25,17 @@ void h2_callbacks::readCallback(struct bufferevent *bufferEvent, void *ptr) {
     int returnValue = h2_utils::sessionOnReceived(clientSessData);
 }
 
+
+// TODO: Comment here
+
 void h2_callbacks::writeCallback(struct bufferevent *bufferEvent, void *ptr){
     if (printTrackers) {
         cout << "[ write cb ]" << endl;
     }
-    return;
 }
 
 
-/// eventCallback - Callback invoked when there is an event on the sock filedescriptor.
+/// Callback invoked when there is an event on the sock filedescriptor.
 ///
 /// @param bufferEvent - bufferevent object associated with the connection.
 /// @param events - flag type conjunction of error and/or event type.
@@ -48,7 +50,7 @@ void h2_callbacks::eventCallback(struct bufferevent *bufferEvent, short events, 
 
 
     if (events & BEV_EVENT_CONNECTED) {
-        const unsigned char *alpn = NULL;
+        const unsigned char *alpn = nullptr;
         unsigned int alpnlen = 0;
 
         SSL *ssl;
@@ -59,12 +61,13 @@ void h2_callbacks::eventCallback(struct bufferevent *bufferEvent, short events, 
 
         ssl = bufferevent_openssl_get_ssl(bufferEvent);
 
+        // TODO: Kan if-setningen her fjernes siden den alltid er true?
         /* Negotiate ALPN on initial connection */
-        if (alpn == NULL) {
+        if (alpn == nullptr) {
             SSL_get0_alpn_selected(ssl, &alpn, &alpnlen);
         }
 
-        if (alpn == NULL || alpnlen != 2 || memcmp("h2", alpn, 2) != 0) {
+        if (alpn == nullptr || alpnlen != 2 || memcmp("h2", alpn, 2) != 0) {
             printf("%s h2 negotiation failed\n", clientSessData->clientAddress);
             // TODO: delete_client_sess_data(clientSessData);
             return;
@@ -77,6 +80,9 @@ void h2_callbacks::eventCallback(struct bufferevent *bufferEvent, short events, 
         return;
     }
 }
+
+
+// TODO: Comment here
 
 void h2_callbacks::acceptCallback(struct evconnlistener *conListener, int sock,
                                   struct sockaddr *address, int address_length, void *arg) {

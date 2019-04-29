@@ -14,7 +14,7 @@ static unsigned char next_proto_list[256];
 static size_t next_proto_list_len;
 
 
-/// nextProtocolCallback - Callback function used when the TLS server needs a list of supported protocols
+/// Callback function used when the TLS server needs a list of supported protocols
 ///                        for Next Protocol Negotiation.
 ///
 /// @param s - SSL object (unused)
@@ -35,13 +35,13 @@ int h2_config::nextProtocolCallback(SSL *s, const unsigned char **out,
 }
 
 
-/// selectProtocol - Selects 'h2' meaning 'HTTP/2 over TLS'
+/// Selects 'h2' meaning 'HTTP/2 over TLS'
 ///
 /// @param out - name of protocol chosen by the server.
 /// @param outlen - length of name of protocol given in 'out'.
 /// @param in  - string of protocols supported by the client, prefixed by the length of the following protocol.
 /// @param inlen - total length of the protocols-string 'in'.
-/// @return - 1 if successful.
+/// @return 1 if successful.
 
 int h2_config::selectProtocol(unsigned char **out, unsigned char *outlen, const unsigned char *in, unsigned int inlen) {
 
@@ -74,7 +74,7 @@ int h2_config::selectProtocol(unsigned char **out, unsigned char *outlen, const 
 }
 
 
-/// alpnSelectProtocolCallback - Callback function used for the negotiation of HTTP/2 over TLS in ALPN.
+/// Callback function used for the negotiation of HTTP/2 over TLS in ALPN.
 ///
 /// @param ssl - SSL object (unused parameter).
 /// @param out - string for chosen protocol
@@ -82,7 +82,7 @@ int h2_config::selectProtocol(unsigned char **out, unsigned char *outlen, const 
 /// @param in - protocols supported by the client.
 /// @param inlen - length of 'in'.
 /// @param arg
-/// @return - returns 0 on success and non-zero on failure.
+/// @return 0 on success and non-zero on failure.
 
 int h2_config::alpnSelectProtocolCallback(SSL *ssl, const unsigned char **out,
                                       unsigned char *outlength, const unsigned char *in,
@@ -107,7 +107,7 @@ int h2_config::alpnSelectProtocolCallback(SSL *ssl, const unsigned char **out,
     return SSL_TLSEXT_ERR_OK;
 }
 
-/// configureAlpn - Configures the referenced SSL_CTX object to use the Aplication Protocol Layer Negotiation
+/// Configures the referenced SSL_CTX object to use the Aplication Protocol Layer Negotiation
 /// extension, with 'nextProtocolCallback' and 'alpnSelectProtocolCallback'.
 ///
 /// @param ctx - reference to the SSL_CTX object to configure ALPN extension on.
@@ -126,7 +126,7 @@ void h2_config::configureAlpn(SSL_CTX *ctx) {
 }
 
 
-/// createApplicationContext - Initializes the application wide application_ctx object on the refernece given.
+/// Initializes the application wide application_ctx object on the refernece given.
 ///
 /// @param appCtx - reference to appCtx object to initialize.
 /// @param sslCtx - SSL_CTX object to use.
@@ -148,10 +148,10 @@ void h2_config::createApplicationContext(ApplicationContext *appCtx, SSL_CTX *ss
 }
 
 
-/// createSslContext - Creates a new SSL_CTX object and sets the connection method to be used,
-/// which is a general SSL/TLS server connection method.
+/// Creates a new SSL_CTX object and sets the connection method to be used, which is a general SSL/TLS server
+/// connection method.
 ///
-/// return ctx - The newly created SSL_CTX object with the connection method set.
+/// @return SSL_CTX - The newly created SSL_CTX object with the connection method set.
 
 SSL_CTX *h2_config::createSslContext() {
     if (printTrackers) {
@@ -173,8 +173,7 @@ SSL_CTX *h2_config::createSslContext() {
 }
 
 
-/// configureContext - Configures the SSL_CTX object to use given certificate and private key,
-/// and calls to configure ALPN extension.
+/// Configures the SSL_CTX object to use given certificate and private key, and calls to configure ALPN extension.
 ///
 /// @param ctx - reference to the SSL_CTX object to configure.
 /// @param certKeyFile - path to Certificate Key File to be used for TLS.
@@ -204,7 +203,7 @@ void h2_config::configureContext(SSL_CTX *ctx, const char *certKeyFile, const ch
 }
 
 
-// TODO: Comment function initOpenssl
+/// Initiates openSSL.
 
 void h2_config::initOpenssl() {
     if (printTrackers) {
@@ -216,7 +215,7 @@ void h2_config::initOpenssl() {
 }
 
 
-// TODO: Comment function cleanup_openssl
+// TODO: Not in use, remove?
 
 void h2_config::cleanup_openssl() {
     EVP_cleanup();

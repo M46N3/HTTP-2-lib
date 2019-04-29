@@ -131,6 +131,15 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Converts bytes from unsigned char* to string </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">data</td><td>- bytes to be converted </td></tr>
+    <tr><td class="paramname">firstIndex</td><td>- Index to start reading from </td></tr>
+    <tr><td class="paramname">secondIndex</td><td>- Index after the last to byte to be read </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>string - from bytes </dd></dl>
 
 </div>
 </div>
@@ -179,7 +188,7 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>createClientSessionData - Creates a clientSessionData object which keeps all to be used for one single connection.</p>
+<p>Creates a clientSessionData object which keeps all to be used for one single connection.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">appCtx</td><td>- Application-wide application_ctx object. </td></tr>
@@ -232,10 +241,10 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>getResponse200 - responds to get request with html, js or css file</p>
+<p>Responds to get request with html, js or css file, and status: 200.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">clientSessData</td><td>- <a class="el" href="structClientSessionData.html">ClientSessionData</a>, Used to respond to correct client </td></tr>
+    <tr><td class="paramname">clientSessData</td><td>- <a class="el" href="structClientSessionData.html">ClientSessionData</a>, used to respond to correct client </td></tr>
     <tr><td class="paramname">data</td><td>- pointer to array containing request </td></tr>
     <tr><td class="paramname">filepath</td><td>- where the requested file is located </td></tr>
   </table>
@@ -277,10 +286,10 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>getResponse404 - sends a 404 Not Found response</p>
+<p>Sends a status: 404 Not Found response</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">clientSessData</td><td>- <a class="el" href="structClientSessionData.html">ClientSessionData</a> </td></tr>
+    <tr><td class="paramname">clientSessData</td><td>- <a class="el" href="structClientSessionData.html">ClientSessionData</a>, used to respond to correct client </td></tr>
     <tr><td class="paramname">data</td><td>- pointer to array containing request </td></tr>
   </table>
   </dd>
@@ -311,6 +320,13 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Convert hexString to ulong </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">hexString</td><td>- hexString to be converted </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>ulong </dd></dl>
 
 </div>
 </div>
@@ -347,7 +363,7 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>resolvePath - resolves user-defined routes, and returns the filepath in publicDir</p>
+<p>Resolves user-defined routes, and returns the filepath in publicDir</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">clientSessData</td><td>- <a class="el" href="structClientSessionData.html">ClientSessionData</a> to access list of routes </td></tr>
@@ -382,10 +398,10 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>sendConnectionHeader - Sends server connection header with 'MAXIMUM_CONCURRENT_STREAMS' set to 100.</p>
+<p>Sends server connection header with 'MAXIMUM_CONCURRENT_STREAMS' set to 100.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">ClientSessData</td><td>- ClientSessData object for this particular connection. </td></tr>
+    <tr><td class="paramname">ClientSessData</td><td>- <a class="el" href="structClientSessionData.html">ClientSessionData</a> object for this particular connection. </td></tr>
   </table>
   </dd>
 </dl>
@@ -432,7 +448,7 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>sendGetResponse - Send a get response when recieving a request</p>
+<p>Send a get response when recieving a request</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">ClientSessData</td><td>- <a class="el" href="structClientSessionData.html">ClientSessionData</a> </td></tr>
@@ -467,6 +483,13 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Gets called every time a frame is recieved from a client </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">clientSessData</td><td>- <a class="el" href="structClientSessionData.html">ClientSessionData</a> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 if successful, non-zero if failure </dd></dl>
 
 </div>
 </div>
