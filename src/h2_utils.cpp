@@ -24,9 +24,9 @@
 using namespace std;
 
 
-/// sendConnectionHeader - Sends server connection header with 'MAXIMUM_CONCURRENT_STREAMS' set to 100.
+/// Sends server connection header with 'MAXIMUM_CONCURRENT_STREAMS' set to 100.
 ///
-/// @param ClientSessData - ClientSessData object for this particular connection.
+/// @param ClientSessData - ClientSessionData object for this particular connection.
 /// @return returnValue - 0 if successful, non-zero if failure.
 
 int h2_utils::sendConnectionHeader(struct ClientSessionData *clientSessData) {
@@ -40,6 +40,10 @@ int h2_utils::sendConnectionHeader(struct ClientSessionData *clientSessData) {
     returnValue = bufferevent_write(clientSessData->bufferEvent, data, 15);
     return returnValue;
 }
+
+/// Gets called every time a frame is recieved from a client
+/// \param clientSessData - ClientSessionData
+/// \return 0 if successful, non-zero if failure
 
 int h2_utils::sessionOnReceived(struct ClientSessionData *clientSessData) {
 
@@ -64,7 +68,7 @@ int h2_utils::sessionOnReceived(struct ClientSessionData *clientSessData) {
 }
 
 
-/// createClientSessionData - Creates a clientSessionData object which keeps all to be used for one single connection.
+/// Creates a clientSessionData object which keeps all to be used for one single connection.
 ///
 /// @param appCtx - Application-wide application_ctx object.
 /// @param sock - file descriptor for the connection
@@ -129,6 +133,12 @@ struct ClientSessionData *h2_utils::createClientSessionData(struct ApplicationCo
     return clientSessData;
 }
 
+/// Converts bytes from unsigned char* to string
+/// \param data - bytes to be converted
+/// \param firstIndex - Index to start reading from
+/// \param secondIndex - Index after the last to byte to be read
+/// \return string - from bytes
+
 string h2_utils::bytesToString(const unsigned char *data, size_t firstIndex, size_t secondIndex) {
     static const char characters[] = "0123456789abcdef";
 
@@ -144,6 +154,10 @@ string h2_utils::bytesToString(const unsigned char *data, size_t firstIndex, siz
     return res;
 }
 
+
+/// Convert hexString to ulong
+/// \param hexString - hexString to be converted
+/// \return ulong
 
 ulong h2_utils::hexToUlong(string hexString) {
     ulong hexDecimalValue;
@@ -165,7 +179,7 @@ ulong h2_utils::hexToUlong(string hexString) {
   }
 
 
-/// sendGetResponse - Send a get response when recieving a request
+/// Send a get response when recieving a request
 ///
 /// @param ClientSessData - ClientSessionData
 /// @param data - pointer to array with the request
@@ -181,7 +195,7 @@ void h2_utils::sendGetResponse(ClientSessionData *ClientSessData, const unsigned
 }
 
 
-/// resolvePath - resolves user-defined routes, and returns the filepath in publicDir
+/// Resolves user-defined routes, and returns the filepath in publicDir
 ///
 /// @param clientSessData - ClientSessionData to access list of routes
 /// @param path - path to resolve
@@ -204,9 +218,9 @@ string h2_utils::resolvePath(ClientSessionData *clientSessData, string path) {
 }
 
 
-/// getResponse200 - responds to get request with html, js or css file
+/// Responds to get request with html, js or css file, and status: 200.
 ///
-/// @param clientSessData - ClientSessionData, Used to respond to correct client
+/// @param clientSessData - ClientSessionData, used to respond to correct client
 /// @param data - pointer to array containing request
 /// @param filepath - where the requested file is located
 
@@ -382,9 +396,9 @@ void h2_utils::getResponse200(struct ClientSessionData *clientSessData, const un
 }
 
 
-/// getResponse404 - sends a 404 Not Found response
+/// Sends a status: 404 Not Found response
 ///
-/// @param clientSessData - ClientSessionData
+/// @param clientSessData - ClientSessionData, used to respond to correct client
 /// @param data - pointer to array containing request
 
 void h2_utils::getResponse404(struct ClientSessionData *clientSessData, const unsigned char *data) {
