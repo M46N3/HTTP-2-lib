@@ -16,7 +16,7 @@
 - [Prerequisites](#prerequisites)
 - [Installing dependencies](#installing-dependencies)
 - [Compiling and running](#compiling-and-running)
-- [Short introduction to HTTP/2](#short-introduction-to-http/2)
+- [Short introduction to h2](#short-introduction-to-h2)
 - [What's included](#whats-included)
 - [Implemented functionality](#implemented-functionality)
 - [Future work](#future-work)
@@ -47,7 +47,7 @@ Text..
 git clone https://github.com/M46N3/HTTP-2-lib.git
 ```
 
-## Short introduction to HTTP/2
+## Short introduction to h2
 HTTP/2 has the same purpose as earlier versions of HTTP: to provide a standard way for web browsers and servers to talk to each other. The HTTP-protocol is in the application layer in the OSI-model. HTTP/2 provides an optimized transport for HTTP semantics and aims to be more efficient than earlier version of HTTP.
 
 HTTP/2 enables more efficient processing of messages with binary message framing. The original request response messages are divided into header-frames and data-frames. Header-frames is the same as headers in earlier versions, and data-frames is the same as body, but is sent as individually frames on the same stream.
