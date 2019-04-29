@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://github.com/M46N3/HTTP-2-lib/">
-    <img src="http://i66.tinypic.com/2dkhfzt.png" alt="HTTP-2-lib logo" width="100" height="100">
+    <img src="http://i64.tinypic.com/4sjgq9.png" alt="HTTP-2-lib logo" width="100" height="100">
   </a>
 </p>
 
