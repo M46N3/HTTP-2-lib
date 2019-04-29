@@ -16,7 +16,7 @@
 - [Prerequisites](#prerequisites)
 - [Installing dependencies](#installing-dependencies)
 - [Compiling and running](#compiling-and-running)
-- [Short introduction to HTTP/2](#short-introduction-to-http/2)
+- [Short introduction to HTTP2](#short-introduction-to-HTTP2)
 - [What's included](#whats-included)
 - [Implemented functionality](#implemented-functionality)
 - [Future work](#future-work)
@@ -25,20 +25,19 @@
 
 
 ## Introduction
-This library is an implementation of the [RFC 7540](https://tools.ietf.org/html/rfc7540) - Hypertext Transfer Protocol Version 2 (HTTP/2) in c++.
+HTTP-2-lib is an implementation of the [RFC 7540](https://tools.ietf.org/html/rfc7540) - Hypertext Transfer Protocol Version 2 (HTTP/2) in C++. It is important to notice that this library is a work in progress, so there will be some missing HTTP/2-functionalities.
 
 
 ## Prerequisites
-Text..
 * Linux
-
+* [C++ compiler](https://gcc.gnu.org/)
 
 ## Installing dependencies
-Text..
-* [Boost](https://github.com/boostorg/boost)
-* [libevent](https://github.com/libevent/libevent)
-* [nghttp2](https://github.com/nghttp2/nghttp2)
-* [OpenSSL](https://github.com/openssl/openssl)
+Dependencies needed to use HTTP-2-lib:
+* [Boost](https://github.com/boostorg/boost): Used for unit testing.
+* [libevent](https://github.com/libevent/libevent): Used for asynchronous buffer read and write.
+* [nghttp2](https://github.com/nghttp2/nghttp2): HPACK to compress and decompress header frames.
+* [OpenSSL](https://github.com/openssl/openssl): TLS and ALPN support.
 
 
 ## Compiling and running
@@ -47,7 +46,7 @@ Text..
 git clone https://github.com/M46N3/HTTP-2-lib.git
 ```
 
-## Short introduction to HTTP/2
+## Short introduction to HTTP2
 HTTP/2 has the same purpose as earlier versions of HTTP: to provide a standard way for web browsers and servers to talk to each other. The HTTP-protocol is in the application layer in the OSI-model. HTTP/2 provides an optimized transport for HTTP semantics and aims to be more efficient than earlier version of HTTP.
 
 HTTP/2 enables more efficient processing of messages with binary message framing. The original request response messages are divided into header-frames and data-frames. Header-frames is the same as headers in earlier versions, and data-frames is the same as body, but is sent as individually frames on the same stream.
@@ -64,7 +63,7 @@ In earlier version of HTTP we did not compress header fields, HTTP/2 is the firs
 
 ## What's included
 
-Within the download you'll find the following directories and files, logically grouping common assets and providing both compiled and minified variations. You'll see something like this:
+Within the download you'll find the following directories and files:
 
 ```text
 HTTP-2-lib/
@@ -125,4 +124,4 @@ We have implemented..
 - [RFC 7301 - Transport Layer Security (TLS), Application-Layer Protocol Negotiation Extension](https://tools.ietf.org/html/rfc7301)
 - [Tutorial:HTTP/2 server](https://nghttp2.org/documentation/tutorial-server.html#)
 - [Tutorial:HPACK API](https://nghttp2.org/documentation/tutorial-hpack.html)
-- Learning HTTP/2 a practical guide for beginners
+- [Book: O'Reilly Media, Learning HTTP/2, A practical guide for beginners](https://www.amazon.com/Learning-HTTP-Practical-Guide-Beginners/dp/1491962445)
