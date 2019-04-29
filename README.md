@@ -25,7 +25,7 @@
 
 
 ## Introduction
-This library is an implementation of the [RFC 7540](https://tools.ietf.org/html/rfc7540) - Hypertext Transfer Protocol Version 2 (HTTP/2) in C++. It is important to notice that this library is a work in progress, so there will be some missing h2-functionalities.
+This library is an implementation of the [RFC 7540](https://tools.ietf.org/html/rfc7540) - Hypertext Transfer Protocol Version 2 (HTTP/2) in C++. It is important to notice that this library is a work in progress, so there will be some missing HTTP/2-functionalities.
 
 
 ## Prerequisites
