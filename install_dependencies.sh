@@ -14,7 +14,9 @@ autoconf
 make && sudo make install
 
 # Download, build, and install boost
-#wget https://dl.bintray.com/boostorg/release/1.70.0/source/boost_1_70_0.zip
-#unzip boost_1_70_0.zip && cd boost_1_70_0
-#chmod +x bootstrap.sh
-#./
+wget -O boost_1_68_0.tar.gz https://sourceforge.net/projects/boost/files/boost/1.68.0/boost_1_68_0.tar.gz/download
+tar xzvf boost_1_68_0.tar.gz && cd boost_1_68_0
+chmod +x bootstrap.sh
+./bootstrap.sh --prefix=/usr/
+./b2
+sudo ./b2 install
