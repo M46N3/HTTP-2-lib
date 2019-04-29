@@ -32,6 +32,31 @@ h2_server::h2_server(const char *certKeyFile, const char *certFile) {
     h2_config::createApplicationContext(&appCtx, sslCtx, eventBase, routes);
 }
 
+
+/// Turn on/off comment prints
+/// \param enable - bool true enables, false disables
+
+void h2_server::enableCommentsPrint(bool enable) {
+    printComments = enable;
+}
+
+
+/// Turn on/off trackers prints
+/// \param enable - bool true enables, false disables
+
+void h2_server::enableTrackersPrint(bool enable) {
+    printTrackers = enable;
+}
+
+
+/// Turn on/off frames prints
+/// \param enable - bool true enables, false disables
+
+void h2_server::enableFramesPrint(bool enable){
+    printFrames = enable;
+}
+
+
 /// Set the path to be used as public directory on the server
 ///
 /// @param dir - string with the path

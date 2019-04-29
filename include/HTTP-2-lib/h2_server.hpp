@@ -8,6 +8,9 @@ public:
     static void setPublicDir(string dir);
     static void addRoute(string path, string filepath);
     void run(const char *port);
+    static void enableCommentsPrint(bool enable);
+    static void enableTrackersPrint(bool enable);
+    static void enableFramesPrint(bool enable);
 
 private:
     static void serverListen(struct event_base *eventBase, const char *port, ApplicationContext *appCtx);
