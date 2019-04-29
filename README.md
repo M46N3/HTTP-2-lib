@@ -130,6 +130,12 @@ HTTP-2-lib supports https, this is done by using [TLS]( https://tools.ietf.org/h
 
 
 ## Future work
+HTTP-2-lib is far from finished. The library is expected to include more features in the future such as flow control, server push, and its own implementation of the HPACK-algorithm. We also want to support bigger payloads with multiple frames.
+
+List of missing features:
+- [5.1. Stream States](https://tools.ietf.org/html/rfc7540#section-5.1)
+- [5.2. Flow Control](https://tools.ietf.org/html/rfc7540#section-5.2)
+- [5.3. Stream Priority]( https://tools.ietf.org/html/rfc7540#section-5.3)
 
 
 ## External information
