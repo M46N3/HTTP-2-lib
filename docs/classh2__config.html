@@ -87,6 +87,7 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:acef781cb9a7766163b5214154793d821"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh2__config.html#acef781cb9a7766163b5214154793d821">configureContext</a> (SSL_CTX *ctx, const char *certKeyFile, const char *certFile)</td></tr>
 <tr class="separator:acef781cb9a7766163b5214154793d821"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1b8b3542630f413ede39ab093888a8d4"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh2__config.html#a1b8b3542630f413ede39ab093888a8d4">initOpenssl</a> ()</td></tr>
+<tr class="memdesc:a1b8b3542630f413ede39ab093888a8d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initiates openSSL.  <a href="#a1b8b3542630f413ede39ab093888a8d4">More...</a><br /></td></tr>
 <tr class="separator:a1b8b3542630f413ede39ab093888a8d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a921f0ece9327e5324dbe478bb13e37fb"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh2__config.html#a921f0ece9327e5324dbe478bb13e37fb">cleanup_openssl</a> ()</td></tr>
 <tr class="separator:a921f0ece9327e5324dbe478bb13e37fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -149,7 +150,7 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>alpnSelectProtocolCallback - Callback function used for the negotiation of HTTP/2 over TLS in ALPN.</p>
+<p>Callback function used for the negotiation of HTTP/2 over TLS in ALPN.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">ssl</td><td>- SSL object (unused parameter). </td></tr>
@@ -161,7 +162,7 @@ Static Public Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>- returns 0 on success and non-zero on failure. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>0 on success and non-zero on failure. </dd></dl>
 
 </div>
 </div>
@@ -213,7 +214,7 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>configureAlpn - Configures the referenced SSL_CTX object to use the Aplication Protocol Layer Negotiation extension, with 'nextProtocolCallback' and 'alpnSelectProtocolCallback'.</p>
+<p>Configures the referenced SSL_CTX object to use the Aplication Protocol Layer Negotiation extension, with 'nextProtocolCallback' and 'alpnSelectProtocolCallback'.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">ctx</td><td>- reference to the SSL_CTX object to configure ALPN extension on. </td></tr>
@@ -262,7 +263,7 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>configureContext - Configures the SSL_CTX object to use given certificate and private key, and calls to configure ALPN extension.</p>
+<p>Configures the SSL_CTX object to use given certificate and private key, and calls to configure ALPN extension.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">ctx</td><td>- reference to the SSL_CTX object to configure. </td></tr>
@@ -319,7 +320,7 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>createApplicationContext - Initializes the application wide application_ctx object on the refernece given.</p>
+<p>Initializes the application wide application_ctx object on the refernece given.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">appCtx</td><td>- reference to appCtx object to initialize. </td></tr>
@@ -354,8 +355,8 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>createSslContext - Creates a new SSL_CTX object and sets the connection method to be used, which is a general SSL/TLS server connection method.</p>
-<p>return ctx - The newly created SSL_CTX object with the connection method set. </p>
+<p>Creates a new SSL_CTX object and sets the connection method to be used, which is a general SSL/TLS server connection method.</p>
+<dl class="section return"><dt>Returns</dt><dd>SSL_CTX - The newly created SSL_CTX object with the connection method set. </dd></dl>
 
 </div>
 </div>
@@ -381,6 +382,8 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Initiates openSSL. </p>
 
 </div>
 </div>
@@ -429,7 +432,7 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>nextProtocolCallback - Callback function used when the TLS server needs a list of supported protocols for Next Protocol Negotiation.</p>
+<p>Callback function used when the TLS server needs a list of supported protocols for Next Protocol Negotiation.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">s</td><td>- SSL object (unused) </td></tr>
@@ -488,7 +491,7 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>selectProtocol - Selects 'h2' meaning 'HTTP/2 over TLS'</p>
+<p>Selects 'h2' meaning 'HTTP/2 over TLS'</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">out</td><td>- name of protocol chosen by the server. </td></tr>
@@ -498,7 +501,7 @@ Static Public Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>- 1 if successful. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>1 if successful. </dd></dl>
 
 </div>
 </div>
