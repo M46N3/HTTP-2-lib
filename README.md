@@ -63,7 +63,7 @@ In earlier version of HTTP we did not compress header fields, HTTP/2 is the firs
 
 ## What's included
 
-Within the download you'll find the following directories and files, logically grouping common assets and providing both compiled and minified variations. You'll see something like this:
+Within the download you'll find the following directories and files:
 
 ```text
 HTTP-2-lib/
