@@ -13,6 +13,8 @@
 ## Table of contents
 
 - [Introduction](#introduction)
+- [Prerequisites](#prerequisites)
+- [Installing dependencies](installing-dependencies)
 - [What's included](#whats-included)
 - [Implemented functionality](#implemented-functionality)
 - [Future work](#future-work)
@@ -22,6 +24,15 @@
 
 ## Introduction
 This library is an implementation of the [RFC 7540](https://tools.ietf.org/html/rfc7540) - Hypertext Transfer Protocol Version 2 (HTTP/2) in c++.
+
+## Prerequisites
+* Linux
+
+## Installing dependencies
+```sh
+git clone https://github.com/M46N3/HTTP-2-lib.git
+```
+
 
 
 ## What's included
