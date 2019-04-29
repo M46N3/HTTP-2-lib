@@ -33,6 +33,7 @@ This library is an implementation of the [RFC 7540](https://tools.ietf.org/html/
 * [Boost](https://github.com/boostorg/boost)
 * [libevent](https://github.com/libevent/libevent)
 * [nghttp2](https://github.com/nghttp2/nghttp2)
+* [OpenSSL](https://github.com/openssl/openssl)
 
 
 ## Compiling and running
