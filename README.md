@@ -1,3 +1,10 @@
+<p align="center">
+  <a href="https://github.com/M46N3/HTTP-2-lib/">
+    <img src="http://i66.tinypic.com/2dkhfzt.png" alt="HTTP-2-lib logo" width="72" height="72">
+  </a>
+</p>
+
+<h3 align="center">HTTP-2-lib</h3>
 # HTTP-2-lib
 TDAT2004 - NTNU - Project
 
