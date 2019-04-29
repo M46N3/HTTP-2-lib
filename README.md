@@ -87,8 +87,7 @@ server.run("443");
 ## Testing
 If you want to run the tests from the terminal, use the following commands:
 ```sh
-cd HTTP-2-lib/
-cd build/
+cd HTTP-2-lib/build/
 ./Tests --log_level=all --report_sink=./report --report_format=HRF --report_level=detailed
 ```
 
