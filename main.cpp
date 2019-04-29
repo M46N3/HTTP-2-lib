@@ -13,16 +13,16 @@
 #include <signal.h>
 #include <err.h>
 #include <netinet/tcp.h>
-#include "h2_enums.hpp"
+#include "src/h2_enums.hpp"
 #include <nghttp2/nghttp2.h>
 #include <sstream>
 #include <fstream>
-#include "h2_callbacks.hpp"
-#include "h2_structs.hpp"
-#include "h2_config.hpp"
-#include "h2_global.hpp"
-#include "h2_utils.hpp"
-#include "h2_server.hpp"
+#include "src/h2_callbacks.hpp"
+#include "src/h2_structs.hpp"
+#include "src/h2_config.hpp"
+#include "src/h2_global.hpp"
+#include "src/h2_utils.hpp"
+#include "include/HTTP-2-lib/h2_server.hpp"
 
 using namespace std;
 

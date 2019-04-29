@@ -40,10 +40,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y -pthread -Wall -Wextra -Wno-u
 find_package(OpenSSL REQUIRED)
 include_directories(${OPENSSL_INCLUDE_DIR})
 
-add_executable(Nettverksprog_prosjekt main.cpp h2_server.cpp h2_callbacks.cpp h2_utils.cpp h2_frame_handlers.cpp h2_config.cpp h2_structs.hpp h2_enums.hpp)
-target_link_libraries(Nettverksprog_prosjekt ${OPENSSL_LIBRARIES} -levent_openssl -levent ${EVENT_LIBRARIES} ${NGHTTP2_LIBRARIES})
+add_executable(HTTP-2-lib-server main.cpp src/h2_server.cpp src/h2_callbacks.cpp src/h2_utils.cpp src/h2_frame_handlers.cpp src/h2_config.cpp src/h2_structs.hpp src/h2_enums.hpp)
+target_link_libraries(HTTP-2-lib-server ${OPENSSL_LIBRARIES} -levent_openssl -levent ${EVENT_LIBRARIES} ${NGHTTP2_LIBRARIES})
 
 include_directories(${Boost_INCLUDE_DIR})
-add_executable(Tests tests/h2_utils.test.cpp h2_server.cpp h2_callbacks.cpp h2_utils.cpp h2_frame_handlers.cpp
-                     h2_config.cpp h2_structs.hpp h2_enums.hpp)
+add_executable(Tests tests/h2_utils.test.cpp src/h2_server.cpp src/h2_callbacks.cpp src/h2_utils.cpp src/h2_frame_handlers.cpp
+        src/h2_config.cpp src/h2_structs.hpp src/h2_enums.hpp)
 target_link_libraries(Tests ${Boost_LIBRARIES} ${OPENSSL_LIBRARIES} -levent_openssl -levent ${EVENT_LIBRARIES} ${NGHTTP2_LIBRARIES})

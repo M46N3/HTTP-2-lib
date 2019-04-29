@@ -1,6 +1,6 @@
 // h2_server.hpp
 
-#include "h2_structs.hpp"
+#include "../../src/h2_structs.hpp"
 
 class h2_server {
 public:

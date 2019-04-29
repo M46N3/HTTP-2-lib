@@ -1,6 +1,6 @@
 // h2_server.cpp
 
-#include "h2_server.hpp"
+#include "../include/HTTP-2-lib/h2_server.hpp"
 #include "h2_global.hpp"
 #include "h2_structs.hpp"
 #include "h2_callbacks.hpp"

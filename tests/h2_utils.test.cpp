@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE h2_utils.test.cpp
 #include <boost/test/included/unit_test.hpp>
-#include "../h2_utils.hpp"
-#include "../h2_global.hpp"
+#include "../src/h2_utils.hpp"
+#include "../src/h2_global.hpp"
 #include <string>
 #include <sstream>
 
