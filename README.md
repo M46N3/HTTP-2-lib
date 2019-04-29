@@ -71,13 +71,19 @@ Remember to generate your own private key and certificate.
 ```cpp
 // Initialize server instance with path to private key and certificate
 h2_server server = h2_server("../key.pem", "../cert.pem");
-
+```
+Text..
+```cpp
 // Set path to the directory you want to serve
 h2_server::setPublicDir("../public");
-
+```
+Text..
+```cpp
 // Add routes to specific files, inside the public directory
 h2_server::addRoute("/", "/index.html");
-
+```
+Text..
+```cpp
 // Start the server on a specified port
 server.run("8443");
 ```
