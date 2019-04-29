@@ -29,9 +29,8 @@ This library is an implementation of the [RFC 7540](https://tools.ietf.org/html/
 
 
 ## Prerequisites
-Text..
 * Linux
-
+* [C++ compiler](https://gcc.gnu.org/)
 
 ## Installing dependencies
 Text..
