@@ -1,11 +1,8 @@
 // h2_frame_handlers.cpp
 
 #include "h2_frame_handlers.hpp"
-#include "h2_structs.hpp"
 #include "h2_utils.hpp"
 #include "h2_enums.hpp"
-#include <nghttp2/nghttp2.h>
-#include <string.h>
 #include <event2/bufferevent_ssl.h>
 #include "h2_global.hpp"
 
