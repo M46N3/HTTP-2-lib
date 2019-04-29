@@ -67,24 +67,20 @@ It is recommended to use a C++ IDE, you then have to follow the instruction for 
 
 
 ## How to use
-Remember to generate your own private key and certificate.
+Initialize server instance with path to private key and certificate. Remember to generate your own private key and certificate for security reasons.
 ```cpp
-// Initialize server instance with path to private key and certificate
 h2_server server = h2_server("../key.pem", "../cert.pem");
 ```
-Text..
+Set path to the directory you want to serve.
 ```cpp
-// Set path to the directory you want to serve
 h2_server::setPublicDir("../public");
 ```
-Text..
+Add routes to specific files, the files should be located in the public directory.
 ```cpp
-// Add routes to specific files, inside the public directory
 h2_server::addRoute("/", "/index.html");
 ```
-Text..
+Start the server on a specified port.
 ```cpp
-// Start the server on a specified port
 server.run("8443");
 ```
 
