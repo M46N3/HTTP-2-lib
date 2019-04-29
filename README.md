@@ -10,12 +10,20 @@
   More efficient use of network resources, reduced perception of latency and multiple concurrent exchanges on the same connection.
 </p>
 
+<p align="center">
+  <a href="https://m46n3.github.io/HTTP-2-lib/">Documentation</a>
+  ·
+  <a href="https://www.nrk.no/">CI LØSNING!!!!</a>
+</p>
+
+
 ## Table of contents
 
 - [Introduction](#introduction)
 - [Prerequisites](#prerequisites)
 - [Installing dependencies](#installing-dependencies)
 - [Compiling and running](#compiling-and-running)
+- [How to use](#how-to-use)
 - [Short introduction to HTTP2](#short-introduction-to-HTTP2)
 - [What's included](#whats-included)
 - [Implemented functionality](#implemented-functionality)
@@ -45,6 +53,10 @@ Text..
 ```sh
 git clone https://github.com/M46N3/HTTP-2-lib.git
 ```
+
+## How to use
+Text...
+
 
 ## Short introduction to HTTP2
 HTTP/2 has the same purpose as earlier versions of HTTP: to provide a standard way for web browsers and servers to talk to each other. The HTTP-protocol is in the application layer in the OSI-model. HTTP/2 provides an optimized transport for HTTP semantics and aims to be more efficient than earlier version of HTTP.
