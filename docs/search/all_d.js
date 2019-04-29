@@ -4,7 +4,7 @@ var searchData=
   ['sendconnectionheader',['sendConnectionHeader',['../classh2__utils.html#aceb109ad155898e8ab5dce396461745e',1,'h2_utils']]],
   ['sendgetresponse',['sendGetResponse',['../classh2__utils.html#a81aa277d8e9c16002aec254a67357558',1,'h2_utils']]],
   ['sessiononreceived',['sessionOnReceived',['../classh2__utils.html#a33b538431628f2952392d9ecd6e790eb',1,'h2_utils']]],
-  ['setpublicdir',['setPublicDir',['../classh2__server.html#a0a7c4db6191b7d0f411cecafd076b005',1,'h2_server::setPublicDir()'],['../classh2__utils.html#a694a3506b1098a0c7378d4f55026d5fb',1,'h2_utils::setPublicDir()']]],
+  ['setpublicdir',['setPublicDir',['../classh2__server.html#a0a7c4db6191b7d0f411cecafd076b005',1,'h2_server']]],
   ['settings',['SETTINGS',['../h2__enums_8hpp.html#a8aaeba5aed18516d10d61fe3139c9d32ac678338caea29d77d56be2ea56325610',1,'h2_enums.hpp']]],
   ['settings_5fenable_5fpush',['SETTINGS_ENABLE_PUSH',['../h2__enums_8hpp.html#a6d8635789715a576e50ec07d397d3d97a00dd03c6bee6e2af061b9468dc51c87d',1,'h2_enums.hpp']]],
   ['settings_5fheader_5ftable_5fsize',['SETTINGS_HEADER_TABLE_SIZE',['../h2__enums_8hpp.html#a6d8635789715a576e50ec07d397d3d97a0ee595b509ccd1a3e9e9b939a262db03',1,'h2_enums.hpp']]],

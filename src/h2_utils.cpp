@@ -181,25 +181,6 @@ void h2_utils::sendGetResponse(ClientSessionData *ClientSessData, const unsigned
 }
 
 
-/// setPublicDir - set the path to be used as public directory on the server
-///
-/// @param dir - string with the path
-
-void h2_utils::setPublicDir(string dir) {
-    publicDir = std::move(dir);
-}
-
-
-/// addRoute - Add a route for a file to be served on
-///
-/// @param appCtx - ApplicationContext for whole server
-/// @param path - route to serve
-/// @param filepath - path of the file to serve, in publicDir
-
-void h2_utils::addRoute(ApplicationContext *appCtx, string path, string filepath) {
-    appCtx->routes[path] = std::move(filepath);
-}
-
 /// resolvePath - resolves user-defined routes, and returns the filepath in publicDir
 ///
 /// @param clientSessData - ClientSessionData to access list of routes
@@ -234,7 +215,6 @@ void h2_utils::getResponse200(struct ClientSessionData *clientSessData, const un
     auto filetype_found = sregex_iterator(filepath.begin(), filepath.end(), filetype_regex);
     smatch match = *filetype_found;
     string filetype = match.str();
-    cout << filetype << endl;
 
     // HEADER FRAME:
     ssize_t rv;
