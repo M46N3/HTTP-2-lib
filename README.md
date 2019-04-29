@@ -134,6 +134,7 @@ HTTP-2-lib/
 ├── key.pem
 └── README.md
 ```
+main.cpp, cert.pem and key.pem are included for demonstrative purposes only. Users of this library should generate their own cerificate and key files for security reasons. 
 
 ## Implemented functionality
 HTTP-2-lib supports https, this is done by using [TLS]( https://tools.ietf.org/html/rfc5246) with [ALPN]( https://tools.ietf.org/html/rfc7301) extension. ALPN extension is used to negotiate the use of HTTP/2 with the client. Not all web browsers supports HTTP/2 over TLS, you can check which web browsers that are supported [here]( https://caniuse.com/#search=http2).
