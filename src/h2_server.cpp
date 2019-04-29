@@ -21,6 +21,37 @@ bool printFrames; // boolean to turn on/off printing of frames.
 ApplicationContext appCtx;
 string publicDir;
 
+
+h2_server::h2_server(const char *certKeyFile, const char *certFile) {
+    h2_config::initOpenssl();
+
+    //ApplicationContext appCtx;
+    unordered_map<string, string> routes = {};
+
+    sslCtx = h2_config::createSslContext();
+    h2_config::configureContext(sslCtx, certKeyFile, certFile);
+    eventBase = event_base_new();
+    h2_config::createApplicationContext(&appCtx, sslCtx, eventBase, routes);
+}
+
+/// setPublicDir - set the path to be used as public directory on the server
+///
+/// @param dir - string with the path
+
+void h2_server::setPublicDir(string dir) {
+    publicDir = std::move(dir);
+}
+
+/// addRoute - Add a route for a file to be served on
+///
+/// @param appCtx - ApplicationContext for whole server
+/// @param path - route to serve
+/// @param filepath - path of the file to serve, in publicDir
+
+void h2_server::addRoute(string path, string filepath) {
+    appCtx.routes[path] = std::move(filepath);
+}
+
 /// serverListen - Sets up the server and starts listening on the given port.
 ///
 /// @param eventBase - The application-wide event_base object to use with listeners.
@@ -28,7 +59,6 @@ string publicDir;
 /// @param appCtx - The global application context object to use.
 
 void h2_server::serverListen(struct event_base *eventBase, const char *port, ApplicationContext *appCtx) {
-
     if (printTrackers) {
         cout << "[ serverListen ]" << endl;
     }
@@ -65,31 +95,13 @@ void h2_server::serverListen(struct event_base *eventBase, const char *port, App
     printf("%s", "Error: Could not start listener");
 }
 
-void h2_server::run(const char *port, const char *certKeyFile, const char *certFile) {
+void h2_server::run(const char *port) {
     if (printTrackers) {
         cout << "[ run ]" << endl;
     }
-    h2_config::initOpenssl();
-
-    SSL_CTX *sslCtx;
-    //ApplicationContext appCtx;
-    struct event_base *eventBase;
-    unordered_map<string, string> routes = {};
-
-    sslCtx = h2_config::createSslContext();
-    h2_config::configureContext(sslCtx, certKeyFile, certFile);
-    eventBase = event_base_new();
-    h2_config::createApplicationContext(&appCtx, sslCtx, eventBase, routes);
-
-    // Configure routes and public directory
-    h2_utils::setPublicDir("../public");
-    h2_utils::addRoute(&appCtx, "/", "/index.html");
-    h2_utils::addRoute(&appCtx, "/2", "/index2.html");
 
     serverListen(eventBase, port, &appCtx);
-
     event_base_loop(eventBase, 0);
-
     event_base_free(eventBase);
     SSL_CTX_free(sslCtx);
 }
