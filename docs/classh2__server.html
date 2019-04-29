@@ -84,6 +84,12 @@ Static Public Member Functions</h2></td></tr>
 <tr class="separator:a0a7c4db6191b7d0f411cecafd076b005"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6972bbed06a6482adbaac23c3919229b"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh2__server.html#a6972bbed06a6482adbaac23c3919229b">addRoute</a> (string path, string filepath)</td></tr>
 <tr class="separator:a6972bbed06a6482adbaac23c3919229b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2c7929f129ed8f8dc86dfacee1ea671a"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh2__server.html#a2c7929f129ed8f8dc86dfacee1ea671a">enableCommentsPrint</a> (bool enable)</td></tr>
+<tr class="separator:a2c7929f129ed8f8dc86dfacee1ea671a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5a1b18df2c0184929355fed1c696e487"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh2__server.html#a5a1b18df2c0184929355fed1c696e487">enableTrackersPrint</a> (bool enable)</td></tr>
+<tr class="separator:a5a1b18df2c0184929355fed1c696e487"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a61ca336c0437f567173b808731dda57c"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh2__server.html#a61ca336c0437f567173b808731dda57c">enableFramesPrint</a> (bool enable)</td></tr>
+<tr class="separator:a61ca336c0437f567173b808731dda57c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a858aec262ba2c9653042677e929b7083"></a>
@@ -161,6 +167,102 @@ Static Public Member Functions</h2></td></tr>
     <tr><td class="paramname">appCtx</td><td>- <a class="el" href="structApplicationContext.html">ApplicationContext</a> for whole server </td></tr>
     <tr><td class="paramname">path</td><td>- route to serve </td></tr>
     <tr><td class="paramname">filepath</td><td>- path of the file to serve, in publicDir </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a2c7929f129ed8f8dc86dfacee1ea671a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2c7929f129ed8f8dc86dfacee1ea671a">&#9670;&nbsp;</a></span>enableCommentsPrint()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void h2_server::enableCommentsPrint </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>enable</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Turn on/off comment prints </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">enable</td><td>- bool true enables, false disables </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a61ca336c0437f567173b808731dda57c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a61ca336c0437f567173b808731dda57c">&#9670;&nbsp;</a></span>enableFramesPrint()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void h2_server::enableFramesPrint </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>enable</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Turn on/off frames prints </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">enable</td><td>- bool true enables, false disables </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a5a1b18df2c0184929355fed1c696e487"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5a1b18df2c0184929355fed1c696e487">&#9670;&nbsp;</a></span>enableTrackersPrint()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void h2_server::enableTrackersPrint </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>enable</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Turn on/off trackers prints </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">enable</td><td>- bool true enables, false disables </td></tr>
   </table>
   </dd>
 </dl>
