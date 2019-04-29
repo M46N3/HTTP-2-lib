@@ -5,10 +5,6 @@
 </p>
 
 <h3 align="center">HTTP-2-lib</h3>
-# HTTP-2-lib
-TDAT2004 - NTNU - Project
-
-Development port: 8443
 
 ## Table of contents
 
