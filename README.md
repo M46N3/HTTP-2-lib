@@ -81,7 +81,7 @@ h2_server::addRoute("/", "/index.html");
 ```
 Start the server on a specified port.
 ```cpp
-server.run("8443");
+server.run("443");
 ```
 
 ## Testing
