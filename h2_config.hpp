@@ -18,4 +18,5 @@ public:
     static void createApplicationContext(struct ApplicationContext *appCtx, SSL_CTX *sslCtx, struct event_base *eventBase_, std::unordered_map<std::string, std::string> routes);
     static SSL_CTX *createSslContext();
     static void configureContext(SSL_CTX *ctx, const char *certKeyFile, const char *certFile);
+    static void initOpenssl();
 };

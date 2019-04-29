@@ -1,7 +1,3 @@
-#include <utility>
-
-#include <utility>
-
 // h2_config.cpp
 
 #include "h2_config.hpp"
@@ -205,4 +201,13 @@ void h2_config::configureContext(SSL_CTX *ctx, const char *certKeyFile, const ch
 
     // Configure SSL_CTX object to use ALPN.
     configureAlpn(ctx);
+}
+
+void h2_config::initOpenssl() {
+    if (printTrackers) {
+        cout << "[ initOpenssl ]" << endl;
+    }
+    SSL_load_error_strings();
+    SSL_library_init();
+    OpenSSL_add_ssl_algorithms();
 }

@@ -33,12 +33,16 @@ find_package_handle_standard_args(NGHTTP2
 set(NGHTTP2_INCLUDE_DIRS ${NGHTTP2_INCLUDE_DIR})
 set(NGHTTP2_LIBRARIES ${NGHTTP2_LIBRARY})
 
-
+find_package(Boost 1.68.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y -pthread -Wall -Wextra -Wno-unused-parameter")
 find_package(OpenSSL REQUIRED)
 include_directories(${OPENSSL_INCLUDE_DIR})
 
-add_executable(Nettverksprog_prosjekt main.cpp h2_callbacks.cpp h2_utils.cpp h2_frame_handlers.cpp h2_config.cpp h2_structs.hpp h2_frames.hpp)
+add_executable(Nettverksprog_prosjekt main.cpp h2_server.cpp h2_callbacks.cpp h2_utils.cpp h2_frame_handlers.cpp h2_config.cpp h2_structs.hpp h2_frames.hpp)
 target_link_libraries(Nettverksprog_prosjekt ${OPENSSL_LIBRARIES} -levent_openssl -levent ${EVENT_LIBRARIES} ${NGHTTP2_LIBRARIES})
+
+include_directories(${Boost_INCLUDE_DIR})
+add_executable(Tests tests.cpp)
+target_link_libraries(Tests ${Boost_LIBRARIES})
