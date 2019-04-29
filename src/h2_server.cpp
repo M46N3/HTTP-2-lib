@@ -110,4 +110,5 @@ void h2_server::run(const char *port) {
     event_base_loop(eventBase, 0);
     event_base_free(eventBase);
     SSL_CTX_free(sslCtx);
+    h2_config::cleanupOpenssl();
 }

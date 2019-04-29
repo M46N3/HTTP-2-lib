@@ -215,8 +215,11 @@ void h2_config::initOpenssl() {
 }
 
 
-// TODO: Not in use, remove?
+/// Cleaning up openssl environment
 
-void h2_config::cleanup_openssl() {
+void h2_config::cleanupOpenssl() {
+    if (printTrackers) {
+        cout << "[ cleanupOpenssl ]" << endl;
+    }
     EVP_cleanup();
 }

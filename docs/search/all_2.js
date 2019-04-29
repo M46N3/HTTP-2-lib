@@ -1,7 +1,7 @@
 var searchData=
 [
   ['cancel',['CANCEL',['../h2__enums_8hpp.html#a3878e89dc5c88d823f4f923ef90dbcb3ae4842754cb17e5234637e3a85a7f3d90',1,'h2_enums.hpp']]],
-  ['cleanup_5fopenssl',['cleanup_openssl',['../classh2__config.html#a921f0ece9327e5324dbe478bb13e37fb',1,'h2_config']]],
+  ['cleanupopenssl',['cleanupOpenssl',['../classh2__config.html#ad6c34cc068311b57b96a95d228837568',1,'h2_config']]],
   ['clientaddress',['clientAddress',['../structClientSessionData.html#ab0f26c277547c8d43f47522f572a0e5d',1,'ClientSessionData']]],
   ['clientsessiondata',['ClientSessionData',['../structClientSessionData.html',1,'']]],
   ['compression_5ferror',['COMPRESSION_ERROR',['../h2__enums_8hpp.html#a3878e89dc5c88d823f4f923ef90dbcb3ad566b2c26802f641e611b83978dfba0e',1,'h2_enums.hpp']]],
