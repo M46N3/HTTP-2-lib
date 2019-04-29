@@ -124,4 +124,4 @@ We have implemented..
 - [RFC 7301 - Transport Layer Security (TLS), Application-Layer Protocol Negotiation Extension](https://tools.ietf.org/html/rfc7301)
 - [Tutorial:HTTP/2 server](https://nghttp2.org/documentation/tutorial-server.html#)
 - [Tutorial:HPACK API](https://nghttp2.org/documentation/tutorial-hpack.html)
-- Learning HTTP/2 a practical guide for beginners
+- Book: [O'Reilly Media, Learning HTTP/2, A practical guide for beginners](https://www.amazon.com/Learning-HTTP-Practical-Guide-Beginners/dp/1491962445)
