@@ -40,6 +40,7 @@ HTTP-2-lib is an implementation of the [RFC 7540](https://tools.ietf.org/html/rf
 ## Prerequisites
 * Linux
 * [C++ compiler](https://gcc.gnu.org/)
+* [CMake](https://cmake.org/)
 
 ## Installing dependencies
 Dependencies needed to use HTTP-2-lib:
