@@ -16,6 +16,7 @@ autoconf
             --docdir=/usr/share/doc/nghttp2-1.48.0
 make
 sudo make install
+ls /usr/inlcude
 
 # Download, build, and install boost
 wget -O boost_1_68_0.tar.bz2 https://sourceforge.net/projects/boost/files/boost/1.68.0/boost_1_68_0.tar.bz2/download
