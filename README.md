@@ -16,7 +16,7 @@
 - [Prerequisites](#prerequisites)
 - [Installing dependencies](#installing-dependencies)
 - [Compiling and running](#compiling-and-running)
-- [Short introduction to h2](#short-introduction-to-h2)
+- [Short introduction to h2](#short-introduction-to-h22)
 - [What's included](#whats-included)
 - [Implemented functionality](#implemented-functionality)
 - [Future work](#future-work)
