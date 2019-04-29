@@ -15,6 +15,6 @@ make && sudo make install
 
 # Download, build, and install boost
 wget -O boost_1_68_0.tar.bz2 https://sourceforge.net/projects/boost/files/boost/1.68.0/boost_1_68_0.tar.bz2/download
-tar xzvf boost_1_68_0.tar.bz2
+tar --bzip2 xf boost_1_68_0.tar.bz2
 cp -r boost_1_68_0 /usr/local/
 rm -r boost_1_68_0
