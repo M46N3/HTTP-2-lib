@@ -15,6 +15,7 @@
 - [Introduction](#introduction)
 - [Prerequisites](#prerequisites)
 - [Installing dependencies](installing-dependencies)
+- [Compiling and running](compiling-and-running)
 - [What's included](#whats-included)
 - [Implemented functionality](#implemented-functionality)
 - [Future work](#future-work)
@@ -29,6 +30,12 @@ This library is an implementation of the [RFC 7540](https://tools.ietf.org/html/
 * Linux
 
 ## Installing dependencies
+* [Boost](https://github.com/boostorg/boost)
+* [libevent](https://github.com/libevent/libevent)
+* [nghttp2](https://github.com/nghttp2/nghttp2)
+
+
+## Compiling and running
 ```sh
 git clone https://github.com/M46N3/HTTP-2-lib.git
 ```
