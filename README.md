@@ -6,6 +6,10 @@
 
 <h3 align="center">HTTP-2-lib</h3>
 
+<p align="center">
+  More efficient use of network resources, reduced perception of latency and multiple concurrent exchanges on the same connection.
+</p>
+
 ## Table of contents
 
 - [Introduction](#introduction)
