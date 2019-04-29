@@ -85,7 +85,12 @@ server.run("443");
 ```
 
 ## Testing
-Text...
+If you want to run the tests from the terminal, use the following commands:
+```sh
+cd HTTP-2-lib/
+cd build/
+./Tests --log_level=all --report_sink=./report --report_format=HRF --report_level=detailed
+```
 
 ## Short introduction to HTTP2
 HTTP/2 has the same purpose as earlier versions of HTTP: to provide a standard way for web browsers and servers to talk to each other. The HTTP-protocol is in the application layer in the OSI-model. HTTP/2 provides an optimized transport for HTTP semantics and aims to be more efficient than earlier version of HTTP.
