@@ -10,6 +10,11 @@
 #include "h2_global.hpp"
 
 
+/// Handles frame correctly depening on type of frame
+/// \param clientSessData - ClientSessionData
+/// \param data - the frame data
+/// \param length - length of the frame
+
 void h2_frame_handlers::frameHandler(struct ClientSessionData *clientSessData, const unsigned char *data, size_t length) {
     switch (data[3]) {
         case Types::DATA:
@@ -89,6 +94,10 @@ void h2_frame_handlers::frameHandler(struct ClientSessionData *clientSessData, c
     }
 }
 
+
+/// Prints the frameheader from a frame (first 9 octets)
+/// \param data - frame to print frameheader from
+
 void h2_frame_handlers::frameDefaultPrint(const unsigned char *data) {
     // Printing Frame Format
     if (printFrames) {
@@ -148,6 +157,11 @@ void h2_frame_handlers::frameDefaultPrint(const unsigned char *data) {
     }
 }
 
+
+/// Handles frame of type: HEADER
+/// \param clientSessData - ClientSessionData
+/// \param data - the frame data
+/// \param length - length of the frame
 
 void h2_frame_handlers::headerFrameHandler(ClientSessionData *clientSessData, const unsigned char *data, size_t length) {
     // Checks if the padded and priority flags for the header frame are set
@@ -211,6 +225,11 @@ void h2_frame_handlers::headerFrameHandler(ClientSessionData *clientSessData, co
     }
 }
 
+
+/// Handles frame of type: SETTINGS
+/// \param clientSessData - ClientSessionData
+/// \param data - the frame data
+/// \param length - length of the frame
 
 void h2_frame_handlers::settingsFrameHandler(ClientSessionData *clientSessData, const unsigned char *data, size_t length) {
     // Printing SETTINGS frame
@@ -280,6 +299,12 @@ void h2_frame_handlers::settingsFrameHandler(ClientSessionData *clientSessData, 
     }
 }
 
+
+/// Handles frame of type: PING
+/// \param clientSessData - ClientSessionData
+/// \param data - the frame data
+/// \param length - length of the frame
+
 void h2_frame_handlers::pingFrameHandler(ClientSessionData *clientSessData, const unsigned char *data, size_t length) {
     const bool ack = bitset<8>(data[4])[0];      // ACK = 0x1
 
@@ -294,6 +319,12 @@ void h2_frame_handlers::pingFrameHandler(ClientSessionData *clientSessData, cons
         if (printFrames) cout << "\nRevieved PING response" << endl;
     }
 }
+
+
+/// Handles frame of type: WINDOW_UPDATE
+/// \param clientSessData - ClientSessionData
+/// \param data - the frame data
+/// \param length - length of the frame
 
 void h2_frame_handlers::windowUpdateFrameHandler(ClientSessionData *clientSessData, const unsigned char *data, size_t length) {
     // Printing WINDOW_UPDATE frame
