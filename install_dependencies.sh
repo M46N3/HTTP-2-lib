@@ -33,7 +33,7 @@ tar -xf openssl-1.1.1b.tar.gz
 ls
 cd openssl-1.1.1b
 ./config --prefix=/usr/local/ssl --openssldir=/usr/local/ssl shared zlib
-make --quiet
-sudo make install --quiet
+make -s
+sudo make install -s
 sudo ln -s /usr/local/bin/openssl /usr/bin/openssl
 sudo ldconfig
