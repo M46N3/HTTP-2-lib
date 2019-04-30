@@ -155,6 +155,10 @@ SSL_CTX *h2_config::createSslContext() {
     const SSL_METHOD *method;
     SSL_CTX *ctx;
 
+    /*
+     * Using deprecated SSLv23_server_method due to outdated OpenSSL library on Travis CI image
+     * Using TLS_server_method() would be the optimal choice.
+     */
     method = SSLv23_server_method();
 
     ctx = SSL_CTX_new(method);
