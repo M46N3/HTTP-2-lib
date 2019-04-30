@@ -65,7 +65,7 @@ $(function() {
 <div class="title">HTTP-2-lib Documentation</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock">
+ </a> </p>
 <h3>HTTP-2-lib</h3>
 <p>More efficient use of network resources, reduced perception of latency and multiple concurrent exchanges on the same connection. </p>
 <p><a href="https://travis-ci.com/M46N3/HTTP-2-lib/">Travis CI</a> </p>
@@ -73,17 +73,17 @@ $(function() {
 </a></p>
 <h2>Table of contents</h2>
 <ul>
-<li>Introduction</li>
-<li>Prerequisites</li>
-<li>Installing dependencies</li>
-<li>Compiling and running</li>
-<li>How to use</li>
-<li>Testing</li>
-<li>Short introduction to HTTP2</li>
-<li>What's included</li>
-<li>Implemented functionality</li>
-<li>Future work</li>
-<li>External information</li>
+ <li>Introduction</li>
+ <li>Prerequisites</li>
+ <li>Installing dependencies</li>
+ <li>Compiling and running</li>
+ <li>How to use</li>
+ <li>Testing</li>
+ <li>Short introduction to HTTP2</li>
+ <li>What's included</li>
+ <li>Implemented functionality</li>
+ <li>Future work</li>
+ <li>External information</li>
 </ul>
 <h2>Introduction</h2>
 <p>HTTP-2-lib is an implementation of the <a href="https://tools.ietf.org/html/rfc7540">RFC 7540</a> - Hypertext Transfer Protocol Version 2 (HTTP/2) in C++. It is important to notice that this library is a work in progress, so there will be some missing HTTP/2-functionalities.</p>
@@ -105,7 +105,11 @@ $(function() {
 <p>It is recommended to use a C++ IDE, you then have to follow the instruction for the chosen IDE.</p>
 <h2>How to use</h2>
 <p>Initialize server instance with path to private key and certificate. Remember to generate your own private key and certificate for security reasons. </p><div class="fragment"><div class="line"><a class="code" href="classh2__server.html">h2_server</a> server = <a class="code" href="classh2__server.html">h2_server</a>(<span class="stringliteral">&quot;../key.pem&quot;</span>, <span class="stringliteral">&quot;../cert.pem&quot;</span>);</div></div><!-- fragment --><p> Set path to the directory you want to serve. </p><div class="fragment"><div class="line"><a class="code" href="classh2__server.html#a0a7c4db6191b7d0f411cecafd076b005">h2_server::setPublicDir</a>(<span class="stringliteral">&quot;../public&quot;</span>);</div></div><!-- fragment --><p> Add routes to specific files, the files should be located in the public directory. </p><div class="fragment"><div class="line"><a class="code" href="classh2__server.html#a6972bbed06a6482adbaac23c3919229b">h2_server::addRoute</a>(<span class="stringliteral">&quot;/&quot;</span>, <span class="stringliteral">&quot;/index.html&quot;</span>);</div></div><!-- fragment --><p> Start the server on a specified port. </p><div class="fragment"><div class="line">server.<a class="code" href="classh2__server.html#a82347608f58d70704310e826e31df3b2">run</a>(<span class="stringliteral">&quot;443&quot;</span>);</div></div><!-- fragment --><h2>Testing</h2>
-<p>If you want to run the tests from the terminal, use the following commands to print detailed information about the tests: </p><div class="fragment"><div class="line">cd HTTP-2-lib/build/</div><div class="line">./Tests --log_level=all --report_sink=./report --report_format=HRF --report_level=detailed</div></div><!-- fragment --><h2>Short introduction to HTTP2</h2>
+<p>If you want to run the tests from the terminal, use the following commands to print detailed information about the tests: </p><div class="fragment"><div class="line">cd HTTP-2-lib/build/</div><div class="line">./Tests --log_level=all --report_sink=./report --report_format=HRF --report_level=detailed</div></div><!-- fragment --><p> With the server running, you can also test the connection with <a href="https://curl.haxx.se/">curl</a>. The following command will show detailed output from curl's communication with the server: </p><div class="fragment"><div class="line">curl -k -v https://localhost:8443</div></div><!-- fragment --><p> The flags does the following:</p><ul>
+<li>k: Supports self-signed certificate</li>
+<li>v: Verbose, detailed output</li>
+</ul>
+<h2>Short introduction to HTTP2</h2>
 <p>HTTP/2 has the same purpose as earlier versions of HTTP: to provide a standard way for web browsers and servers to talk to each other. The HTTP-protocol is in the application layer in the OSI-model. HTTP/2 provides an optimized transport for HTTP semantics and aims to be more efficient than earlier version of HTTP.</p>
 <p>HTTP/2 enables more efficient processing of messages with binary message framing. The original request response messages are divided into header-frames and data-frames. Header-frames is the same as headers in earlier versions, and data-frames is the same as body, but is sent as individually frames on the same stream.</p>
 <p>Head-of-line-blocking have been a problem in earlier versions of HTTP, HTTP/2 introduced multiplexing, which reduced the amount of head-of-line-blocking. Multiplexing of requests is achieved by each having HTTP request/response exchange associated with its own stream. Streams are largely independent of each other, so a blocked or stalled request or response does not prevent progress on other streams.</p>
