@@ -5,9 +5,7 @@
 #include "h2_utils.hpp"
 #include "h2_global.hpp"
 #include <iostream>
-#include <string.h>
 #include <event2/bufferevent_ssl.h>
-#include <openssl/ssl.h>
 
 using namespace std;
 

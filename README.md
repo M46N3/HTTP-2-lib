@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://github.com/M46N3/HTTP-2-lib/">
-    <img src="http://i66.tinypic.com/2dkhfzt.png" alt="HTTP-2-lib logo" width="100" height="100">
+    <img src="docs/59022763_355955211705506_740535327713656832_n.png" alt="HTTP-2-lib logo" width="100" height="100">
   </a>
 </p>
 
@@ -16,6 +16,7 @@
   <a href="https://www.nrk.no/">CI LØSNING!!!!</a>
 </p>
 
+[![Travis Build Status](https://travis-ci.com/M46N3/HTTP-2-lib.svg?branch=master)](https://travis-ci.com/M46N3/HTTP-2-lib)
 
 ## Table of contents
 
@@ -24,6 +25,7 @@
 - [Installing dependencies](#installing-dependencies)
 - [Compiling and running](#compiling-and-running)
 - [How to use](#how-to-use)
+- [Testing](#testing)
 - [Short introduction to HTTP2](#short-introduction-to-HTTP2)
 - [What's included](#whats-included)
 - [Implemented functionality](#implemented-functionality)
@@ -39,6 +41,7 @@ HTTP-2-lib is an implementation of the [RFC 7540](https://tools.ietf.org/html/rf
 ## Prerequisites
 * Linux
 * [C++ compiler](https://gcc.gnu.org/)
+* [CMake](https://cmake.org/)
 
 ## Installing dependencies
 Dependencies needed to use HTTP-2-lib:
@@ -49,14 +52,45 @@ Dependencies needed to use HTTP-2-lib:
 
 
 ## Compiling and running
-Text..
+If you want to try the server without an IDE, use the following commands:
 ```sh
 git clone https://github.com/M46N3/HTTP-2-lib.git
+cd HTTP-2-lib/
+mkdir build
+cd build/
+cmake ..
+make
+./HTTP-2-lib-server 8443
 ```
+Go to https://localhost:8443 to visit the example site.
+
+It is recommended to use a C++ IDE, you then have to follow the instruction for the chosen IDE. 
+
 
 ## How to use
-Text...
+Initialize server instance with path to private key and certificate. Remember to generate your own private key and certificate for security reasons.
+```cpp
+h2_server server = h2_server("../key.pem", "../cert.pem");
+```
+Set path to the directory you want to serve.
+```cpp
+h2_server::setPublicDir("../public");
+```
+Add routes to specific files, the files should be located in the public directory.
+```cpp
+h2_server::addRoute("/", "/index.html");
+```
+Start the server on a specified port.
+```cpp
+server.run("443");
+```
 
+## Testing
+If you want to run the tests from the terminal, use the following commands to print detailed information about the tests:
+```sh
+cd HTTP-2-lib/build/
+./Tests --log_level=all --report_sink=./report --report_format=HRF --report_level=detailed
+```
 
 ## Short introduction to HTTP2
 HTTP/2 has the same purpose as earlier versions of HTTP: to provide a standard way for web browsers and servers to talk to each other. The HTTP-protocol is in the application layer in the OSI-model. HTTP/2 provides an optimized transport for HTTP semantics and aims to be more efficient than earlier version of HTTP.
@@ -114,12 +148,22 @@ HTTP-2-lib/
 ├── key.pem
 └── README.md
 ```
+main.cpp, cert.pem and key.pem are included for demonstrative purposes only. Users of this library should generate their own cerificate and key files for security reasons. 
 
 ## Implemented functionality
-HTTP-2-lib supports https, this is done by using [TLS]( https://tools.ietf.org/html/rfc5246) with [ALPN]( https://tools.ietf.org/html/rfc7301) extension. ALPN extension is used to negotiate the use of HTTP/2 with the client. Not all web browsers supports HTTP/2 over TLS, you can check which web browser that are supported [here]( https://caniuse.com/#search=http2).
+HTTP-2-lib supports https, this is done by using [TLS]( https://tools.ietf.org/html/rfc5246) with [ALPN]( https://tools.ietf.org/html/rfc7301) extension. ALPN extension is used to negotiate the use of HTTP/2 with the client. Not all web browsers supports HTTP/2 over TLS, you can check which web browsers that are supported [here]( https://caniuse.com/#search=http2).
 
+Asynchronous reading and writing of frames are implemented with libevent. This feature makes it possible to read and write frames back and forth between the server and multiple clients simultaneously.
+
+Currently the HTTP-2-lib server only supports GET requests, with the filetypes requested being .html, .css or .js.
 
 ## Future work
+HTTP-2-lib is far from finished. The library is expected to include more features in the future such as flow control, server push, and its own implementation of the HPACK-algorithm. We also want to support bigger payloads with multiple frames. To have a complete HTTP/2 library it would also be essential to implement support for POST, PUT and DELETE requests. The GET request should also support more filetypes, such as images.
+
+List of missing features:
+- [5.1. Stream States](https://tools.ietf.org/html/rfc7540#section-5.1)
+- [5.2. Flow Control](https://tools.ietf.org/html/rfc7540#section-5.2)
+- [5.3. Stream Priority]( https://tools.ietf.org/html/rfc7540#section-5.3)
 
 
 ## External information

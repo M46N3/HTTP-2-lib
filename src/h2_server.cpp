@@ -2,15 +2,10 @@
 
 #include "../include/HTTP-2-lib/h2_server.hpp"
 #include "h2_global.hpp"
-#include "h2_structs.hpp"
 #include "h2_callbacks.hpp"
 #include "h2_config.hpp"
-#include "h2_utils.hpp"
 #include <iostream>
 #include <netinet/tcp.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <openssl/ssl.h>
 #include <event2/listener.h>
 
 using namespace std;
@@ -36,6 +31,31 @@ h2_server::h2_server(const char *certKeyFile, const char *certFile) {
     eventBase = event_base_new();
     h2_config::createApplicationContext(&appCtx, sslCtx, eventBase, routes);
 }
+
+
+/// Turn on/off comment prints
+/// \param enable - bool true enables, false disables
+
+void h2_server::enableCommentsPrint(bool enable) {
+    printComments = enable;
+}
+
+
+/// Turn on/off trackers prints
+/// \param enable - bool true enables, false disables
+
+void h2_server::enableTrackersPrint(bool enable) {
+    printTrackers = enable;
+}
+
+
+/// Turn on/off frames prints
+/// \param enable - bool true enables, false disables
+
+void h2_server::enableFramesPrint(bool enable){
+    printFrames = enable;
+}
+
 
 /// Set the path to be used as public directory on the server
 ///
