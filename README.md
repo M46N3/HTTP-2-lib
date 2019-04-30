@@ -91,6 +91,13 @@ If you want to run the tests from the terminal, use the following commands to pr
 cd HTTP-2-lib/build/
 ./Tests --log_level=all --report_sink=./report --report_format=HRF --report_level=detailed
 ```
+With the server running, you can test also test the connection with [curl](https://curl.haxx.se/). The following command will show detailed output from curl's communication with the server:
+```sh
+curl -k -v https://localhost:8443
+```
+The flags does the follwing:
+- k: Supports self-signed certificate
+- v: Verbose, detailed output
 
 ## Short introduction to HTTP2
 HTTP/2 has the same purpose as earlier versions of HTTP: to provide a standard way for web browsers and servers to talk to each other. The HTTP-protocol is in the application layer in the OSI-model. HTTP/2 provides an optimized transport for HTTP semantics and aims to be more efficient than earlier version of HTTP.
