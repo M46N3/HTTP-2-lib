@@ -65,11 +65,12 @@ $(function() {
 <div class="title">HTTP-2-lib Documentation</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a href="https://github.com/M46N3/HTTP-2-lib/"><img src="http://i64.tinypic.com/4sjgq9.png" alt="HTTP-2-lib logo" width="100" height="100" class="inline"/>
- </a> </p>
-<h3 align="center">HTTP-2-lib</h3>
+<div class="textblock">
+<h3>HTTP-2-lib</h3>
 <p>More efficient use of network resources, reduced perception of latency and multiple concurrent exchanges on the same connection. </p>
-<p><a href="https://m46n3.github.io/HTTP-2-lib/">Documentation</a> · <a href="https://www.nrk.no/">CI LØSNING!!!!</a> </p>
+<p><a href="https://m46n3.github.io/HTTP-2-lib/">Documentation</a> · <a href="https://travis-ci.com/M46N3/HTTP-2-lib/">Travis CI</a> </p>
+<p><a href="https://travis-ci.com/M46N3/HTTP-2-lib"><img src="https://travis-ci.com/M46N3/HTTP-2-lib.svg?branch=master" alt="Travis Build Status" class="inline"/>
+</a></p>
 <h2>Table of contents</h2>
 <ul>
 <li><a href="#introduction">Introduction</a></li>
@@ -90,6 +91,7 @@ $(function() {
 <ul>
 <li>Linux</li>
 <li><a href="https://gcc.gnu.org/">C++ compiler</a></li>
+<li><a href="https://cmake.org/">CMake</a></li>
 </ul>
 <h2>Installing dependencies</h2>
 <p>Dependencies needed to use HTTP-2-lib:</p><ul>
@@ -99,10 +101,11 @@ $(function() {
 <li><a href="https://github.com/openssl/openssl">OpenSSL</a>: TLS and ALPN support.</li>
 </ul>
 <h2>Compiling and running</h2>
-<p>Text.. </p><div class="fragment"><div class="line">git clone https://github.com/M46N3/HTTP-2-lib.git</div></div><!-- fragment --><h2>How to use</h2>
-<div class="fragment"><div class="line"><span class="keywordtype">int</span> <a class="code" href="main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627">main</a>() {</div><div class="line">  <span class="keywordtype">int</span> y = SOME_MACRO_REFERENCE;</div><div class="line">  <span class="keywordtype">int</span> x = 5 + 6;</div><div class="line">  cout &lt;&lt; <span class="stringliteral">&quot;Hello World! &quot;</span> &lt;&lt; x &lt;&lt; std::endl();</div><div class="line">}</div></div><!-- fragment --><h2>Testing</h2>
-<p>Text...</p>
-<h2>Short introduction to HTTP2</h2>
+<p>If you want to try the server without an IDE, use the following commands: </p><div class="fragment"><div class="line">git clone https://github.com/M46N3/HTTP-2-lib.git</div><div class="line">cd HTTP-2-lib/</div><div class="line">mkdir build</div><div class="line">cd build/</div><div class="line">cmake ..</div><div class="line">make</div><div class="line">./HTTP-2-lib-server 8443</div></div><!-- fragment --><p> Go to <a href="https://localhost:8443">https://localhost:8443</a> to visit the example site.</p>
+<p>It is recommended to use a C++ IDE, you then have to follow the instruction for the chosen IDE.</p>
+<h2>How to use</h2>
+<p>Initialize server instance with path to private key and certificate. Remember to generate your own private key and certificate for security reasons. </p><div class="fragment"><div class="line"><a class="code" href="classh2__server.html">h2_server</a> server = <a class="code" href="classh2__server.html">h2_server</a>(<span class="stringliteral">&quot;../key.pem&quot;</span>, <span class="stringliteral">&quot;../cert.pem&quot;</span>);</div></div><!-- fragment --><p> Set path to the directory you want to serve. </p><div class="fragment"><div class="line"><a class="code" href="classh2__server.html#a0a7c4db6191b7d0f411cecafd076b005">h2_server::setPublicDir</a>(<span class="stringliteral">&quot;../public&quot;</span>);</div></div><!-- fragment --><p> Add routes to specific files, the files should be located in the public directory. </p><div class="fragment"><div class="line"><a class="code" href="classh2__server.html#a6972bbed06a6482adbaac23c3919229b">h2_server::addRoute</a>(<span class="stringliteral">&quot;/&quot;</span>, <span class="stringliteral">&quot;/index.html&quot;</span>);</div></div><!-- fragment --><p> Start the server on a specified port. </p><div class="fragment"><div class="line">server.<a class="code" href="classh2__server.html#a82347608f58d70704310e826e31df3b2">run</a>(<span class="stringliteral">&quot;443&quot;</span>);</div></div><!-- fragment --><h2>Testing</h2>
+<p>If you want to run the tests from the terminal, use the following commands to print detailed information about the tests: </p><div class="fragment"><div class="line">cd HTTP-2-lib/build/</div><div class="line">./Tests --log_level=all --report_sink=./report --report_format=HRF --report_level=detailed</div></div><!-- fragment --><h2>Short introduction to HTTP2</h2>
 <p>HTTP/2 has the same purpose as earlier versions of HTTP: to provide a standard way for web browsers and servers to talk to each other. The HTTP-protocol is in the application layer in the OSI-model. HTTP/2 provides an optimized transport for HTTP semantics and aims to be more efficient than earlier version of HTTP.</p>
 <p>HTTP/2 enables more efficient processing of messages with binary message framing. The original request response messages are divided into header-frames and data-frames. Header-frames is the same as headers in earlier versions, and data-frames is the same as body, but is sent as individually frames on the same stream.</p>
 <p>Head-of-line-blocking have been a problem in earlier versions of HTTP, HTTP/2 introduced multiplexing, which reduced the amount of head-of-line-blocking. Multiplexing of requests is achieved by each having HTTP request/response exchange associated with its own stream. Streams are largely independent of each other, so a blocked or stalled request or response does not prevent progress on other streams.</p>
@@ -111,15 +114,23 @@ $(function() {
 <p>In earlier version of HTTP we did not compress header fields, HTTP/2 is the first version to introduce header field compression. Because HTTP header fields used in a connection can contain large amounts of redundant data, we sent unnecessary amount of data instead of compressing it and reduce the amount of data sent over the connection.</p>
 <h2>What's included</h2>
 <p>Within the download you'll find the following directories and files:</p>
-<div class="fragment"><div class="line">HTTP-2-lib/</div><div class="line">├── include/</div><div class="line">|   └── HTTP-2-lib/</div><div class="line">|       └── h2_server.hpp</div><div class="line">|</div><div class="line">├── public/</div><div class="line">|   ├── index.html</div><div class="line">|   ├── index2.html</div><div class="line">|   ├── script.js</div><div class="line">|   └── style.css</div><div class="line">|   </div><div class="line">├── src/</div><div class="line">|   ├── h2_callbacks.cpp</div><div class="line">|   ├── h2_callback.hpp</div><div class="line">|   ├── h2_config.cpp</div><div class="line">|   ├── h2_config.hpp</div><div class="line">|   ├── h2_enums.hpp</div><div class="line">|   ├── h2_frame_handlers.cpp</div><div class="line">|   ├── h2_frame_handlers.hpp</div><div class="line">|   ├── h2_global.hpp</div><div class="line">|   ├── h2_server.cpp</div><div class="line">|   ├── h2_structs.hpp</div><div class="line">|   ├── h2_utils.cpp</div><div class="line">|   └── h2_utils.hpp</div><div class="line">│</div><div class="line">├── tests/</div><div class="line">|   ├── h2_server.test.cpp</div><div class="line">|   ├── h2_utils.test.cpp</div><div class="line">|   └── main.test.cpp</div><div class="line">|</div><div class="line">├── cert.pem</div><div class="line">├── CMakeLists.txt</div><div class="line">├── main.cpp</div><div class="line">├── key.pem</div><div class="line">└── README.md</div></div><!-- fragment --><h2>Implemented functionality</h2>
-<p>HTTP-2-lib supports https, this is done by using <a href="https://tools.ietf.org/html/rfc5246">TLS</a> with <a href="https://tools.ietf.org/html/rfc7301">ALPN</a> extension. ALPN extension is used to negotiate the use of HTTP/2 with the client. Not all web browsers supports HTTP/2 over TLS, you can check which web browser that are supported <a href="https://caniuse.com/#search=http2">here</a>.</p>
-<p>Asynchronous reading and writing of frames are implemented with libevent. This feature makes it possible to read and write frames back and forth between server and client simultaneously.</p>
+<div class="fragment"><div class="line">HTTP-2-lib/</div><div class="line">├── include/</div><div class="line">|   └── HTTP-2-lib/</div><div class="line">|       └── h2_server.hpp</div><div class="line">|</div><div class="line">├── public/</div><div class="line">|   ├── index.html</div><div class="line">|   ├── index2.html</div><div class="line">|   ├── script.js</div><div class="line">|   └── style.css</div><div class="line">|   </div><div class="line">├── src/</div><div class="line">|   ├── h2_callbacks.cpp</div><div class="line">|   ├── h2_callback.hpp</div><div class="line">|   ├── h2_config.cpp</div><div class="line">|   ├── h2_config.hpp</div><div class="line">|   ├── h2_enums.hpp</div><div class="line">|   ├── h2_frame_handlers.cpp</div><div class="line">|   ├── h2_frame_handlers.hpp</div><div class="line">|   ├── h2_global.hpp</div><div class="line">|   ├── h2_server.cpp</div><div class="line">|   ├── h2_structs.hpp</div><div class="line">|   ├── h2_utils.cpp</div><div class="line">|   └── h2_utils.hpp</div><div class="line">│</div><div class="line">├── tests/</div><div class="line">|   ├── h2_server.test.cpp</div><div class="line">|   ├── h2_utils.test.cpp</div><div class="line">|   └── main.test.cpp</div><div class="line">|</div><div class="line">├── cert.pem</div><div class="line">├── CMakeLists.txt</div><div class="line">├── main.cpp</div><div class="line">├── key.pem</div><div class="line">└── README.md</div></div><!-- fragment --><p> <a class="el" href="main_8cpp.html">main.cpp</a>, cert.pem and key.pem are included for demonstrative purposes only. Users of this library should generate their own cerificate and key files for security reasons.</p>
+<h2>Implemented functionality</h2>
+<p>HTTP-2-lib supports https, this is done by using <a href="https://tools.ietf.org/html/rfc5246">TLS</a> with <a href="https://tools.ietf.org/html/rfc7301">ALPN</a> extension. ALPN extension is used to negotiate the use of HTTP/2 with the client. Not all web browsers supports HTTP/2 over TLS, you can check which web browsers that are supported <a href="https://caniuse.com/#search=http2">here</a>.</p>
+<p>Asynchronous reading and writing of frames are implemented with libevent. This feature makes it possible to read and write frames back and forth between the server and multiple clients simultaneously.</p>
+<p>Currently the HTTP-2-lib server only supports GET requests, with the filetypes requested being .html, .css or .js.</p>
 <h2>Future work</h2>
-<p>HTTP-2-lib is far from finished. The library is expected to include more features in the future such as flow control, server push, and its own implementation of the HPACK-algorithm. We also want to support bigger payloads with multiple frames.</p>
+<p>HTTP-2-lib is far from finished. The library is expected to include more features in the future such as flow control, server push, and its own implementation of the HPACK-algorithm. We also want to support bigger payloads with multiple frames. To have a complete HTTP/2 library it would also be essential to implement support for POST, PUT and DELETE requests. The GET request should also support more filetypes, such as images.</p>
 <p>List of missing features:</p><ul>
-<li><a href="https://tools.ietf.org/html/rfc7540#section-5.1">5.1. Stream States</a></li>
-<li><a href="https://tools.ietf.org/html/rfc7540#section-5.2">5.2. Flow Control</a></li>
-<li><a href="https://tools.ietf.org/html/rfc7540#section-5.3">5.3. Stream Priority</a></li>
+<li>Better management of stream states: <a href="https://tools.ietf.org/html/rfc7540#section-5.1">5.1. Stream States</a></li>
+<li>Automated use of stream identifiers: <a href="https://tools.ietf.org/html/rfc7540#section-5.1.1">5.1.1. Stream Identifiers</a></li>
+<li>Stream concurrency management: <a href="https://tools.ietf.org/html/rfc7540#section-5.1.2">5.1.2. Stream Concurrency</a></li>
+<li>Flow-control scheme to avoid destructively interference between streams: <a href="https://tools.ietf.org/html/rfc7540#section-5.2">5.2. Flow Control</a></li>
+<li>Management of stream priority: <a href="https://tools.ietf.org/html/rfc7540#section-5.3">5.3. Stream Priority</a></li>
+<li>More advanced error handling: <a href="https://tools.ietf.org/html/rfc7540#section-5.4">5.4. Error Handling</a></li>
+<li>Server push feature: <a href="https://tools.ietf.org/html/rfc7540#section-8.2">8.2. Server Push</a></li>
+<li>Own implementation of HPACK: <a href="https://tools.ietf.org/html/rfc7541">RFC 7541</a></li>
+<li>Keep state of flow-control on WINDOW_UPDATE frames by expanding <a class="el" href="structClientSessionData.html" title="Struct for holding all data for each individual connection and client session.">ClientSessionData</a> object for each connection: <a href="https://tools.ietf.org/html/rfc7540#section-6.9">6.9. WINDOW_UPDATE</a></li>
 </ul>
 <h2>External information</h2>
 <ul>

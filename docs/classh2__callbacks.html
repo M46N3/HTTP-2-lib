@@ -133,6 +133,17 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Creates a <a class="el" href="structClientSessionData.html" title="Struct for holding all data for each individual connection and client session.">ClientSessionData</a> object for the new accepted connection and sets callbacks for the created bufferevent object.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">conListener</td><td>- evconnlistener struct object </td></tr>
+    <tr><td class="paramname">sock</td><td>- filedscriptor for the connection </td></tr>
+    <tr><td class="paramname">address</td><td>- clients address </td></tr>
+    <tr><td class="paramname">address_length</td><td>- length of clients address </td></tr>
+    <tr><td class="paramname">arg</td><td>- user supplied <a class="el" href="structApplicationContext.html" title="Struct for holding the application wide context.">ApplicationContext</a> object. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -224,7 +235,7 @@ Static Public Member Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">bufferEvent</td><td>- The bufferevent that triggered the callback. </td></tr>
-    <tr><td class="paramname">ptr</td><td>- The user-specified context for this bufferevent, which is the <a class="el" href="structClientSessionData.html">ClientSessionData</a> object. </td></tr>
+    <tr><td class="paramname">ptr</td><td>- The user-specified context for this bufferevent, which is the <a class="el" href="structClientSessionData.html" title="Struct for holding all data for each individual connection and client session.">ClientSessionData</a> object. </td></tr>
   </table>
   </dd>
 </dl>
@@ -264,6 +275,14 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Callback invoked when all data in the session's buffer has been sent and the buffer is empty. It has not been implemented as of yet, but with time the library will change from responding to client requests directly with a bufferwrite, to adding response data to a linked list queued for transmission and sending it by invoking a function 'sendSessionData()'. With time this will be implemented.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">bufferEvent</td><td>- The connections bufferevent object. </td></tr>
+    <tr><td class="paramname">ptr</td><td>- The connections <a class="el" href="structClientSessionData.html" title="Struct for holding all data for each individual connection and client session.">ClientSessionData</a> object, which will hold the linked list of data queued for transmission </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

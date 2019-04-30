@@ -90,6 +90,8 @@ Static Public Member Functions</h2></td></tr>
 <tr class="separator:a0967e8daf54902682f8af79e53de69f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3a6f4358fab20df1504f8e4389fdd6e7"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh2__utils.html#a3a6f4358fab20df1504f8e4389fdd6e7">getResponse404</a> (struct <a class="el" href="structClientSessionData.html">ClientSessionData</a> *clientSessData, const unsigned char *data)</td></tr>
 <tr class="separator:a3a6f4358fab20df1504f8e4389fdd6e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aabb50fb277b63c5f62d1571326b84c82"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classh2__utils.html#aabb50fb277b63c5f62d1571326b84c82">deleteClientSessionData</a> (struct <a class="el" href="structClientSessionData.html">ClientSessionData</a> *clientSessData)</td></tr>
+<tr class="separator:aabb50fb277b63c5f62d1571326b84c82"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a id="a9969241c0924ceef77fc0046f7ecafb7"></a>
@@ -202,6 +204,39 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="aabb50fb277b63c5f62d1571326b84c82"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aabb50fb277b63c5f62d1571326b84c82">&#9670;&nbsp;</a></span>deleteClientSessionData()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void h2_utils::deleteClientSessionData </td>
+          <td>(</td>
+          <td class="paramtype">struct <a class="el" href="structClientSessionData.html">ClientSessionData</a> *&#160;</td>
+          <td class="paramname"><em>clientSessData</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Deletes and frees memory hold by the <a class="el" href="structClientSessionData.html" title="Struct for holding all data for each individual connection and client session.">ClientSessionData</a> object.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">clientSessData</td><td>- The <a class="el" href="structClientSessionData.html" title="Struct for holding all data for each individual connection and client session.">ClientSessionData</a> object to delete. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="a0967e8daf54902682f8af79e53de69f0"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a0967e8daf54902682f8af79e53de69f0">&#9670;&nbsp;</a></span>getResponse200()</h2>
 
@@ -244,7 +279,7 @@ Static Public Member Functions</h2></td></tr>
 <p>Responds to get request with html, js or css file, and status: 200.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">clientSessData</td><td>- <a class="el" href="structClientSessionData.html">ClientSessionData</a>, used to respond to correct client </td></tr>
+    <tr><td class="paramname">clientSessData</td><td>- <a class="el" href="structClientSessionData.html" title="Struct for holding all data for each individual connection and client session.">ClientSessionData</a>, used to respond to correct client </td></tr>
     <tr><td class="paramname">data</td><td>- pointer to array containing request </td></tr>
     <tr><td class="paramname">filepath</td><td>- where the requested file is located </td></tr>
   </table>
@@ -289,7 +324,7 @@ Static Public Member Functions</h2></td></tr>
 <p>Sends a status: 404 Not Found response</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">clientSessData</td><td>- <a class="el" href="structClientSessionData.html">ClientSessionData</a>, used to respond to correct client </td></tr>
+    <tr><td class="paramname">clientSessData</td><td>- <a class="el" href="structClientSessionData.html" title="Struct for holding all data for each individual connection and client session.">ClientSessionData</a>, used to respond to correct client </td></tr>
     <tr><td class="paramname">data</td><td>- pointer to array containing request </td></tr>
   </table>
   </dd>
@@ -366,7 +401,7 @@ Static Public Member Functions</h2></td></tr>
 <p>Resolves user-defined routes, and returns the filepath in publicDir</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">clientSessData</td><td>- <a class="el" href="structClientSessionData.html">ClientSessionData</a> to access list of routes </td></tr>
+    <tr><td class="paramname">clientSessData</td><td>- <a class="el" href="structClientSessionData.html" title="Struct for holding all data for each individual connection and client session.">ClientSessionData</a> to access list of routes </td></tr>
     <tr><td class="paramname">path</td><td>- path to resolve </td></tr>
   </table>
   </dd>
@@ -401,7 +436,7 @@ Static Public Member Functions</h2></td></tr>
 <p>Sends server connection header with 'MAXIMUM_CONCURRENT_STREAMS' set to 100.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">ClientSessData</td><td>- <a class="el" href="structClientSessionData.html">ClientSessionData</a> object for this particular connection. </td></tr>
+    <tr><td class="paramname">ClientSessData</td><td>- <a class="el" href="structClientSessionData.html" title="Struct for holding all data for each individual connection and client session.">ClientSessionData</a> object for this particular connection. </td></tr>
   </table>
   </dd>
 </dl>
@@ -451,7 +486,7 @@ Static Public Member Functions</h2></td></tr>
 <p>Send a get response when recieving a request</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">ClientSessData</td><td>- <a class="el" href="structClientSessionData.html">ClientSessionData</a> </td></tr>
+    <tr><td class="paramname">ClientSessData</td><td>- <a class="el" href="structClientSessionData.html" title="Struct for holding all data for each individual connection and client session.">ClientSessionData</a> </td></tr>
     <tr><td class="paramname">data</td><td>- pointer to array with the request </td></tr>
     <tr><td class="paramname">path</td><td>- where to find requested resource </td></tr>
   </table>
@@ -485,7 +520,7 @@ Static Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Gets called every time a frame is recieved from a client </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">clientSessData</td><td>- <a class="el" href="structClientSessionData.html">ClientSessionData</a> </td></tr>
+    <tr><td class="paramname">clientSessData</td><td>- <a class="el" href="structClientSessionData.html" title="Struct for holding all data for each individual connection and client session.">ClientSessionData</a> </td></tr>
   </table>
   </dd>
 </dl>
