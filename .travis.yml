@@ -36,4 +36,4 @@ script:
   - mkdir build && cd build
   - cmake ..
   - make
-  - ls
+  - ./Tests
