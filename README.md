@@ -166,6 +166,7 @@ List of missing features:
 - Stream concurrency management: [5.1.2. Stream Concurrency]( https://tools.ietf.org/html/rfc7540#section-5.1.2)
 - Flow-control scheme to avoid destructively interference between streams: [5.2. Flow Control](https://tools.ietf.org/html/rfc7540#section-5.2)
 - Management of stream priority: [5.3. Stream Priority]( https://tools.ietf.org/html/rfc7540#section-5.3)
+- More advanced error handling: [5.4. Error Handling](https://tools.ietf.org/html/rfc7540#section-5.4)
 - Own implementation of HPACK: [RFC 7541]( https://tools.ietf.org/html/rfc7541)
 
 
