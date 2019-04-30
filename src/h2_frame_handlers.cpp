@@ -279,7 +279,8 @@ void h2_frame_handlers::settingsFrameHandler(ClientSessionData *clientSessData, 
     ulong payloadLength = h2_utils::hexToUlong(h2_utils::bytesToString(data, 0, 3));
 
 
-    //    TODO: Do more than just acknowledge the settings frame. Save data from settings frame.
+    //    TODO: Do more than just acknowledge the settings frame.
+    //          Save data from settings frame to the ClientSession object for the connection.
     if (!acknowledge) {
         unsigned char ackSettingsFrame[] = { 0x00, 0x00, 0x00, Types::SETTINGS, 0x01, 0x00, 0x00, 0x00, 0x00 };
         bufferevent_write(clientSessData->bufferEvent, ackSettingsFrame, 9);

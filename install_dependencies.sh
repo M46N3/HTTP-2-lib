@@ -1,5 +1,9 @@
 #! /bin/bash
 
+#
+# bash script used by CI provider, Travis, to install dependencies before building.
+#
+
 sudo apt-get update
 sudo apt-get install make binutils autoconf automake autotools-dev cmake libtool pkg-config zlib1g-dev libcunit1-dev libxml2-dev libev-dev libnghttp2-dev libevent-dev -y
 

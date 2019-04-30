@@ -169,6 +169,7 @@ List of missing features:
 - More advanced error handling: [5.4. Error Handling](https://tools.ietf.org/html/rfc7540#section-5.4)
 - Server push: [6.6. PUSH_PROMISE](https://tools.ietf.org/html/rfc7540#section-6.6)
 - Own implementation of HPACK: [RFC 7541]( https://tools.ietf.org/html/rfc7541)
+- Keep state of flow-control on WINDOW_UPDATE frames by expanding ClientSessionData object for each connection: [6.9. WINDOW_UPDATE](https://tools.ietf.org/html/rfc7540#section-6.9)
 
 
 
