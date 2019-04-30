@@ -16,6 +16,7 @@
   <a href="https://www.nrk.no/">CI LØSNING!!!!</a>
 </p>
 
+[![Travis Build Status](https://travis-ci.com/M46N3/HTTP-2-lib.svg?branch=master)](https://travis-ci.com/M46N3/HTTP-2-lib)
 
 ## Table of contents
 
