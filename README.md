@@ -161,9 +161,13 @@ Currently the HTTP-2-lib server only supports GET requests, with the filetypes r
 HTTP-2-lib is far from finished. The library is expected to include more features in the future such as flow control, server push, and its own implementation of the HPACK-algorithm. We also want to support bigger payloads with multiple frames. To have a complete HTTP/2 library it would also be essential to implement support for POST, PUT and DELETE requests. The GET request should also support more filetypes, such as images.
 
 List of missing features:
-- [5.1. Stream States](https://tools.ietf.org/html/rfc7540#section-5.1)
-- [5.2. Flow Control](https://tools.ietf.org/html/rfc7540#section-5.2)
-- [5.3. Stream Priority]( https://tools.ietf.org/html/rfc7540#section-5.3)
+- Better management of stream states: [5.1. Stream States](https://tools.ietf.org/html/rfc7540#section-5.1)
+- Automated use of stream identifiers: [5.1.1. Stream Identifiers](https://tools.ietf.org/html/rfc7540#section-5.1.1)
+- Stream concurrency management: [5.1.2. Stream Concurrency]( https://tools.ietf.org/html/rfc7540#section-5.1.2)
+- Flow-control scheme to avoid destructively interference between streams: [5.2. Flow Control](https://tools.ietf.org/html/rfc7540#section-5.2)
+- Management of stream priority: [5.3. Stream Priority]( https://tools.ietf.org/html/rfc7540#section-5.3)
+- Own implementation of HPACK: [RFC 7541]( https://tools.ietf.org/html/rfc7541)
+
 
 
 ## External information
