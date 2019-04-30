@@ -95,7 +95,7 @@ With the server running, you can also test the connection with [curl](https://cu
 ```sh
 curl -k -v https://localhost:8443
 ```
-The flags does the follwing:
+The flags does the following:
 - k: Supports self-signed certificate
 - v: Verbose, detailed output
 
