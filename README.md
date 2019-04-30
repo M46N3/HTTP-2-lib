@@ -91,7 +91,7 @@ If you want to run the tests from the terminal, use the following commands to pr
 cd HTTP-2-lib/build/
 ./Tests --log_level=all --report_sink=./report --report_format=HRF --report_level=detailed
 ```
-With the server running, you can test also test the connection with [curl](https://curl.haxx.se/). The following command will show detailed output from curl's communication with the server:
+With the server running, you can also test the connection with [curl](https://curl.haxx.se/). The following command will show detailed output from curl's communication with the server:
 ```sh
 curl -k -v https://localhost:8443
 ```
