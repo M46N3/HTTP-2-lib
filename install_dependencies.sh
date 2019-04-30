@@ -35,5 +35,6 @@ cd openssl-1.1.1b
 ./config --prefix=/usr/local/ssl --openssldir=/usr/local/ssl shared zlib
 make -s
 sudo make install -s
+sudo rm -rf /usr/bin/openssl
 sudo ln -s /usr/local/bin/openssl /usr/bin/openssl
 sudo ldconfig
