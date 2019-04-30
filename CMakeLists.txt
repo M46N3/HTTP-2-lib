@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION ${CMAKE_VERSION}) #VERSION 3.12)
 project(Nettverksprog_prosjekt)
 
 find_path(EVENT_INCLUDE_DIR event.h
@@ -33,10 +33,10 @@ find_package_handle_standard_args(NGHTTP2
 set(NGHTTP2_INCLUDE_DIRS ${NGHTTP2_INCLUDE_DIR})
 set(NGHTTP2_LIBRARIES ${NGHTTP2_LIBRARY})
 
-find_package(Boost 1.68.0)
+find_package(Boost) #1.68.0)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y -pthread -Wall -Wextra -Wno-unused-parameter")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -Wall -Wextra -Wno-unused-parameter")
 find_package(OpenSSL REQUIRED)
 include_directories(${OPENSSL_INCLUDE_DIR})
 

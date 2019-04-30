@@ -159,7 +159,7 @@ SSL_CTX *h2_config::createSslContext() {
     const SSL_METHOD *method;
     SSL_CTX *ctx;
 
-    method = TLS_server_method();
+    method = SSLv23_server_method();
 
     ctx = SSL_CTX_new(method);
     if (!ctx) {
