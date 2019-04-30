@@ -13,7 +13,7 @@
 <p align="center">
   <a href="https://m46n3.github.io/HTTP-2-lib/">Documentation</a>
   ·
-  <a href="https://www.nrk.no/">CI LØSNING!!!!</a>
+  <a href="https://travis-ci.com/M46N3/HTTP-2-lib/">Travis CI</a>
 </p>
 
 [![Travis Build Status](https://travis-ci.com/M46N3/HTTP-2-lib.svg?branch=master)](https://travis-ci.com/M46N3/HTTP-2-lib)
