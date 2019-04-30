@@ -8,11 +8,15 @@
 
 using namespace std;
 
+/// Struct for holding the application wide context
+
 struct ApplicationContext {
     SSL_CTX *ctx;
     struct event_base *eventBase;
     unordered_map<string, string> routes;
 };
+
+/// Struct for holding all data for each individual connection and client session.
 
 struct ClientSessionData {
     //struct stream_data root;
