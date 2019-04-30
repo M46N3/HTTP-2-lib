@@ -67,16 +67,17 @@ void h2_callbacks::eventCallback(struct bufferevent *bufferEvent, short events, 
 
         if (alpn == nullptr || alpnlen != 2 || memcmp("h2", alpn, 2) != 0) {
             printf("%s h2 negotiation failed\n", clientSessData->clientAddress);
-            // TODO: delete_client_sess_data(clientSessData);
+            h2_utils::deleteClientSessionData(clientSessData);
             return;
         }
 
         if(h2_utils::sendConnectionHeader(clientSessData) != 0) {
-            // TODO: delete_client_sess_data(clientSessData);
+            h2_utils::deleteClientSessionData(clientSessData);
             return;
         }
         return;
     }
+    h2_utils::deleteClientSessionData(clientSessData);
 }
 
 

@@ -18,4 +18,5 @@ public:
     static string resolvePath(struct ClientSessionData *clientSessData, string path);
     static void getResponse200(struct ClientSessionData *clientSessData, const unsigned char *data, string filepath);
     static void getResponse404(struct ClientSessionData *clientSessData, const unsigned char *data);
+    static void deleteClientSessionData(struct ClientSessionData *clientSessData);
 };

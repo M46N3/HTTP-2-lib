@@ -454,3 +454,24 @@ void h2_utils::getResponse404(struct ClientSessionData *clientSessData, const un
 
     bufferevent_write(clientSessData->bufferEvent, frame, outlen + 9);
 }
+
+
+/// Deletes and frees memory hold by the ClientSessionData object.
+///
+/// @param clientSessData - The ClientSessionData object to delete.
+
+void h2_utils::deleteClientSessionData(struct ClientSessionData *clientSessData) {
+    if (printTrackers) {
+        cout << "[ deleteClientSessionData ]" << endl;
+    }
+
+    SSL *ssl = bufferevent_openssl_get_ssl(clientSessData->bufferEvent);
+    printf("%s disconnected\n", clientSessData->clientAddress);
+
+    if (ssl) {
+        SSL_shutdown(ssl);
+    }
+    bufferevent_free(clientSessData->bufferEvent);
+    free(clientSessData->clientAddress);
+    free(clientSessData);
+}
