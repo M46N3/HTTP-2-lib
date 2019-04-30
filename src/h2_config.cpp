@@ -131,10 +131,6 @@ void h2_config::configureAlpn(SSL_CTX *ctx) {
 /// @param eventBase_ - event_base object to use.
 
 void h2_config::createApplicationContext(ApplicationContext *appCtx, SSL_CTX *sslCtx, struct event_base *eventBase_, std::unordered_map<std::string, std::string> routes) {
-    /**
-     * Sets the application_ctx members, ctx and eventBase, to the given SSL_CTX and event_base objects
-     */
-
     if (printTrackers) {
         cout << "[ createApplicationContext ]" << endl;
     }

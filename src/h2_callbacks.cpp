@@ -24,7 +24,14 @@ void h2_callbacks::readCallback(struct bufferevent *bufferEvent, void *ptr) {
 }
 
 
-// TODO: Comment here
+/// Callback invoked when all data in the session's buffer has been sent and the buffer is empty.
+/// It has not been implemented as of yet, but with time the library will change from responding to client requests
+/// directly with a bufferwrite, to adding response data to a linked list queued for transmission and sending it by
+/// invoking a function 'sendSessionData()'. With time this will be implemented.
+///
+/// \param bufferEvent - The connections bufferevent object.
+/// \param ptr - The connections ClientSessionData object, which will hold the linked list of data
+///              queued for transmission
 
 void h2_callbacks::writeCallback(struct bufferevent *bufferEvent, void *ptr){
     if (printTrackers) {
@@ -56,14 +63,11 @@ void h2_callbacks::eventCallback(struct bufferevent *bufferEvent, short events, 
 
         printf( "%s connected\n", clientSessData->clientAddress);
 
-
         ssl = bufferevent_openssl_get_ssl(bufferEvent);
 
-        // TODO: Kan if-setningen her fjernes siden den alltid er true?
         /* Negotiate ALPN on initial connection */
-        if (alpn == nullptr) {
-            SSL_get0_alpn_selected(ssl, &alpn, &alpnlen);
-        }
+        SSL_get0_alpn_selected(ssl, &alpn, &alpnlen);
+
 
         if (alpn == nullptr || alpnlen != 2 || memcmp("h2", alpn, 2) != 0) {
             printf("%s h2 negotiation failed\n", clientSessData->clientAddress);
@@ -81,7 +85,14 @@ void h2_callbacks::eventCallback(struct bufferevent *bufferEvent, short events, 
 }
 
 
-// TODO: Comment here
+/// Creates a ClientSessionData object for the new accepted connection and sets
+/// callbacks for the created bufferevent object.
+///
+/// \param conListener - evconnlistener struct object
+/// \param sock - filedscriptor for the connection
+/// \param address - clients address
+/// \param address_length - length of clients address
+/// \param arg  - user supplied ApplicationContext object.
 
 void h2_callbacks::acceptCallback(struct evconnlistener *conListener, int sock,
                                   struct sockaddr *address, int address_length, void *arg) {
@@ -92,10 +103,8 @@ void h2_callbacks::acceptCallback(struct evconnlistener *conListener, int sock,
         cout << "[ acceptCallback]: " << "sock: " << sock << ", address: " << address << endl;
     }
 
-
     (void) conListener;
 
     clientSessData = h2_utils::createClientSessionData(appCtx, sock, address, address_length);
     bufferevent_setcb(clientSessData->bufferEvent, readCallback, writeCallback, eventCallback, clientSessData);
-
 }
