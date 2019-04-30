@@ -167,7 +167,7 @@ List of missing features:
 - Flow-control scheme to avoid destructively interference between streams: [5.2. Flow Control](https://tools.ietf.org/html/rfc7540#section-5.2)
 - Management of stream priority: [5.3. Stream Priority]( https://tools.ietf.org/html/rfc7540#section-5.3)
 - More advanced error handling: [5.4. Error Handling](https://tools.ietf.org/html/rfc7540#section-5.4)
-- Server push: [6.6. PUSH_PROMISE](https://tools.ietf.org/html/rfc7540#section-6.6)
+- Server push feature: [8.2. Server Push](https://tools.ietf.org/html/rfc7540#section-8.2)
 - Own implementation of HPACK: [RFC 7541]( https://tools.ietf.org/html/rfc7541)
 - Keep state of flow-control on WINDOW_UPDATE frames by expanding ClientSessionData object for each connection: [6.9. WINDOW_UPDATE](https://tools.ietf.org/html/rfc7540#section-6.9)
 
