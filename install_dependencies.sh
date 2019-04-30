@@ -1,7 +1,7 @@
 #! /bin/bash
 
 sudo apt-get update
-sudo apt-get install make binutils autoconf automake autotools-dev cmake libtool pkg-config zlib1g-dev libcunit1-dev libssl-dev libxml2-dev libev-dev libnghttp2-dev libevent-dev -y
+sudo apt-get install make binutils autoconf automake autotools-dev cmake libtool pkg-config zlib1g-dev libcunit1-dev libxml2-dev libev-dev libnghttp2-dev libevent-dev -y
 
 
 # Download, build, and install nghttp2
@@ -35,3 +35,5 @@ cd openssl-1.1.1b
 ./config --prefix=/usr/local/ssl --openssldir=/usr/local/ssl shared zlib
 make --quiet
 sudo make install --quiet
+sudo ln -s /usr/local/bin/openssl /usr/bin/openssl
+sudo ldconfig
