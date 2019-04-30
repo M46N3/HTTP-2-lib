@@ -26,15 +26,15 @@ cp -r boost_1_68_0 /usr/local/
 rm -r boost_1_68_0
 
 # Openssl
-wget -O openssl-1.1.1b.tar.gz https://www.openssl.org/source/openssl-1.1.1b.tar.gz
-mv openssl-1.1.1b.tar.gz /usr/local/src/
-cd /usr/local/src
-tar -xf openssl-1.1.1b.tar.gz
-ls
-cd openssl-1.1.1b
-./config --prefix=/usr/local/ssl --openssldir=/usr/local/ssl shared zlib
-make -s
-sudo make install -s
-sudo rm -rf /usr/bin/openssl
-sudo ln -s /usr/local/bin/openssl /usr/bin/openssl
-sudo ldconfig
+#wget -O openssl-1.1.1b.tar.gz https://www.openssl.org/source/openssl-1.1.1b.tar.gz
+#mv openssl-1.1.1b.tar.gz /usr/local/src/
+#cd /usr/local/src
+#tar -xf openssl-1.1.1b.tar.gz
+#ls
+#cd openssl-1.1.1b
+#./config --prefix=/usr/local/ssl --openssldir=/usr/local/ssl shared zlib
+#make -s
+#sudo make install -s
+#sudo rm -rf /usr/bin/openssl
+#sudo ln -s /usr/local/bin/openssl /usr/bin/openssl
+#sudo ldconfig
